@@ -53,11 +53,11 @@ const Login = () => {
         <Card className="glass border-white/20 shadow-2xl">
           <CardHeader className="text-center space-y-2">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary">
-              <span className="text-2xl font-bold text-white">S</span>
+              <span className="text-2xl font-bold text-white">E</span>
             </div>
             <CardTitle className="text-2xl font-bold gradient-text">Welcome Back</CardTitle>
             <CardDescription className="text-white/80">
-              Sign in to your account to continue
+              Sign in to EndlessChat and continue your conversations
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -71,46 +71,46 @@
   }
 
   .dark {
-    /* Dark Mode Base */
-    --background: 220 25% 8%;
+    /* Dark Mode Base - Not Pure Black */
+    --background: 220 15% 15%;
     --foreground: 220 15% 95%;
 
     /* Dark Mode Cards */
-    --card: 220 20% 12%;
+    --card: 220 15% 18%;
     --card-foreground: 220 15% 95%;
 
     /* Dark Mode Primary - Brighter for contrast */
     --primary: 262 83% 68%;
-    --primary-foreground: 220 25% 8%;
+    --primary-foreground: 220 15% 15%;
     --primary-glow: 252 100% 80%;
 
     /* Dark Mode Secondary */
-    --secondary: 220 20% 16%;
+    --secondary: 220 15% 20%;
     --secondary-foreground: 262 83% 75%;
 
     /* Dark Mode Accent */
     --accent: 212 100% 60%;
-    --accent-foreground: 220 25% 8%;
+    --accent-foreground: 220 15% 15%;
 
     /* Dark Mode Muted */
-    --muted: 220 20% 16%;
+    --muted: 220 15% 20%;
     --muted-foreground: 220 9% 65%;
 
     /* Dark Mode Borders */
-    --border: 220 20% 20%;
-    --input: 220 20% 16%;
+    --border: 220 15% 25%;
+    --input: 220 15% 20%;
 
     /* Dark Mode Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(262 83% 68%), hsl(212 100% 60%));
     --gradient-hero: linear-gradient(135deg, hsl(262 83% 68%) 0%, hsl(212 100% 60%) 50%, hsl(252 100% 80%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(220 20% 12% / 0.9), hsl(220 20% 16% / 0.5));
+    --gradient-card: linear-gradient(135deg, hsl(220 15% 18% / 0.9), hsl(220 15% 20% / 0.5));
 
     /* Dark Mode Shadows */
     --shadow-primary: 0 10px 25px -5px hsl(262 83% 68% / 0.3);
     --shadow-accent: 0 10px 25px -5px hsl(212 100% 60% / 0.3);
 
     /* Popover Dark */
-    --popover: 220 20% 12%;
+    --popover: 220 15% 18%;
     --popover-foreground: 220 15% 95%;
   }
 }

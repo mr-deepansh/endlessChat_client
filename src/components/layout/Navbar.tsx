@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   Search,
   Home,
@@ -21,10 +22,13 @@ import {
   MessageCircle,
   Plus,
   Shield,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -47,9 +51,9 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
+              <span className="text-white font-bold text-sm">E</span>
             </div>
-            <span className="font-bold text-xl gradient-text">Social</span>
+            <span className="font-bold text-xl gradient-text">EndlessChat</span>
           </Link>
 
           {/* Search Bar */}
@@ -70,7 +74,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                {/* Main Navigation */}
+                 {/* Main Navigation */}
                 <div className="hidden sm:flex items-center space-x-2">
                   <Button variant="ghost" size="icon" asChild>
                     <Link to="/feed">
@@ -94,6 +98,15 @@ const Navbar = () => {
                       </Link>
                     </Button>
                   )}
+                  
+                  {/* Theme Toggle */}
+                  <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                    {theme === 'light' ? (
+                      <Moon className="w-5 h-5" />
+                    ) : (
+                      <Sun className="w-5 h-5" />
+                    )}
+                  </Button>
                 </div>
 
                 {/* Create Post Button */}
@@ -152,6 +165,14 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center space-x-2">
+                {/* Theme Toggle for non-authenticated users */}
+                <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                  {theme === 'light' ? (
+                    <Moon className="w-5 h-5" />
+                  ) : (
+                    <Sun className="w-5 h-5" />
+                  )}
+                </Button>
                 <Button variant="ghost" asChild>
                   <Link to="/login">Sign In</Link>
                 </Button>

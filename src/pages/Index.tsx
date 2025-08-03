@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import Navbar from '@/components/layout/Navbar';
 import { 
   Users, 
   MessageCircle, 
@@ -66,8 +67,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <Navbar />
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0">
           <img 
@@ -82,17 +84,17 @@ const Index = () => {
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <div className="mb-8">
             <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <span className="text-3xl font-bold">S</span>
+              <span className="text-3xl font-bold">E</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Connect.
+              <span className="gradient-text">Endless</span>
               <br />
-              <span className="gradient-text">Share.</span>
+              Conversations.
               <br />
-              Inspire.
+              <span className="text-white/90">Infinite</span> Ideas.
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Join our vibrant community where ideas flourish, connections grow, and every voice matters.
+              Welcome to <span className="font-semibold text-primary-glow">EndlessChat</span> - where meaningful conversations never end and authentic connections begin.
             </p>
           </div>
 
@@ -133,10 +135,10 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-              Why Choose Our Platform?
+              Why Choose EndlessChat?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Experience social networking like never before with our innovative features designed for meaningful connections.
+              Built by <span className="font-semibold text-primary">Deepansh Gangwar</span> - Experience social networking designed for authentic, endless conversations and genuine connections.
             </p>
           </div>
 
@@ -195,15 +197,17 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center mr-3">
-              <span className="text-white font-bold">S</span>
+              <span className="text-white font-bold">E</span>
             </div>
-            <span className="text-2xl font-bold gradient-text">Social</span>
+            <span className="text-2xl font-bold gradient-text">EndlessChat</span>
           </div>
           <p className="text-muted-foreground mb-6">
-            Building meaningful connections, one post at a time.
+            Building endless conversations, one chat at a time.
           </p>
-          <div className="text-sm text-muted-foreground">
-            © 2024 Social Platform. All rights reserved.
+          <div className="text-sm text-muted-foreground flex items-center justify-center gap-4">
+            <span>© 2024 EndlessChat. All rights reserved.</span>
+            <span>•</span>
+            <span>Created by <a href="https://github.com/mr-deepansh" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Deepansh Gangwar</a></span>
           </div>
         </div>
       </footer>
