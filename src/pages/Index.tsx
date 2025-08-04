@@ -82,7 +82,7 @@ const Index = () => {
             alt="Global social platform hero" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-hero/80" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/70 via-blue-900/60 to-teal-800/70" />
         </div>
 
         {/* Content */}
