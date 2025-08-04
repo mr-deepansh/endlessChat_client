@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/layout/Navbar';
+import { Modal } from '@/components/ui/modal';
+import Login from './Login';
+import Register from './Register';
 import { 
   Users, 
   MessageCircle, 
@@ -13,11 +16,13 @@ import {
   ArrowRight,
   Star
 } from 'lucide-react';
-import heroImage from '@/assets/hero-social.jpg';
+import worldHeroImage from '@/assets/world-hero.jpg';
 
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -73,8 +78,8 @@ const Index = () => {
         {/* Background */}
         <div className="absolute inset-0">
           <img 
-            src={heroImage} 
-            alt="Social platform hero" 
+            src={worldHeroImage} 
+            alt="Global social platform hero" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-hero/80" />
@@ -99,15 +104,21 @@ const Index = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button variant="hero" size="lg" asChild className="px-8 py-4 text-lg">
-              <Link to="/register">
-                Get Started <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="px-8 py-4 text-lg"
+              onClick={() => setShowRegisterModal(true)}
+            >
+              Get Started <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button variant="secondary" size="lg" asChild className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30">
-              <Link to="/login">
-                Sign In
-              </Link>
+            <Button 
+              variant="secondary" 
+              size="lg" 
+              className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30"
+              onClick={() => setShowLoginModal(true)}
+            >
+              Sign In
             </Button>
           </div>
 
@@ -178,15 +189,21 @@ const Index = () => {
             Thousands of users are already sharing, connecting, and building amazing relationships. Don't miss out on the conversation.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="lg" asChild className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90">
-              <Link to="/register">
-                Create Account <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90"
+              onClick={() => setShowRegisterModal(true)}
+            >
+              Create Account <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button variant="outline" size="lg" asChild className="px-8 py-4 text-lg border-white text-white hover:bg-white/10">
-              <Link to="/login">
-                Sign In
-              </Link>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="px-8 py-4 text-lg border-white text-white hover:bg-white/10"
+              onClick={() => setShowLoginModal(true)}
+            >
+              Sign In
             </Button>
           </div>
         </div>
@@ -211,6 +228,27 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Modals */}
+      <Modal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        title="Sign In"
+      >
+        <div className="bg-transparent">
+          <Login />
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={showRegisterModal} 
+        onClose={() => setShowRegisterModal(false)}
+        title="Sign Up"
+      >
+        <div className="bg-transparent">
+          <Register />
+        </div>
+      </Modal>
     </div>
   );
 };

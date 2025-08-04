@@ -114,7 +114,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-foreground">First Name</Label>
+              <Label htmlFor="firstName" className="text-card-foreground">First Name</Label>
               <Input
                 id="firstName"
                 type="text"
@@ -125,7 +125,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-foreground">Last Name</Label>
+              <Label htmlFor="lastName" className="text-card-foreground">Last Name</Label>
               <Input
                 id="lastName"
                 type="text"
@@ -141,7 +141,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-foreground">Username</Label>
+              <Label htmlFor="username" className="text-card-foreground">Username</Label>
               <Input
                 id="username"
                 type="text"
@@ -152,7 +152,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">Email</Label>
+              <Label htmlFor="email" className="text-card-foreground">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -168,7 +168,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">Password</Label>
+              <Label htmlFor="password" className="text-card-foreground">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -179,7 +179,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-card-foreground">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"

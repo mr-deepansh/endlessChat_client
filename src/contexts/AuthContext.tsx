@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import axios from 'axios';
 
 interface User {
   _id: string;
@@ -49,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE = 'http://localhost:3000'; // Replace with your API URL
+  const API_BASE = 'http://localhost:8080';
 
   useEffect(() => {
     // Check for existing session
@@ -61,20 +62,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
-        const response = await fetch(`${API_BASE}/users/profile/me`, {
+        const response = await axios.get(`${API_BASE}/users/profile/me`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
           },
         });
 
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData.data);
-        } else {
-          localStorage.removeItem('token');
-        }
-      } catch (error) {
+        setUser(response.data.data);
+      } catch (error: any) {
         console.error('Auth check failed:', error);
         localStorage.removeItem('token');
       } finally {
@@ -87,36 +82,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE}/users/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post(`${API_BASE}/users/login`, {
+        email,
+        password,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        setUser(data.user);
-        toast({
-          title: "Welcome back!",
-          description: "You've been successfully logged in.",
-        });
-        return true;
-      } else {
-        toast({
-          title: "Login failed",
-          description: data.message || "Invalid credentials",
-          variant: "destructive",
-        });
-        return false;
-      }
-    } catch (error) {
+      localStorage.setItem('token', response.data.token);
+      setUser(response.data.user);
+      toast({
+        title: "Welcome back!",
+        description: "You've been successfully logged in.",
+      });
+      return true;
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: "Network error. Please try again.",
+        description: error.response?.data?.message || "Invalid credentials",
         variant: "destructive",
       });
       return false;
@@ -125,34 +106,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (userData: RegisterData): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE}/users/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
+      await axios.post(`${API_BASE}/users/register`, userData);
+      
+      toast({
+        title: "Registration successful!",
+        description: "Please login with your new account.",
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Registration successful!",
-          description: "Please login with your new account.",
-        });
-        return true;
-      } else {
-        toast({
-          title: "Registration failed",
-          description: data.message || "Please check your information",
-          variant: "destructive",
-        });
-        return false;
-      }
-    } catch (error) {
+      return true;
+    } catch (error: any) {
       toast({
         title: "Registration failed",
-        description: "Network error. Please try again.",
+        description: error.response?.data?.message || "Please check your information",
         variant: "destructive",
       });
       return false;
@@ -163,8 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch(`${API_BASE}/users/logout`, {
-          method: 'POST',
+        await axios.post(`${API_BASE}/users/logout`, {}, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -185,26 +148,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (data: Partial<User>): Promise<void> => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/users/profile/me`, {
-        method: 'PUT',
+      const response = await axios.put(`${API_BASE}/users/profile/me`, data, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        const updatedUser = await response.json();
-        setUser(updatedUser.data);
-        toast({
-          title: "Profile updated",
-          description: "Your profile has been successfully updated.",
-        });
-      } else {
-        throw new Error('Failed to update profile');
-      }
-    } catch (error) {
+      setUser(response.data.data);
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error: any) {
       toast({
         title: "Update failed",
         description: "Failed to update profile. Please try again.",
