@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import heroImage from '@/assets/hero-social.jpg';
+import worldHeroImage from '@/assets/world-hero.jpg';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -41,7 +41,7 @@ const Login = () => {
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <img 
-          src={heroImage} 
+          src={worldHeroImage} 
           alt="Social platform background" 
           className="w-full h-full object-cover"
         />
@@ -84,10 +84,11 @@ const Login = () => {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    placeholder="Enter your password (min 8 characters)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={8}
                     className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
                   />
                   <Button
@@ -111,6 +112,11 @@ const Login = () => {
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
+            <div className="mt-4 text-center">
+              <Link to="/forgot-password" className="text-sm text-white/60 hover:text-white/80 hover:underline">
+                Forgot your password?
+              </Link>
+            </div>
             <div className="mt-6 text-center">
               <p className="text-muted-foreground">
                 Don't have an account?{' '}
