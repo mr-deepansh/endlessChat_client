@@ -56,14 +56,14 @@ const Login = () => {
               <span className="text-2xl font-bold text-white">E</span>
             </div>
             <CardTitle className="text-2xl font-bold gradient-text">Welcome Back</CardTitle>
-            <CardDescription className="text-white/80">
+            <CardDescription className="text-muted-foreground">
               Sign in to EndlessChat and continue your conversations
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white/90">Email</Label>
+                <Label htmlFor="email" className="text-foreground">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
                   <Input
@@ -78,7 +78,7 @@ const Login = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-white/90">Password</Label>
+                <Label htmlFor="password" className="text-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
                   <Input
@@ -112,7 +112,7 @@ const Login = () => {
               </Button>
             </form>
             <div className="mt-6 text-center">
-              <p className="text-white/80">
+              <p className="text-muted-foreground">
                 Don't have an account?{' '}
                 <Link to="/register" className="text-primary-glow hover:underline font-medium">
                   Sign up
