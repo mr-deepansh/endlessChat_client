@@ -200,10 +200,10 @@ const Index = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="px-8 py-4 text-lg border-white text-white hover:bg-white/10"
+              className="px-8 py-4 text-lg border-white text-primary hover:bg-white/10"
               onClick={() => setShowLoginModal(true)}
             >
-              Sign In
+              Sign In 
             </Button>
           </div>
         </div>
