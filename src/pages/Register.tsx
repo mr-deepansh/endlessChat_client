@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import StepForm from '@/components/auth/StepForm';
-import heroImage from '@/assets/hero-social.jpg';
+import worldHeroImage from '@/assets/world-hero.jpg';
 
 interface RegisterData {
   username: string;
@@ -42,7 +42,7 @@ const Register = () => {
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <img 
-          src={heroImage} 
+          src={worldHeroImage} 
           alt="Social platform background" 
           className="w-full h-full object-cover"
         />

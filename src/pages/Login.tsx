@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import heroImage from '@/assets/hero-social.jpg';
+import worldHeroImage from '@/assets/world-hero.jpg';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -41,7 +41,7 @@ const Login = () => {
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <img 
-          src={heroImage} 
+          src={worldHeroImage} 
           alt="Social platform background" 
           className="w-full h-full object-cover"
         />
