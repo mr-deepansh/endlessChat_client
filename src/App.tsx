@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageTransition from "@/components/layout/PageTransition";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -25,18 +27,28 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/feed" element={<Feed />} />
-            <Route path="/profile/me" element={<CurrentUserProfile />} />
-            <Route path="/profile/:userId" element={<Profile />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <PageTransition>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/profile/me" element={
+                  <ProtectedRoute>
+                    <CurrentUserProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile/:userId" element={<Profile />} />
+                <Route path="/admin" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </PageTransition>
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>
