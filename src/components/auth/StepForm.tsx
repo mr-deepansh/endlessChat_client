@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, User, Mail, Lock, Shield } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, Mail, Lock, Shield, Eye, EyeOff } from 'lucide-react';
 
 interface StepFormProps {
   onSubmit: (data: RegisterData) => Promise<void>;
@@ -23,6 +23,8 @@ interface RegisterData {
 
 const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState<RegisterData>({
     username: '',
     email: '',
@@ -63,7 +65,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
       case 2:
         return formData.username.trim() && formData.email.trim();
       case 3:
-        return formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
+        return formData.password && formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length >= 8;
       default:
         return false;
     }
@@ -169,27 +171,54 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password" className="text-card-foreground">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Create a strong password"
-                value={formData.password}
-                onChange={(e) => updateFormData('password', e.target.value)}
-                className="bg-background/50 border-border focus:border-primary"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a strong password (min 8 characters)"
+                  value={formData.password}
+                  onChange={(e) => updateFormData('password', e.target.value)}
+                  minLength={8}
+                  className="bg-background/50 border-border focus:border-primary pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-card-foreground">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={(e) => updateFormData('confirmPassword', e.target.value)}
-                className="bg-background/50 border-border focus:border-primary"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Confirm your password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => updateFormData('confirmPassword', e.target.value)}
+                  minLength={8}
+                  className="bg-background/50 border-border focus:border-primary pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
               {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
                 <p className="text-sm text-destructive">Passwords don't match</p>
+              )}
+              {formData.password && formData.password.length < 8 && (
+                <p className="text-sm text-destructive">Password must be at least 8 characters</p>
               )}
             </div>
           </div>

@@ -136,9 +136,9 @@ const Navbar = () => {
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to={`/profile/${user._id}`} className="cursor-pointer">
+                      <Link to="/profile/me" className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
-                        Profile
+                        My Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

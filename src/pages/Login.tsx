@@ -112,11 +112,15 @@ const Login = () => {
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
-            <div className="mt-4 text-center">
-              <Link to="/forgot-password" className="text-sm text-white/60 hover:text-white/80 hover:underline">
-                Forgot your password?
-              </Link>
-            </div>
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="remember" className="w-4 h-4 rounded border-white/20 bg-white/10 text-primary focus:ring-primary" />
+                  <label htmlFor="remember" className="text-sm text-white/80">Remember me</label>
+                </div>
+                <Link to="/forgot-password" className="text-sm text-white/60 hover:text-white/80 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
             <div className="mt-6 text-center">
               <p className="text-muted-foreground">
                 Don't have an account?{' '}

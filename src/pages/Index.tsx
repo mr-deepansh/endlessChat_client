@@ -104,22 +104,24 @@ const Index = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button 
-              variant="hero" 
-              size="lg" 
-              className="px-8 py-4 text-lg"
-              onClick={() => setShowRegisterModal(true)}
-            >
-              Get Started <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            <Button 
-              variant="secondary" 
-              size="lg" 
-              className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30"
-              onClick={() => setShowLoginModal(true)}
-            >
-              Sign In
-            </Button>
+            <Link to="/register">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="px-8 py-4 text-lg w-full sm:w-auto"
+              >
+                Get Started <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button 
+                variant="secondary" 
+                size="lg" 
+                className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30 w-full sm:w-auto"
+              >
+                Sign In
+              </Button>
+            </Link>
           </div>
 
           {/* Stats */}
@@ -189,22 +191,24 @@ const Index = () => {
             Thousands of users are already sharing, connecting, and building amazing relationships. Don't miss out on the conversation.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              variant="hero" 
-              size="lg" 
-              className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90"
-              onClick={() => setShowRegisterModal(true)}
-            >
-              Create Account <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="px-8 py-4 text-lg border-white text-primary hover:bg-white/10"
-              onClick={() => setShowLoginModal(true)}
-            >
-              Sign In 
-            </Button>
+            <Link to="/register">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
+              >
+                Create Account <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="px-8 py-4 text-lg border-white text-white hover:bg-white/10 w-full sm:w-auto"
+              >
+                Sign In 
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

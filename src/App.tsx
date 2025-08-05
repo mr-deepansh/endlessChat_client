@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
+import CurrentUserProfile from "./pages/CurrentUserProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/feed" element={<Feed />} />
+            <Route path="/profile/me" element={<CurrentUserProfile />} />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/admin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
