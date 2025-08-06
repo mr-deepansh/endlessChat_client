@@ -35,7 +35,7 @@ const Feed = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [feedType, setFeedType] = useState<'recent' | 'trending' | 'following'>('recent');
 
-  const API_BASE = 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   // Mock data for demo purposes
   const mockPosts: Post[] = [
