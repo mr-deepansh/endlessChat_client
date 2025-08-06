@@ -64,43 +64,43 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-foreground">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
-                  />
-                </div>
+                 <div className="relative">
+                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                   <Input
+                     id="email"
+                     type="email"
+                     placeholder="Enter your email"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     required
+                     className="pl-10 bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:bg-background/80"
+                   />
+                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-foreground">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password (min 8 characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
+                 <div className="relative">
+                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                   <Input
+                     id="password"
+                     type={showPassword ? 'text' : 'password'}
+                     placeholder="Enter your password (min 8 characters)"
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+                     required
+                     minLength={8}
+                     className="pl-10 pr-10 bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:bg-background/80"
+                   />
+                   <Button
+                     type="button"
+                     variant="ghost"
+                     size="icon-sm"
+                     className="absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                     onClick={() => setShowPassword(!showPassword)}
+                   >
+                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                   </Button>
+                 </div>
               </div>
               <Button
                 type="submit"
@@ -114,10 +114,10 @@ const Login = () => {
             </form>
               <div className="mt-4 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="remember" className="w-4 h-4 rounded border-white/20 bg-white/10 text-primary focus:ring-primary" />
-                  <label htmlFor="remember" className="text-sm text-white/80">Remember me</label>
+                  <input type="checkbox" id="remember" className="w-4 h-4 rounded border-border bg-background/50 text-primary focus:ring-primary" />
+                  <label htmlFor="remember" className="text-sm text-muted-foreground">Remember me</label>
                 </div>
-                <Link to="/forgot-password" className="text-sm text-white/60 hover:text-white/80 hover:underline">
+                <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
                   Forgot password?
                 </Link>
               </div>

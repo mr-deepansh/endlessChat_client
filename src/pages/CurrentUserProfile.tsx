@@ -5,6 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Modal } from '@/components/ui/modal';
 import Layout from '@/components/layout/Layout';
 import { 
   Users, 
@@ -16,7 +20,9 @@ import {
   Edit3,
   UserPlus,
   Settings,
-  Shield
+  Shield,
+  Save,
+  X
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import axios from 'axios';
@@ -48,12 +54,27 @@ const CurrentUserProfile = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('posts');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    username: '',
+    bio: '',
+    location: ''
+  });
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
   useEffect(() => {
     if (user) {
       fetchUserData();
+      setEditForm({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        username: user.username || '',
+        bio: user.bio || '',
+        location: (user as any).location || ''
+      });
     }
   }, [user]);
 
@@ -85,6 +106,27 @@ const CurrentUserProfile = () => {
     }
   };
 
+  const handleEditProfile = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      await updateProfile(editForm);
+      setIsEditModalOpen(false);
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!user) {
     return <div>Please log in to view your profile</div>;
   }
@@ -112,7 +154,7 @@ const CurrentUserProfile = () => {
                     <p className="text-muted-foreground text-lg">@{user.username}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleEditProfile}>
                       <Edit3 className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
@@ -134,6 +176,12 @@ const CurrentUserProfile = () => {
                     <Calendar className="w-4 h-4" />
                     <span>Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                   </div>
+                  {(user as any).location && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      <span>{(user as any).location}</span>
+                    </div>
+                  )}
                   {user.role === 'admin' && (
                     <Badge variant="secondary" className="bg-gradient-primary text-white">
                       <Shield className="w-3 h-3 mr-1" />
@@ -223,6 +271,76 @@ const CurrentUserProfile = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Profile Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Profile">
+        <Card className="glass border-white/20 shadow-2xl">
+          <CardHeader>
+            <CardTitle className="gradient-text">Edit Profile</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-foreground">First Name</Label>
+                <Input
+                  id="firstName"
+                  value={editForm.firstName}
+                  onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-foreground">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={editForm.lastName}
+                  onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-foreground">Username</Label>
+              <Input
+                id="username"
+                value={editForm.username}
+                onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bio" className="text-foreground">Bio</Label>
+              <Textarea
+                id="bio"
+                value={editForm.bio}
+                onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location" className="text-foreground">Location</Label>
+              <Input
+                id="location"
+                value={editForm.location}
+                onChange={(e) => setEditForm({...editForm, location: e.target.value})}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                placeholder="City, Country"
+              />
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleSaveProfile} className="flex-1" variant="hero">
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </Button>
+              <Button onClick={() => setIsEditModalOpen(false)} variant="outline" className="flex-1">
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </Modal>
     </Layout>
   );
 };
