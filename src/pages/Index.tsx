@@ -6,91 +6,72 @@ import Navbar from '@/components/layout/Navbar';
 import { Modal } from '@/components/ui/modal';
 import Login from './Login';
 import Register from './Register';
-import { 
-  Users, 
-  MessageCircle, 
-  Heart, 
-  Zap, 
-  Shield, 
-  Globe,
-  ArrowRight,
-  Star
-} from 'lucide-react';
+import { Users, MessageCircle, Heart, Zap, Shield, Globe, ArrowRight, Star } from 'lucide-react';
 import worldHeroImage from '@/assets/world-hero.jpg';
-
 const Index = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-
   useEffect(() => {
     if (user) {
       navigate('/feed');
     }
   }, [user, navigate]);
-
-  const features = [
-    {
-      icon: Users,
-      title: 'Connect & Follow',
-      description: 'Build your network by following interesting people and discovering new voices.'
-    },
-    {
-      icon: MessageCircle,
-      title: 'Share Your Thoughts',
-      description: 'Express yourself with posts, comments, and engage in meaningful conversations.'
-    },
-    {
-      icon: Heart,
-      title: 'Show Appreciation',
-      description: 'Like, repost, and bookmark content that resonates with you.'
-    },
-    {
-      icon: Zap,
-      title: 'Real-time Updates',
-      description: 'Stay up-to-date with instant notifications and live feed updates.'
-    },
-    {
-      icon: Shield,
-      title: 'Safe Environment',
-      description: 'Robust moderation tools ensure a positive and respectful community.'
-    },
-    {
-      icon: Globe,
-      title: 'Global Community',
-      description: 'Connect with people from around the world and expand your horizons.'
-    }
-  ];
-
-  const stats = [
-    { label: 'Active Users', value: '50K+' },
-    { label: 'Posts Shared', value: '2M+' },
-    { label: 'Connections Made', value: '100K+' },
-    { label: 'Communities', value: '500+' }
-  ];
-
-  return (
-    <div className="min-h-screen">
+  const features = [{
+    icon: Users,
+    title: 'Connect & Follow',
+    description: 'Build your network by following interesting people and discovering new voices.'
+  }, {
+    icon: MessageCircle,
+    title: 'Share Your Thoughts',
+    description: 'Express yourself with posts, comments, and engage in meaningful conversations.'
+  }, {
+    icon: Heart,
+    title: 'Show Appreciation',
+    description: 'Like, repost, and bookmark content that resonates with you.'
+  }, {
+    icon: Zap,
+    title: 'Real-time Updates',
+    description: 'Stay up-to-date with instant notifications and live feed updates.'
+  }, {
+    icon: Shield,
+    title: 'Safe Environment',
+    description: 'Robust moderation tools ensure a positive and respectful community.'
+  }, {
+    icon: Globe,
+    title: 'Global Community',
+    description: 'Connect with people from around the world and expand your horizons.'
+  }];
+  const stats = [{
+    label: 'Active Users',
+    value: '50K+'
+  }, {
+    label: 'Posts Shared',
+    value: '2M+'
+  }, {
+    label: 'Connections Made',
+    value: '100K+'
+  }, {
+    label: 'Communities',
+    value: '500+'
+  }];
+  return <div className="min-h-screen">
       <Navbar />
       {/* Hero Section */}
       <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0">
-          <img 
-            src={worldHeroImage} 
-            alt="Global social platform hero" 
-            className="w-full h-full object-cover"
-          />
+          <img src={worldHeroImage} alt="Global social platform hero" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900/70 via-blue-900/60 to-teal-800/70" />
         </div>
 
         {/* Content */}
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <div className="mb-8">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <span className="text-3xl font-bold">E</span>
-            </div>
+            
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
               <span className="gradient-text">Endless</span>
               <br />
@@ -105,20 +86,12 @@ const Index = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link to="/register">
-              <Button 
-                variant="hero" 
-                size="lg" 
-                className="px-8 py-4 text-lg w-full sm:w-auto"
-              >
+              <Button variant="hero" size="lg" className="px-8 py-4 text-lg w-full sm:w-auto">
                 Get Started <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link to="/login">
-              <Button 
-                variant="secondary" 
-                size="lg" 
-                className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30 w-full sm:w-auto"
-              >
+              <Button variant="secondary" size="lg" className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30 w-full sm:w-auto">
                 Sign In
               </Button>
             </Link>
@@ -126,12 +99,10 @@ const Index = () => {
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
+            {stats.map((stat, index) => <div key={index} className="text-center">
                 <div className="text-3xl md:text-4xl font-bold mb-2">{stat.value}</div>
                 <div className="text-white/80 text-sm md:text-base">{stat.label}</div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
 
@@ -156,8 +127,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="group">
+            {features.map((feature, index) => <div key={index} className="group">
                 <div className="p-8 rounded-2xl bg-gradient-card border-none shadow-soft hover:shadow-primary/20 transition-all duration-300 hover:-translate-y-2">
                   <div className="w-16 h-16 rounded-xl bg-gradient-primary flex items-center justify-center mb-6 group-hover:shadow-primary transition-all duration-300">
                     <feature.icon className="w-8 h-8 text-white" />
@@ -169,8 +139,7 @@ const Index = () => {
                     {feature.description}
                   </p>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -192,20 +161,12 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register">
-              <Button 
-                variant="hero" 
-                size="lg" 
-                className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
-              >
+              <Button variant="hero" size="lg" className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90 w-full sm:w-auto">
                 Create Account <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link to="/login">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="px-8 py-4 text-lg border-white text-white hover:bg-white/10 w-full sm:w-auto"
-              >
+              <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-white text-white hover:bg-white/10 w-full sm:w-auto">
                 Sign In 
               </Button>
             </Link>
@@ -234,27 +195,17 @@ const Index = () => {
       </footer>
 
       {/* Modals */}
-      <Modal 
-        isOpen={showLoginModal} 
-        onClose={() => setShowLoginModal(false)}
-        title="Sign In"
-      >
+      <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} title="Sign In">
         <div className="bg-transparent">
           <Login />
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={showRegisterModal} 
-        onClose={() => setShowRegisterModal(false)}
-        title="Sign Up"
-      >
+      <Modal isOpen={showRegisterModal} onClose={() => setShowRegisterModal(false)} title="Sign Up">
         <div className="bg-transparent">
           <Register />
         </div>
       </Modal>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
