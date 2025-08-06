@@ -1,267 +1,304 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import UserCard from '@/components/user/UserCard';
-import PostCard from '@/components/posts/PostCard';
+import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import Navbar from '@/components/layout/Navbar';
+import { userService, User, Post } from '@/services/userService';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
-import { Edit, Settings } from 'lucide-react';
-
-interface User {
-  _id: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  bio?: string;
-  avatar?: string;
-  role: 'user' | 'admin';
-  isActive: boolean;
-  followersCount: number;
-  followingCount: number;
-  createdAt: string;
-  location?: string;
-  isFollowing?: boolean;
-}
-
-interface Post {
-  _id: string;
-  content: string;
-  author: User;
-  createdAt: string;
-  likesCount: number;
-  commentsCount: number;
-  repostsCount: number;
-  isLiked?: boolean;
-  isReposted?: boolean;
-  isBookmarked?: boolean;
-}
+import { 
+  MessageCircle, 
+  Heart, 
+  Repeat2, 
+  Eye, 
+  Calendar,
+  MapPin,
+  Link as LinkIcon,
+  Github,
+  Linkedin,
+  UserPlus,
+  UserMinus,
+  Settings
+} from 'lucide-react';
 
 const Profile = () => {
-  const { userId } = useParams<{ userId: string }>();
+  const { username } = useParams<{ username: string }>();
   const { user: currentUser } = useAuth();
-  const [profileUser, setProfileUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
 
-  const isOwnProfile = currentUser?._id === userId;
-
-  // Mock user data
-  const mockUser: User = {
-    _id: userId || '1',
-    username: 'johndoe',
-    firstName: 'John',
-    lastName: 'Doe',
-    bio: 'Full-stack developer passionate about React, TypeScript, and building amazing user experiences. Coffee enthusiast ☕ and open source contributor.',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-    role: 'user',
-    isActive: true,
-    followersCount: 1250,
-    followingCount: 340,
-    createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-    location: 'San Francisco, CA',
-    isFollowing: false
-  };
-
-  const mockPosts: Post[] = [
-    {
-      _id: '1',
-      content: 'Just shipped a new feature! Really excited about the TypeScript integration we built. The type safety is incredible and makes the whole development experience so much smoother.',
-      author: mockUser,
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      likesCount: 89,
-      commentsCount: 12,
-      repostsCount: 23,
-      isLiked: false,
-      isReposted: false,
-      isBookmarked: false
-    },
-    {
-      _id: '2',
-      content: 'Beautiful morning run through Golden Gate Park! 🌲 Sometimes the best debugging happens away from the screen.',
-      author: mockUser,
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      likesCount: 156,
-      commentsCount: 8,
-      repostsCount: 45,
-      isLiked: true,
-      isReposted: false,
-      isBookmarked: true
-    }
-  ];
-
   useEffect(() => {
-    loadProfile();
-  }, [userId]);
+    const fetchUserData = async () => {
+      if (!username) return;
+      
+      try {
+        setLoading(true);
+        // Find user by username
+        const users = await userService.searchUsers(username.replace('@', ''));
+        const foundUser = users.find(u => u.username === username.replace('@', ''));
+        
+        if (foundUser) {
+          setUser(foundUser);
+          setIsFollowing(foundUser.isFollowing || false);
+          
+          // Fetch user posts
+          const userPosts = await userService.getUserPosts(foundUser._id);
+          setPosts(userPosts);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const loadProfile = async () => {
-    setIsLoading(true);
+    fetchUserData();
+  }, [username]);
+
+  const handleFollow = async () => {
+    if (!user) return;
+    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setProfileUser(mockUser);
-      setPosts(mockPosts);
+      if (isFollowing) {
+        await userService.unfollowUser(user._id);
+        setIsFollowing(false);
+        setUser(prev => prev ? { ...prev, followersCount: prev.followersCount - 1 } : null);
+      } else {
+        await userService.followUser(user._id);
+        setIsFollowing(true);
+        setUser(prev => prev ? { ...prev, followersCount: prev.followersCount + 1 } : null);
+      }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load profile. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to follow/unfollow user:', error);
     }
   };
 
-  const handleFollow = async (userId: string) => {
-    toast({
-      title: "Following!",
-      description: `You are now following ${profileUser?.firstName} ${profileUser?.lastName}`,
-    });
-  };
-
-  const handleUnfollow = async (userId: string) => {
-    toast({
-      title: "Unfollowed",
-      description: `You unfollowed ${profileUser?.firstName} ${profileUser?.lastName}`,
-    });
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <Layout>
-        <div className="max-w-4xl mx-auto py-6 px-4">
-          <div className="space-y-6">
-            <div className="p-6 rounded-lg border bg-card">
-              <div className="flex items-start space-x-4">
-                <Skeleton className="w-24 h-24 rounded-full" />
-                <div className="flex-1 space-y-4">
-                  <div className="space-y-2">
-                    <Skeleton className="h-6 w-[200px]" />
-                    <Skeleton className="h-4 w-[150px]" />
-                  </div>
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-[80%]" />
-                  <div className="flex space-x-4">
-                    <Skeleton className="h-4 w-[100px]" />
-                    <Skeleton className="h-4 w-[100px]" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            {Array.from({ length: 2 }).map((_, index) => (
-              <div key={index} className="space-y-4 p-6 rounded-lg border bg-card">
-                <div className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[100px]" />
-                  </div>
-                </div>
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-[80%]" />
-              </div>
-            ))}
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="max-w-4xl mx-auto p-4">
+          <div className="animate-pulse">
+            <div className="h-48 bg-muted rounded-lg mb-4"></div>
+            <div className="h-24 bg-muted rounded-lg"></div>
           </div>
         </div>
-      </Layout>
+      </div>
     );
   }
 
-  if (!profileUser) {
+  if (!user) {
     return (
-      <Layout>
-        <div className="max-w-4xl mx-auto py-12 px-4 text-center">
-          <h2 className="text-2xl font-bold mb-4">User not found</h2>
-          <p className="text-muted-foreground">The user you're looking for doesn't exist.</p>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="max-w-4xl mx-auto p-4 text-center">
+          <h1 className="text-2xl font-bold mb-4">User not found</h1>
+          <p className="text-muted-foreground">The user @{username} does not exist.</p>
         </div>
-      </Layout>
+      </div>
     );
   }
+
+  const isOwnProfile = currentUser?._id === user._id;
 
   return (
-    <Layout>
-      <div className="max-w-4xl mx-auto py-6 px-4">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <div className="max-w-4xl mx-auto p-4">
         {/* Profile Header */}
-        <div className="mb-8">
-          <UserCard
-            user={profileUser}
-            currentUserId={currentUser?._id}
-            onFollow={handleFollow}
-            onUnfollow={handleUnfollow}
-            showFullProfile={true}
-          />
-          
-          {isOwnProfile && (
-            <div className="flex justify-end mt-4 space-x-2">
-              <Button variant="outline" size="sm">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-start gap-6">
+              <Avatar className="h-32 w-32 ring-4 ring-primary/20">
+                <AvatarImage src={user.avatar} alt={user.username} />
+                <AvatarFallback className="bg-gradient-primary text-white text-2xl">
+                  {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                  <div>
+                    <h1 className="text-2xl font-bold">{user.firstName} {user.lastName}</h1>
+                    <p className="text-muted-foreground">@{user.username}</p>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4 md:mt-0">
+                    {isOwnProfile ? (
+                      <Button variant="outline" asChild>
+                        <Link to="/settings">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Edit Profile
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant={isFollowing ? "outline" : "default"}
+                        onClick={handleFollow}
+                      >
+                        {isFollowing ? (
+                          <>
+                            <UserMinus className="w-4 h-4 mr-2" />
+                            Unfollow
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Follow
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {user.bio && (
+                  <p className="text-foreground mb-4">{user.bio}</p>
+                )}
+                
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                  {user.location && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {user.location}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </div>
+                </div>
+                
+                {user.website && (
+                  <div className="flex items-center gap-1 text-sm mb-4">
+                    <LinkIcon className="w-4 h-4" />
+                    <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      {user.website}
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* Profile Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+            
+            {/* Stats */}
+            <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t">
+              <div className="text-center">
+                <div className="text-2xl font-bold">{user.postsCount || 0}</div>
+                <div className="text-sm text-muted-foreground">Posts</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{user.followersCount || 0}</div>
+                <div className="text-sm text-muted-foreground">Followers</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{user.followingCount || 0}</div>
+                <div className="text-sm text-muted-foreground">Following</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">0</div>
+                <div className="text-sm text-muted-foreground">Mutual</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="replies">Replies</TabsTrigger>
-            <TabsTrigger value="media">Media</TabsTrigger>
+            <TabsTrigger value="reposts">Reposts</TabsTrigger>
+            <TabsTrigger value="comments">Comments</TabsTrigger>
             <TabsTrigger value="likes">Likes</TabsTrigger>
+            <TabsTrigger value="views">Views</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="posts" className="space-y-6">
-            {posts.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-primary/10 flex items-center justify-center">
-                  <Edit className="w-12 h-12 text-primary" />
+          <TabsContent value="posts" className="mt-6">
+            <div className="space-y-4">
+              {posts.length > 0 ? (
+                posts.map((post) => (
+                  <Card key={post._id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={post.author.avatar} alt={post.author.username} />
+                          <AvatarFallback className="bg-gradient-primary text-white">
+                            {post.author.firstName?.[0] || post.author.username?.[0] || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-semibold">{post.author.firstName} {post.author.lastName}</span>
+                            <span className="text-muted-foreground">@{post.author.username}</span>
+                            <span className="text-muted-foreground">·</span>
+                            <span className="text-muted-foreground text-sm">
+                              {new Date(post.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="mb-4">{post.content}</p>
+                          
+                          <div className="flex items-center gap-6 text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <MessageCircle className="w-4 h-4" />
+                              <span className="text-sm">{post.commentsCount || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Repeat2 className="w-4 h-4" />
+                              <span className="text-sm">{post.repostsCount || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Heart className="w-4 h-4" />
+                              <span className="text-sm">{post.likesCount || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Eye className="w-4 h-4" />
+                              <span className="text-sm">0</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No posts yet</p>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">No posts yet</h3>
-                <p className="text-muted-foreground">
-                  {isOwnProfile ? "Start sharing your thoughts with the community!" : `${profileUser.firstName} hasn't posted anything yet.`}
-                </p>
-              </div>
-            ) : (
-              posts.map((post) => (
-                <PostCard
-                  key={post._id}
-                  post={post}
-                  currentUserId={currentUser?._id}
-                />
-              ))
-            )}
-          </TabsContent>
-          
-          <TabsContent value="replies" className="space-y-6">
-            <div className="text-center py-12">
-              <h3 className="text-xl font-semibold mb-2">No replies yet</h3>
-              <p className="text-muted-foreground">Replies will appear here when available.</p>
+              )}
             </div>
           </TabsContent>
           
-          <TabsContent value="media" className="space-y-6">
+          <TabsContent value="reposts" className="mt-6">
             <div className="text-center py-12">
-              <h3 className="text-xl font-semibold mb-2">No media yet</h3>
-              <p className="text-muted-foreground">Photos and videos will appear here when available.</p>
+              <p className="text-muted-foreground">No reposts yet</p>
             </div>
           </TabsContent>
           
-          <TabsContent value="likes" className="space-y-6">
+          <TabsContent value="comments" className="mt-6">
             <div className="text-center py-12">
-              <h3 className="text-xl font-semibold mb-2">No likes yet</h3>
-              <p className="text-muted-foreground">Liked posts will appear here when available.</p>
+              <p className="text-muted-foreground">No comments yet</p>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="likes" className="mt-6">
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No liked posts yet</p>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="views" className="mt-6">
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No viewed posts yet</p>
             </div>
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
+    </div>
   );
 };
 

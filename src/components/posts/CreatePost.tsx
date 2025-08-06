@@ -44,7 +44,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
           <Avatar className="w-12 h-12 ring-2 ring-primary/20">
             <AvatarImage src={user.avatar} alt={user.username} />
             <AvatarFallback className="bg-gradient-primary text-white">
-              {user.firstName[0]}{user.lastName[0]}
+              {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
             </AvatarFallback>
           </Avatar>
           

@@ -3,6 +3,8 @@ import Layout from '@/components/layout/Layout';
 import CreatePost from '@/components/posts/CreatePost';
 import PostCard from '@/components/posts/PostCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { userService } from '@/services/userService';
+import { cacheService } from '@/services/core/cache';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -102,15 +104,25 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const loadFeed = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPosts(mockPosts);
+      // Try to load from API first, fallback to mock data
+      try {
+        const feedData = await userService.getUserFeed({
+          sort: feedType,
+          limit: 20,
+          page: 1
+        });
+        setPosts(feedData.length > 0 ? feedData : mockPosts);
+      } catch (apiError) {
+        console.warn('API feed failed, using mock data:', apiError);
+        setPosts(mockPosts);
+      }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to load feed. Please try again.",
         variant: "destructive",
       });
+      setPosts(mockPosts); // Fallback to mock data
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +150,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       isBookmarked: false
     };
 
+    // Optimistic update
     setPosts(prev => [newPost, ...prev]);
+    
+    // Invalidate feed cache
+    cacheService.invalidateByTag('feed');
+    cacheService.invalidateByTag('posts');
+    
     toast({
       title: "Post created!",
       description: "Your post has been shared with the community.",

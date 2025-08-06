@@ -1,28 +1,29 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { userService, type User, type LoginData, type RegisterData } from '@/services/userService';
-
+import { cacheService } from '@/services/core/cache';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (emailOrUsername: string, password: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
-
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const useAuth = () => {
+const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
+
+export { useAuth };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -50,21 +51,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (emailOrUsername: string, password: string): Promise<boolean> => {
     try {
-      const response = await userService.login({ email, password });
+      // Try different login data formats based on backend requirements
+      let loginData: LoginData;
       
-      localStorage.setItem('token', response.token);
-      setUser(response.user);
-      
-      toast({
-        title: "Welcome back!",
-        description: "You've been successfully logged in.",
-      });
-      
-      return true;
+      // First try with emailOrUsername field (common backend pattern)
+      try {
+        loginData = { emailOrUsername, password };
+        const response = await userService.login(loginData);
+        
+        // Backend returns { data: { accessToken, user } }
+        const token = response.data?.accessToken || response.accessToken;
+        const user = response.data?.user || response.user;
+        
+        localStorage.setItem('token', token);
+        setUser(user);
+        
+        toast({
+          title: "Welcome back!",
+          description: "You've been successfully logged in.",
+        });
+        
+        return true;
+      } catch (firstError: any) {
+        // If emailOrUsername field fails, try separate email/username fields
+        const isEmail = emailOrUsername.includes('@');
+        loginData = isEmail 
+          ? { email: emailOrUsername, password }
+          : { username: emailOrUsername, password };
+        
+        const response = await userService.login(loginData);
+        
+        // Backend returns { data: { accessToken, user } }
+        const token = response.data?.accessToken || response.accessToken;
+        const user = response.data?.user || response.user;
+        
+        localStorage.setItem('token', token);
+        setUser(user);
+        
+        toast({
+          title: "Welcome back!",
+          description: "You've been successfully logged in.",
+        });
+        
+        return true;
+      }
     } catch (error: any) {
       console.error('Login failed:', error);
+      toast({
+        title: "Login failed",
+        description: error.response?.data?.message || "Please check your credentials.",
+        variant: "destructive",
+      });
       return false;
     }
   };
@@ -92,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
+      cacheService.clear(); // Clear all cache on logout
       setUser(null);
       toast({
         title: "Logged out",

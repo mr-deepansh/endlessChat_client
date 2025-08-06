@@ -51,17 +51,10 @@ const Register = () => {
 
       {/* Registration Form */}
       <div className="relative z-10 w-full max-w-md">
-        <StepForm onSubmit={handleSubmit} isLoading={isLoading} />
-      </div>
-      
-      {/* Login Link - Outside of form */}
-      <div className="relative z-10 mt-6 text-center">
-        <p className="text-white/80">
-          Already have an account?{' '}
-          <Link to="/login" className="text-primary-glow hover:underline font-medium">
-            Sign in
-          </Link>
-        </p>
+        <StepForm 
+          onSubmit={handleSubmit} 
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

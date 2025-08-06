@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +41,14 @@ interface Post {
 
 const CurrentUserProfile = () => {
   const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect to username-based URL if user is available
+  useEffect(() => {
+    if (user?.username) {
+      navigate(`/@${user.username}`, { replace: true });
+    }
+  }, [user, navigate]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [stats, setStats] = useState<UserStats>({
     postsCount: 0,
@@ -79,21 +88,25 @@ const CurrentUserProfile = () => {
     try {
       setIsLoading(true);
       
-      // Fetch user posts and stats in parallel
-      const [postsData, statsData] = await Promise.all([
-        userService.getUserPosts(),
-        userService.getUserStats()
-      ]);
+      // Try to fetch user posts and stats, but handle 404 gracefully
+      try {
+        const postsData = await userService.getUserPosts();
+        setPosts(postsData || []);
+      } catch (postsError: any) {
+        console.warn('Posts API not available:', postsError);
+        setPosts([]); // Set empty array if API not available
+      }
       
-      setPosts(postsData || []);
-      setStats(statsData || stats);
+      try {
+        const statsData = await userService.getUserStats();
+        setStats(statsData || stats);
+      } catch (statsError: any) {
+        console.warn('Stats API not available:', statsError);
+        // Keep default stats if API not available
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile data",
-        variant: "destructive",
-      });
+      // Don't show error toast for API not being ready
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +165,7 @@ const CurrentUserProfile = () => {
               <Avatar className="w-32 h-32 border-4 border-primary/20">
                 <AvatarImage src={user.avatar} alt={user.username} />
                 <AvatarFallback className="bg-gradient-primary text-white text-2xl">
-                  {user.firstName[0]}{user.lastName[0]}
+                  {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
                 </AvatarFallback>
               </Avatar>
 

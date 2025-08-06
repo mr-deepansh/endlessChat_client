@@ -1,32 +1,49 @@
 import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import NotFound from '@/pages/NotFound';
+import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'admin' | 'user';
+  requireAuth?: boolean;
+  adminOnly?: boolean;
+  redirectTo?: string;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requiredRole = 'user' 
+  requireAuth = true,
+  adminOnly = false,
+  redirectTo
 }) => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  if (!user) {
-    return <NotFound />;
+  // If authentication is required but user is not logged in
+  if (requireAuth && !user) {
+    return <Navigate to={redirectTo || "/login"} state={{ from: location }} replace />;
   }
 
-  if (requiredRole === 'admin' && user.role !== 'admin') {
-    return <NotFound />;
+  // If admin access is required but user is not admin
+  if (adminOnly && user?.role !== 'admin') {
+    return <Navigate to="/feed" replace />;
+  }
+
+  // If user is logged in but trying to access auth pages (login/register)
+  if (!requireAuth && user) {
+    const from = location.state?.from?.pathname || '/feed';
+    return <Navigate to={from} replace />;
   }
 
   return <>{children}</>;

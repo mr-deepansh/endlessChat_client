@@ -80,6 +80,27 @@ export const adminService = {
     );
   },
 
+  getLiveStats: async (): Promise<AdminStats> => {
+    return withErrorHandling(
+      () => api.get<AdminStats>('/admin/stats/live'),
+      'Failed to load live admin statistics'
+    );
+  },
+
+  getAllAdmins: async (): Promise<AdminUser[]> => {
+    return withErrorHandling(
+      () => api.get<AdminUser[]>('/admin/admins'),
+      'Failed to load admins'
+    );
+  },
+
+  getAdminById: async (adminId: string): Promise<AdminUser> => {
+    return withErrorHandling(
+      () => api.get<AdminUser>(`/admin/admins/${adminId}`),
+      'Failed to load admin details'
+    );
+  },
+
   // User Management
   getUsers: async (params?: PaginationParams): Promise<PaginatedResponse<AdminUser>> => {
     return withErrorHandling(

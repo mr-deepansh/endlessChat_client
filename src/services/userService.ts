@@ -70,7 +70,9 @@ export interface UserStats {
 }
 
 export interface LoginData {
-  email: string;
+  emailOrUsername?: string;
+  email?: string;
+  username?: string;
   password: string;
 }
 
@@ -96,9 +98,9 @@ export interface UpdateProfileData {
 // User Service
 export const userService = {
   // Authentication
-  login: async (data: LoginData): Promise<{ user: User; token: string }> => {
+  login: async (data: LoginData): Promise<{ data: { user: User; accessToken: string } }> => {
     return withErrorHandling(
-      () => api.post<{ user: User; token: string }>('/users/login', data),
+      () => api.post<{ data: { user: User; accessToken: string } }>('/users/login', data),
       'Login failed. Please check your credentials.'
     );
   },
@@ -134,14 +136,24 @@ export const userService = {
   // Profile Management
   getProfile: async (): Promise<User> => {
     return withErrorHandling(
-      () => api.get<User>('/users/profile/me'),
+      () => api.get<User>('/users/profile/me', {
+        cache: {
+          ttl: 2 * 60 * 1000, // 2 minutes
+          tags: ['user', 'profile']
+        }
+      }),
       'Failed to load profile'
     );
   },
 
   getUserProfile: async (userId: string): Promise<User> => {
     return withErrorHandling(
-      () => api.get<User>(`/users/profile/${userId}`),
+      () => api.get<User>(`/users/${userId}`, {
+        cache: {
+          ttl: 5 * 60 * 1000, // 5 minutes
+          tags: ['user', `user_${userId}`]
+        }
+      }),
       'Failed to load user profile'
     );
   },
@@ -153,43 +165,45 @@ export const userService = {
     );
   },
 
-  uploadAvatar: async (file: File): Promise<{ avatar: string }> => {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    
+  uploadAvatar: async (avatarUrl: string): Promise<{ message: string }> => {
     return withErrorHandling(
-      () => api.upload<{ avatar: string }>('/users/profile/avatar', formData),
+      () => api.post<{ message: string }>('/users/upload-avatar', { avatarUrl }),
       'Failed to upload avatar'
+    );
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ message: string }> => {
+    return withErrorHandling(
+      () => api.post<{ message: string }>('/users/change-password', { currentPassword, newPassword, confirmNewPassword }),
+      'Failed to change password'
     );
   },
 
   // Follow System
   followUser: async (userId: string): Promise<{ message: string }> => {
     return withErrorHandling(
-      () => api.post<{ message: string }>(`/users/${userId}/follow`),
+      () => api.post<{ message: string }>(`/users/follow/${userId}`),
       'Failed to follow user'
     );
   },
 
   unfollowUser: async (userId: string): Promise<{ message: string }> => {
     return withErrorHandling(
-      () => api.delete<{ message: string }>(`/users/${userId}/follow`),
+      () => api.post<{ message: string }>(`/users/unfollow/${userId}`),
       'Failed to unfollow user'
     );
   },
 
-  getFollowers: async (userId?: string): Promise<User[]> => {
-    const endpoint = userId ? `/users/${userId}/followers` : '/users/followers';
+  getFollowers: async (userId: string, page: number = 1, limit: number = 50): Promise<User[]> => {
     return withErrorHandling(
-      () => api.get<User[]>(endpoint),
+      () => api.get<User[]>(`/users/followers/${userId}?page=${page}&limit=${limit}`),
       'Failed to load followers'
     );
   },
 
-  getFollowing: async (userId?: string): Promise<User[]> => {
-    const endpoint = userId ? `/users/${userId}/following` : '/users/following';
+  getFollowing: async (userId: string, page: number = 1, limit: number = 50): Promise<User[]> => {
     return withErrorHandling(
-      () => api.get<User[]>(endpoint),
+      () => api.get<User[]>(`/users/following/${userId}?page=${page}&limit=${limit}`),
       'Failed to load following'
     );
   },
@@ -197,34 +211,102 @@ export const userService = {
   // User Stats
   getUserStats: async (userId?: string): Promise<UserStats> => {
     const endpoint = userId ? `/users/${userId}/stats` : '/users/stats/me';
-    return withErrorHandling(
-      () => api.get<UserStats>(endpoint),
-      'Failed to load user stats'
-    );
+    try {
+      return await withErrorHandling(
+        () => api.get<UserStats>(endpoint),
+        'Failed to load user stats'
+      );
+    } catch (error: any) {
+      // Return default stats if endpoint doesn't exist yet
+      if (error.response?.status === 404) {
+        console.warn('Stats endpoint not available yet');
+        return {
+          postsCount: 0,
+          followersCount: 0,
+          followingCount: 0,
+          mutualFollowersCount: 0,
+          likesReceived: 0,
+          commentsReceived: 0
+        };
+      }
+      throw error;
+    }
   },
 
   // Posts
   getUserPosts: async (userId?: string): Promise<Post[]> => {
     const endpoint = userId ? `/posts/user/${userId}` : '/posts/me';
+    try {
+      return await withErrorHandling(
+        () => api.get<Post[]>(endpoint),
+        'Failed to load posts'
+      );
+    } catch (error: any) {
+      // Return empty array if endpoint doesn't exist yet
+      if (error.response?.status === 404) {
+        console.warn('Posts endpoint not available yet');
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  // Get all users with pagination and filtering
+  getAllUsers: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+    isActive?: boolean;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<User[]> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    
     return withErrorHandling(
-      () => api.get<Post[]>(endpoint),
-      'Failed to load posts'
+      () => api.get<User[]>(`/users?${queryParams.toString()}`),
+      'Failed to load users'
     );
   },
 
-  // Search
-  searchUsers: async (query: string): Promise<User[]> => {
+  // Search users
+  searchUsers: async (username: string): Promise<User[]> => {
     return withErrorHandling(
-      () => api.get<User[]>(`/users/search?q=${encodeURIComponent(query)}`),
+      () => api.get<User[]>(`/users/search?username=${encodeURIComponent(username)}`),
       'Failed to search users'
     );
   },
 
-  // Suggested Users
-  getSuggestedUsers: async (): Promise<User[]> => {
+  // Get user feed
+  getUserFeed: async (params?: {
+    limit?: number;
+    page?: number;
+    sort?: string;
+  }): Promise<any[]> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    
     return withErrorHandling(
-      () => api.get<User[]>('/users/suggested'),
-      'Failed to load suggested users'
+      () => api.get<any[]>(`/users/feed?${queryParams.toString()}`, {
+        cache: {
+          ttl: 1 * 60 * 1000, // 1 minute for feed
+          tags: ['feed', 'posts']
+        }
+      }),
+      'Failed to load feed'
     );
   },
 };

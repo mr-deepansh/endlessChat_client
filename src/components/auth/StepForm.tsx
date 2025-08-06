@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -285,6 +286,15 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
               {isLoading ? 'Creating Account...' : 'Complete Registration'}
             </Button>
           )}
+        </div>
+        
+        <div className="mt-6 text-center">
+          <p className="text-muted-foreground">
+            Already have an account?{' '}
+            <Link to="/login" className="text-primary-glow hover:underline font-medium">
+              Sign in
+            </Link>
+          </p>
         </div>
       </CardContent>
     </Card>

@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import CurrentUserProfile from "./pages/CurrentUserProfile";
+import Settings from "./pages/Settings";
 import AdminDashboard from "./pages/AdminDashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
@@ -29,23 +30,54 @@ const App = () => (
           <BrowserRouter>
             <PageTransition>
               <Routes>
+                {/* Public routes - accessible to everyone */}
                 <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/feed" element={<Feed />} />
+                <Route path="/login" element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Login />
+                  </ProtectedRoute>
+                } />
+                <Route path="/register" element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Register />
+                  </ProtectedRoute>
+                } />
+                <Route path="/forgot-password" element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ForgotPassword />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Protected routes - require authentication */}
+                <Route path="/feed" element={
+                  <ProtectedRoute>
+                    <Feed />
+                  </ProtectedRoute>
+                } />
                 <Route path="/profile/me" element={
                   <ProtectedRoute>
                     <CurrentUserProfile />
                   </ProtectedRoute>
                 } />
-                <Route path="/profile/:userId" element={<Profile />} />
+                <Route path="/@:username" element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Admin only routes */}
                 <Route path="/admin" element={
-                  <ProtectedRoute requiredRole="admin">
+                  <ProtectedRoute adminOnly={true}>
                     <AdminDashboard />
                   </ProtectedRoute>
                 } />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                
+                {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </PageTransition>
