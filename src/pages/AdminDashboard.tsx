@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { AdminDashboardSkeleton } from '@/components/loaders/AdminDashboardSkeleton';
+import { adminService, type AdminStats, type AdminUser } from '@/services/adminService';
 import {
   Users,
   MessageSquare,
@@ -32,87 +34,17 @@ import {
   UserX,
   Trash2,
   AlertTriangle,
+  Download,
+  RefreshCw,
 } from 'lucide-react';
-
-interface AdminStats {
-  totalUsers: number;
-  activeUsers: number;
-  totalPosts: number;
-  totalComments: number;
-  suspendedUsers: number;
-}
-
-interface User {
-  _id: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'user' | 'admin';
-  isActive: boolean;
-  followersCount: number;
-  followingCount: number;
-  createdAt: string;
-  avatar?: string;
-}
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
-  // Mock data
-  const mockStats: AdminStats = {
-    totalUsers: 12450,
-    activeUsers: 11890,
-    totalPosts: 45620,
-    totalComments: 128340,
-    suspendedUsers: 560,
-  };
-
-  const mockUsers: User[] = [
-    {
-      _id: '1',
-      username: 'johndoe',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      role: 'user',
-      isActive: true,
-      followersCount: 1250,
-      followingCount: 340,
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
-    },
-    {
-      _id: '2',
-      username: 'sarahsmith',
-      firstName: 'Sarah',
-      lastName: 'Smith',
-      email: 'sarah@example.com',
-      role: 'user',
-      isActive: false,
-      followersCount: 890,
-      followingCount: 220,
-      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612c8e8?w=400&h=400&fit=crop&crop=face'
-    },
-    {
-      _id: '3',
-      username: 'mikejohnson',
-      firstName: 'Mike',
-      lastName: 'Johnson',
-      email: 'mike@example.com',
-      role: 'admin',
-      isActive: true,
-      followersCount: 2340,
-      followingCount: 180,
-      createdAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString(),
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
-    }
-  ];
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -128,13 +60,19 @@ const AdminDashboard = () => {
   }, [user]);
 
   const loadAdminData = async () => {
-    setIsLoading(true);
     try {
-      // Simulate API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStats(mockStats);
-      setUsers(mockUsers);
+      setIsLoading(true);
+      
+      // Load stats and users in parallel for better performance
+      const [statsData, usersData] = await Promise.all([
+        adminService.getStats(),
+        adminService.getUsers({ limit: 20 })
+      ]);
+      
+      setStats(statsData);
+      setUsers(usersData.data);
     } catch (error) {
+      console.error('Failed to load admin data:', error);
       toast({
         title: "Error",
         description: "Failed to load admin data. Please try again.",
@@ -145,33 +83,80 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadAdminData();
+      toast({
+        title: "Data Refreshed",
+        description: "Admin dashboard data has been updated.",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleActivateUser = async (userId: string) => {
-    setUsers(prev => prev.map(u => 
-      u._id === userId ? { ...u, isActive: true } : u
-    ));
-    toast({
-      title: "User Activated",
-      description: "User has been successfully activated.",
-    });
+    try {
+      await adminService.activateUser(userId);
+      setUsers(prev => prev.map(u => 
+        u._id === userId ? { ...u, isActive: true } : u
+      ));
+      toast({
+        title: "User Activated",
+        description: "User has been successfully activated.",
+      });
+    } catch (error) {
+      console.error('Failed to activate user:', error);
+    }
   };
 
   const handleSuspendUser = async (userId: string) => {
-    setUsers(prev => prev.map(u => 
-      u._id === userId ? { ...u, isActive: false } : u
-    ));
-    toast({
-      title: "User Suspended",
-      description: "User has been suspended.",
-    });
+    try {
+      await adminService.suspendUser(userId);
+      setUsers(prev => prev.map(u => 
+        u._id === userId ? { ...u, isActive: false } : u
+      ));
+      toast({
+        title: "User Suspended",
+        description: "User has been suspended.",
+      });
+    } catch (error) {
+      console.error('Failed to suspend user:', error);
+    }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    setUsers(prev => prev.filter(u => u._id !== userId));
-    toast({
-      title: "User Deleted",
-      description: "User has been permanently deleted.",
-      variant: "destructive",
-    });
+    try {
+      await adminService.deleteUser(userId);
+      setUsers(prev => prev.filter(u => u._id !== userId));
+      toast({
+        title: "User Deleted",
+        description: "User has been permanently deleted.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+    }
+  };
+
+  const handleExportUsers = async () => {
+    try {
+      const blob = await adminService.exportUsers('csv');
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Export Complete",
+        description: "Users data has been exported successfully.",
+      });
+    } catch (error) {
+      console.error('Failed to export users:', error);
+    }
   };
 
   const filteredUsers = users.filter(user =>
@@ -195,6 +180,14 @@ const AdminDashboard = () => {
     );
   }
 
+  if (isLoading) {
+    return (
+      <Layout>
+        <AdminDashboardSkeleton />
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto py-6 px-4">
@@ -203,10 +196,20 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
             <p className="text-muted-foreground mt-2">Manage users and monitor platform activity</p>
           </div>
-          <Badge variant="secondary" className="bg-gradient-primary text-white">
-            <Shield className="w-4 h-4 mr-1" />
-            Admin Access
-          </Badge>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button variant="outline" onClick={handleExportUsers}>
+              <Download className="w-4 h-4 mr-2" />
+              Export Users
+            </Button>
+            <Badge variant="secondary" className="bg-gradient-primary text-white">
+              <Shield className="w-4 h-4 mr-1" />
+              Admin Access
+            </Badge>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -218,8 +221,10 @@ const AdminDashboard = () => {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">+12% from last month</p>
+                <div className="text-2xl font-bold">{stats.totalUsers?.toLocaleString() || '0'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.newUsersToday ? `+${stats.newUsersToday} today` : '+12% from last month'}
+                </p>
               </CardContent>
             </Card>
 
@@ -229,8 +234,10 @@ const AdminDashboard = () => {
                 <UserCheck className="h-4 w-4 text-social-repost" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.activeUsers.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">95.5% of total users</p>
+                <div className="text-2xl font-bold">{stats.activeUsers?.toLocaleString() || '0'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.totalUsers ? `${((stats.activeUsers / stats.totalUsers) * 100).toFixed(1)}% of total` : '95.5% of total users'}
+                </p>
               </CardContent>
             </Card>
 
@@ -240,8 +247,10 @@ const AdminDashboard = () => {
                 <TrendingUp className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalPosts.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">+8% from last week</p>
+                <div className="text-2xl font-bold">{stats.totalPosts?.toLocaleString() || '0'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.postsToday ? `+${stats.postsToday} today` : '+8% from last week'}
+                </p>
               </CardContent>
             </Card>
 
@@ -251,8 +260,10 @@ const AdminDashboard = () => {
                 <MessageSquare className="h-4 w-4 text-social-comment" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalComments.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">+15% from last week</p>
+                <div className="text-2xl font-bold">{stats.totalComments?.toLocaleString() || '0'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.commentsToday ? `+${stats.commentsToday} today` : '+15% from last week'}
+                </p>
               </CardContent>
             </Card>
 
@@ -262,8 +273,10 @@ const AdminDashboard = () => {
                 <UserX className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.suspendedUsers.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">4.5% of total users</p>
+                <div className="text-2xl font-bold">{stats.suspendedUsers?.toLocaleString() || '0'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.totalUsers ? `${((stats.suspendedUsers / stats.totalUsers) * 100).toFixed(1)}% of total` : '4.5% of total users'}
+                </p>
               </CardContent>
             </Card>
           </div>

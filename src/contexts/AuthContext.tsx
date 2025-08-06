@@ -1,21 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from '@/hooks/use-toast';
-import axios from 'axios';
+import { userService, type User, type LoginData, type RegisterData } from '@/services/userService';
 
-interface User {
-  _id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  bio?: string;
-  avatar?: string;
-  role: 'user' | 'admin';
-  isActive: boolean;
-  followersCount: number;
-  followingCount: number;
-  createdAt: string;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -24,17 +10,9 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
-interface RegisterData {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  role?: 'user' | 'admin';
-}
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -50,89 +28,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
   useEffect(() => {
-    // Check for existing session
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setIsLoading(false);
-          return;
-        }
-
-        const response = await axios.get(`${API_BASE}/users/profile/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        setUser(response.data.data);
-      } catch (error: any) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     checkAuth();
   }, []);
 
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      const userData = await userService.getProfile();
+      setUser(userData);
+    } catch (error: any) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post(`${API_BASE}/users/login`, {
-        email,
-        password,
-      });
-
-      localStorage.setItem('token', response.data.token);
-      setUser(response.data.user);
+      const response = await userService.login({ email, password });
+      
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
+      
       toast({
         title: "Welcome back!",
         description: "You've been successfully logged in.",
       });
+      
       return true;
     } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.response?.data?.message || "Invalid credentials",
-        variant: "destructive",
-      });
+      console.error('Login failed:', error);
       return false;
     }
   };
 
   const register = async (userData: RegisterData): Promise<boolean> => {
     try {
-      await axios.post(`${API_BASE}/users/register`, userData);
+      await userService.register(userData);
       
       toast({
         title: "Registration successful!",
         description: "Please login with your new account.",
       });
+      
       return true;
     } catch (error: any) {
-      toast({
-        title: "Registration failed",
-        description: error.response?.data?.message || "Please check your information",
-        variant: "destructive",
-      });
+      console.error('Registration failed:', error);
       return false;
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await axios.post(`${API_BASE}/users/logout`, {}, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-      }
+      await userService.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -147,25 +102,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = async (data: Partial<User>): Promise<void> => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(`${API_BASE}/users/profile/me`, data, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      setUser(response.data.data);
+      const updatedUser = await userService.updateProfile(data);
+      setUser(updatedUser);
+      
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
       });
     } catch (error: any) {
+      console.error('Profile update failed:', error);
       toast({
         title: "Update failed",
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
       throw error;
+    }
+  };
+
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const userData = await userService.getProfile();
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
     }
   };
 
@@ -176,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     logout,
     updateProfile,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

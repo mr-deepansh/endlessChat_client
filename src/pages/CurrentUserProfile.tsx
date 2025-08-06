@@ -25,7 +25,8 @@ import {
   X
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import axios from 'axios';
+import { userService, type UserStats } from '@/services/userService';
+import { ProfileSkeleton } from '@/components/loaders/ProfileSkeleton';
 
 interface Post {
   _id: string;
@@ -36,12 +37,6 @@ interface Post {
   isLiked: boolean;
 }
 
-interface UserStats {
-  postsCount: number;
-  followersCount: number;
-  followingCount: number;
-  mutualFollowersCount: number;
-}
 
 const CurrentUserProfile = () => {
   const { user, updateProfile } = useAuth();
@@ -50,7 +45,9 @@ const CurrentUserProfile = () => {
     postsCount: 0,
     followersCount: 0,
     followingCount: 0,
-    mutualFollowersCount: 0
+    mutualFollowersCount: 0,
+    likesReceived: 0,
+    commentsReceived: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('posts');
@@ -81,19 +78,15 @@ const CurrentUserProfile = () => {
   const fetchUserData = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
       
-      // Fetch user posts
-      const postsResponse = await axios.get(`${API_BASE}/posts/user/${user?._id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setPosts(postsResponse.data.data || []);
-
-      // Fetch user stats
-      const statsResponse = await axios.get(`${API_BASE}/users/stats/${user?._id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setStats(statsResponse.data.data || stats);
+      // Fetch user posts and stats in parallel
+      const [postsData, statsData] = await Promise.all([
+        userService.getUserPosts(),
+        userService.getUserStats()
+      ]);
+      
+      setPosts(postsData || []);
+      setStats(statsData || stats);
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast({
@@ -128,7 +121,24 @@ const CurrentUserProfile = () => {
   };
 
   if (!user) {
-    return <div>Please log in to view your profile</div>;
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Please log in</h2>
+            <p className="text-muted-foreground">You need to be logged in to view your profile.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <ProfileSkeleton />
+      </Layout>
+    );
   }
 
   return (
