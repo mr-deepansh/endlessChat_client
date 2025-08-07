@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { notificationService, Notification } from '@/services/notificationService';
-import { useApi } from '@/hooks/useApi';
-import { toast } from '@/hooks/use-toast';
+// import { notificationService, Notification } from '@/services/notificationService';
+// import { useApi } from '@/hooks/useApi';
+// import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
 const NotificationSkeleton = () => (
@@ -37,6 +37,24 @@ const getNotificationIcon = (type: string) => {
       return <Bell className="h-4 w-4 text-muted-foreground" />;
   }
 };
+
+// Temporary mock interface
+interface Notification {
+  _id: string;
+  type: 'like' | 'comment' | 'follow' | 'repost' | 'mention';
+  message: string;
+  from: {
+    avatar?: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+  };
+  to: string;
+  postId?: string;
+  commentId?: string;
+  isRead: boolean;
+  createdAt: string;
+}
 
 const NotificationItem: React.FC<{
   notification: Notification;
@@ -94,57 +112,43 @@ const NotificationItem: React.FC<{
   );
 };
 
-export default function Notifications() {
+function Notifications() {
+  console.log('Notifications component is being loaded');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { loading, execute } = useApi();
+  // const { loading, execute } = useApi();
+  const loading = false;
 
   const loadNotifications = async () => {
-    const result = await execute(() => notificationService.getNotifications());
-    if (result) {
-      setNotifications(result.notifications);
-      setUnreadCount(result.unreadCount);
-    }
+    // Mock data for now to avoid service errors
+    console.log('Loading notifications...');
+    setNotifications([]);
+    setUnreadCount(0);
   };
 
   const handleMarkRead = async (notificationId: string) => {
-    const result = await execute(() => notificationService.markAsRead(notificationId));
-    if (result) {
-      setNotifications(prev => 
-        prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
-      toast({
-        title: 'Notification marked as read',
-        description: 'The notification has been marked as read.',
-      });
-    }
+    console.log('Marking notification as read:', notificationId);
+    // Mock implementation
+    setNotifications(prev => 
+      prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
   };
 
   const handleMarkAllRead = async () => {
-    const result = await execute(() => notificationService.markAllAsRead());
-    if (result) {
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      setUnreadCount(0);
-      toast({
-        title: 'All notifications marked as read',
-        description: 'All your notifications have been marked as read.',
-      });
-    }
+    console.log('Marking all notifications as read');
+    // Mock implementation
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    setUnreadCount(0);
   };
 
   const handleDelete = async (notificationId: string) => {
-    const result = await execute(() => notificationService.deleteNotification(notificationId));
-    if (result) {
-      setNotifications(prev => prev.filter(n => n._id !== notificationId));
-      const deletedNotification = notifications.find(n => n._id === notificationId);
-      if (deletedNotification && !deletedNotification.isRead) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-      toast({
-        title: 'Notification deleted',
-        description: 'The notification has been deleted.',
-      });
+    console.log('Deleting notification:', notificationId);
+    // Mock implementation
+    setNotifications(prev => prev.filter(n => n._id !== notificationId));
+    const deletedNotification = notifications.find(n => n._id === notificationId);
+    if (deletedNotification && !deletedNotification.isRead) {
+      setUnreadCount(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -229,3 +233,5 @@ export default function Notifications() {
     </div>
   );
 }
+
+export default Notifications;
