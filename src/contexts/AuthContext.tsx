@@ -10,6 +10,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
+  updateUser: (userData: User) => void;
   refreshUser: () => Promise<void>;
 }
 
@@ -41,11 +42,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      console.log('🔍 Checking auth with token:', token ? 'exists' : 'missing');
       const userData = await userService.getProfile();
+      console.log('✅ Auth check successful, user:', userData.username);
       setUser(userData);
     } catch (error: any) {
-      console.error('Auth check failed:', error);
+      console.error('❌ Auth check failed:', error);
       localStorage.removeItem('token');
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -61,12 +65,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginData = { emailOrUsername, password };
         const response = await userService.login(loginData);
         
-        // Backend returns { data: { accessToken, user } }
         const token = response.data?.accessToken || response.accessToken;
-        const user = response.data?.user || response.user;
+        const userData = response.data?.user || response.user;
         
+        console.log('✅ Login successful, user:', userData?.username);
         localStorage.setItem('token', token);
-        setUser(user);
+        setUser(userData);
         
         toast({
           title: "Welcome back!",
@@ -75,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         return true;
       } catch (firstError: any) {
+        console.log('🔄 First login attempt failed, trying fallback method');
         // If emailOrUsername field fails, try separate email/username fields
         const isEmail = emailOrUsername.includes('@');
         loginData = isEmail 
@@ -83,12 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const response = await userService.login(loginData);
         
-        // Backend returns { data: { accessToken, user } }
         const token = response.data?.accessToken || response.accessToken;
-        const user = response.data?.user || response.user;
+        const userData = response.data?.user || response.user;
         
+        console.log('✅ Login successful (fallback), user:', userData?.username);
         localStorage.setItem('token', token);
-        setUser(user);
+        setUser(userData);
         
         toast({
           title: "Welcome back!",
@@ -160,6 +165,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = (userData: User): void => {
+    setUser(userData);
+  };
+
   const refreshUser = async (): Promise<void> => {
     try {
       const userData = await userService.getProfile();
@@ -176,6 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     logout,
     updateProfile,
+    updateUser,
     refreshUser,
   };
 

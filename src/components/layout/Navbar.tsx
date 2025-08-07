@@ -14,6 +14,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { userService } from '@/services/userService';
+import { socialService } from '@/services/socialService';
+import { debounce } from '@/utils/debounce';
 import {
   Search,
   Home,
@@ -30,7 +32,7 @@ import {
 } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,8 +49,7 @@ const Navbar = () => {
     }
   };
 
-  const handleSearchInput = async (query: string) => {
-    setSearchQuery(query);
+  const debouncedSearch = debounce(async (query: string) => {
     if (query.trim().length > 2) {
       setIsSearching(true);
       try {
@@ -65,6 +66,11 @@ const Navbar = () => {
       setSearchResults([]);
       setShowSearchResults(false);
     }
+  }, 300);
+
+  const handleSearchInput = (query: string) => {
+    setSearchQuery(query);
+    debouncedSearch(query);
   };
 
   const handleLogout = async () => {
@@ -93,7 +99,7 @@ const Navbar = () => {
           </Link>
 
           {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-8 relative">
+          <div className="flex-1 max-w-md mx-4 md:mx-8 relative">
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               {isSearching && (
@@ -140,11 +146,15 @@ const Navbar = () => {
           </div>
 
           {/* Navigation Items */}
-          <div className="flex items-center space-x-4">
-            {user ? (
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-muted animate-pulse"></div>
+              </div>
+            ) : user ? (
               <>
                  {/* Main Navigation */}
-                <div className="hidden sm:flex items-center space-x-2">
+                <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
                   <Button variant="ghost" size="icon" asChild>
                     <Link to="/feed">
                       <Home className="w-5 h-5" />
@@ -187,7 +197,7 @@ const Navbar = () => {
                 <Button variant="gradient" size="sm" asChild className="shadow-primary/20 hover:shadow-primary/40 transition-all">
                   <Link to="/create">
                     <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline ml-1">Post</span>
+                    <span className="hidden md:inline ml-1">Post</span>
                   </Link>
                 </Button>
 
@@ -212,8 +222,10 @@ const Navbar = () => {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <p className="text-sm font-medium leading-none">{user.firstName} {user.lastName}</p>
-                        <p className="text-xs leading-none text-muted-foreground mt-1">@{user.username}</p>
+                        <p className="text-sm font-medium leading-none">
+                          {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'User'}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground mt-1">@{user.username || 'username'}</p>
                         <div className="flex items-center space-x-3 mt-2 text-xs text-muted-foreground">
                           <span>{user.followersCount || 0} followers</span>
                           <span>{user.followingCount || 0} following</span>
@@ -222,7 +234,7 @@ const Navbar = () => {
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to={`/@${user.username}`} className="cursor-pointer">
+                      <Link to={user.username ? `/@${user.username}` : '/profile/me'} className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
                         My Profile
                       </Link>

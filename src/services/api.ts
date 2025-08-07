@@ -55,24 +55,7 @@ apiClient.interceptors.response.use(
       return apiClient(originalRequest);
     }
 
-    // Show error toast for client errors
-    if (error.response?.status >= 400 && error.response?.status < 500) {
-      const errorMessage = (error.response?.data as any)?.message || 'An error occurred';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-
-    // Show error toast for server errors
-    if (error.response?.status >= 500) {
-      toast({
-        title: 'Server Error',
-        description: 'Something went wrong. Please try again later.',
-        variant: 'destructive',
-      });
-    }
+    // Don't show automatic error toasts - let components handle their own error messages
 
     return Promise.reject(error);
   }
@@ -126,11 +109,7 @@ export const api = {
 // Helper functions
 export const handleApiError = (error: any, defaultMessage: string = 'An error occurred') => {
   const message = (error as any)?.response?.data?.message || (error as any)?.message || defaultMessage;
-  toast({
-    title: 'Error',
-    description: message,
-    variant: 'destructive',
-  });
+  console.error('API Error:', message);
   throw error;
 };
 
@@ -141,7 +120,7 @@ export const withErrorHandling = async <T>(
   try {
     return await apiCall();
   } catch (error) {
-    handleApiError(error, errorMessage);
+    console.error('API call failed:', errorMessage || 'Unknown error', error);
     throw error;
   }
 };

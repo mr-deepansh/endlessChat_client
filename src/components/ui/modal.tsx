@@ -23,14 +23,14 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
       {/* Modal Content */}
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* Close Button */}
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           className="absolute -top-12 right-0 text-white hover:text-white/80 z-20"
           onClick={onClose}
         >
           <X className="w-6 h-6" />
-        </Button>
+        </Button> */}
         
         {children}
       </div>

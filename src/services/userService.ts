@@ -99,24 +99,15 @@ export interface UpdateProfileData {
 export const userService = {
   // Authentication
   login: async (data: LoginData): Promise<{ data: { user: User; accessToken: string } }> => {
-    return withErrorHandling(
-      () => api.post<{ data: { user: User; accessToken: string } }>('/users/login', data),
-      'Login failed. Please check your credentials.'
-    );
+    return api.post<{ data: { user: User; accessToken: string } }>('/users/login', data);
   },
 
   register: async (data: RegisterData): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.post<{ message: string }>('/users/register', data),
-      'Registration failed. Please try again.'
-    );
+    return api.post<{ message: string }>('/users/register', data);
   },
 
   logout: async (): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.post<{ message: string }>('/users/logout'),
-      'Logout failed'
-    );
+    return api.post<{ message: string }>('/users/logout');
   },
 
   forgotPassword: async (email: string): Promise<{ message: string }> => {
@@ -270,18 +261,13 @@ export const userService = {
       });
     }
     
-    return withErrorHandling(
-      () => api.get<User[]>(`/users?${queryParams.toString()}`),
-      'Failed to load users'
-    );
+    return api.get<User[]>(`/users?${queryParams.toString()}`);
   },
 
-  // Search users
+  // Search users with debouncing
   searchUsers: async (username: string): Promise<User[]> => {
-    return withErrorHandling(
-      () => api.get<User[]>(`/users/search?username=${encodeURIComponent(username)}`),
-      'Failed to search users'
-    );
+    if (!username.trim()) return [];
+    return api.get<User[]>(`/users/search?username=${encodeURIComponent(username)}`);
   },
 
   // Get user feed

@@ -6,8 +6,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/layout/Navbar';
-import { userService, User, Post } from '@/services/userService';
+import { userService, socialService, User, Post } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
+import { useApi } from '@/hooks/useApi';
 import { 
   MessageCircle, 
   Heart, 
@@ -60,21 +61,28 @@ const Profile = () => {
     fetchUserData();
   }, [username]);
 
+  const { execute: executeFollow } = useApi({
+    showSuccessToast: true,
+    successMessage: 'Follow status updated successfully'
+  });
+
   const handleFollow = async () => {
     if (!user) return;
     
-    try {
-      if (isFollowing) {
-        await userService.unfollowUser(user._id);
-        setIsFollowing(false);
-        setUser(prev => prev ? { ...prev, followersCount: prev.followersCount - 1 } : null);
-      } else {
-        await userService.followUser(user._id);
-        setIsFollowing(true);
-        setUser(prev => prev ? { ...prev, followersCount: prev.followersCount + 1 } : null);
-      }
-    } catch (error) {
-      console.error('Failed to follow/unfollow user:', error);
+    const result = await executeFollow(async () => {
+      return isFollowing 
+        ? await socialService.unfollowUser(user._id)
+        : await socialService.followUser(user._id);
+    });
+    
+    if (result) {
+      setIsFollowing(!isFollowing);
+      setUser(prev => prev ? {
+        ...prev,
+        followersCount: isFollowing 
+          ? prev.followersCount - 1 
+          : prev.followersCount + 1
+      } : null);
     }
   };
 
