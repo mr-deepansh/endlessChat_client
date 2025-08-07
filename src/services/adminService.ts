@@ -7,8 +7,6 @@ export interface AdminStats {
   totalComments: number;
   newUsersToday: number;
   postsToday: number;
-  commentsToday: number;
-  suspendedUsers: number;
 }
 
 export interface AdminUser {
@@ -21,8 +19,6 @@ export interface AdminUser {
   isActive: boolean;
   createdAt: string;
   lastActive: string;
-  avatar?: string;
-  followersCount?: number;
 }
 
 export const adminService = {
@@ -36,21 +32,8 @@ export const adminService = {
   },
 
   // User Management
-  getUsers: async (): Promise<AdminUser[]> => {
-    return api.get<AdminUser[]>('/admin/users');
-  },
-
   getAllUsers: async (): Promise<AdminUser[]> => {
     return api.get<AdminUser[]>('/admin/users');
-  },
-
-  exportUsers: async (format: 'csv' | 'json' = 'csv'): Promise<Blob> => {
-    const response = await fetch(`${api}/admin/export/users?format=${format}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    return response.blob();
   },
 
   getUserById: async (userId: string): Promise<AdminUser> => {
