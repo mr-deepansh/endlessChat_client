@@ -14,6 +14,7 @@ import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import CurrentUserProfile from "./pages/CurrentUserProfile";
 import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
 import AdminDashboard from "./pages/AdminDashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
@@ -67,6 +68,11 @@ const App = () => (
                 <Route path="/settings" element={
                   <ProtectedRoute>
                     <Settings />
+                  </ProtectedRoute>
+                } />
+                <Route path="/notifications" element={
+                  <ProtectedRoute>
+                    <Notifications />
                   </ProtectedRoute>
                 } />
                 

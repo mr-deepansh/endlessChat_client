@@ -66,11 +66,11 @@ const AdminDashboard = () => {
       // Load stats and users in parallel for better performance
       const [statsData, usersData] = await Promise.all([
         adminService.getStats(),
-        adminService.getUsers({ limit: 20 })
+        adminService.getAllUsers()
       ]);
       
       setStats(statsData);
-      setUsers(usersData.data);
+      setUsers(usersData);
     } catch (error) {
       console.error('Failed to load admin data:', error);
       toast({

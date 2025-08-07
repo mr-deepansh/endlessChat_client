@@ -65,8 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginData = { emailOrUsername, password };
         const response = await userService.login(loginData);
         
-        const token = response.data?.accessToken || response.accessToken;
-        const userData = response.data?.user || response.user;
+        const token = (response as any)?.data?.accessToken || (response as any)?.accessToken || (response as any)?.token;
+        const userData = (response as any)?.data?.user || (response as any)?.user;
         
         console.log('✅ Login successful, user:', userData?.username);
         localStorage.setItem('token', token);
@@ -88,8 +88,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const response = await userService.login(loginData);
         
-        const token = response.data?.accessToken || response.accessToken;
-        const userData = response.data?.user || response.user;
+        const token = (response as any)?.data?.accessToken || (response as any)?.accessToken || (response as any)?.token;
+        const userData = (response as any)?.data?.user || (response as any)?.user;
         
         console.log('✅ Login successful (fallback), user:', userData?.username);
         localStorage.setItem('token', token);
