@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import Layout from '@/components/layout/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +36,8 @@ import {
   Download,
   RefreshCw,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Layout from '@/components/layout/Layout';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -190,92 +191,102 @@ const AdminDashboard = () => {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto py-6 px-4">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-2 sm:px-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
-            <p className="text-muted-foreground mt-2">Manage users and monitor platform activity</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Admin Dashboard</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Manage users, monitor activity, and oversee platform operations
+            </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline" 
+              size="sm"
+              disabled={isRefreshing}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
             </Button>
-            <Button variant="outline" onClick={handleExportUsers}>
-              <Download className="w-4 h-4 mr-2" />
-              Export Users
+            <Button 
+              onClick={handleExportUsers} 
+              variant="outline" 
+              size="sm"
+              className="w-full sm:w-auto"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              <span>Export</span>
             </Button>
-            <Badge variant="secondary" className="bg-gradient-primary text-white">
-              <Shield className="w-4 h-4 mr-1" />
-              Admin Access
-            </Badge>
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Mobile Responsive Grid */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-6 sm:mb-8">
             <Card className="bg-gradient-card border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalUsers?.toLocaleString() || '0'}</div>
+                <div className="text-lg sm:text-2xl font-bold text-foreground">{stats.totalUsers.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.newUsersToday ? `+${stats.newUsersToday} today` : '+12% from last month'}
+                  +{stats.newUsersToday} today
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-card border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-                <UserCheck className="h-4 w-4 text-social-repost" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Active Users</CardTitle>
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.activeUsers?.toLocaleString() || '0'}</div>
+                <div className="text-lg sm:text-2xl font-bold text-foreground">{stats.activeUsers.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.totalUsers ? `${((stats.activeUsers / stats.totalUsers) * 100).toFixed(1)}% of total` : '95.5% of total users'}
+                  {((stats.activeUsers / stats.totalUsers) * 100).toFixed(1)}% of total
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-card border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-                <TrendingUp className="h-4 w-4 text-primary" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Posts</CardTitle>
+                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalPosts?.toLocaleString() || '0'}</div>
+                <div className="text-lg sm:text-2xl font-bold text-foreground">{stats.totalPosts.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.postsToday ? `+${stats.postsToday} today` : '+8% from last week'}
+                  +{stats.postsToday} today
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-card border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Comments</CardTitle>
-                <MessageSquare className="h-4 w-4 text-social-comment" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Comments</CardTitle>
+                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalComments?.toLocaleString() || '0'}</div>
+                <div className="text-lg sm:text-2xl font-bold text-foreground">{stats.totalComments.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.commentsToday ? `+${stats.commentsToday} today` : '+15% from last week'}
+                  +{stats.commentsToday || 0} today
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-card border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Suspended</CardTitle>
-                <UserX className="h-4 w-4 text-destructive" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Suspended</CardTitle>
+                <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.suspendedUsers?.toLocaleString() || '0'}</div>
+                <div className="text-lg sm:text-2xl font-bold text-foreground">{stats.suspendedUsers || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.totalUsers ? `${((stats.suspendedUsers / stats.totalUsers) * 100).toFixed(1)}% of total` : '4.5% of total users'}
+                  {stats.suspendedUsers || 0} suspended users
                 </p>
               </CardContent>
             </Card>
@@ -285,101 +296,168 @@ const AdminDashboard = () => {
         {/* User Management */}
         <Card className="bg-gradient-card border-none shadow-soft">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
               <div>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>View and manage all platform users</CardDescription>
+                <CardTitle className="text-lg sm:text-xl text-foreground">User Management</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Monitor and manage registered users
+                </p>
               </div>
-              <div className="relative w-72">
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search users..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 w-full sm:w-72 bg-background text-foreground border-border"
                 />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Followers</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user._id}>
-                    <TableCell>
+            {/* Mobile Cards View */}
+            <div className="block md:hidden space-y-4">
+              {filteredUsers.map((user) => (
+                <Card key={user._id} className="bg-background border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={user.avatar} alt={user.username} />
-                          <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={user.avatar || ''} alt={user.username} />
+                          <AvatarFallback className="bg-gradient-primary text-white">
+                            {user.firstName?.[0] || user.username?.[0] || 'U'}
+                            {user.lastName?.[0] || ''}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{user.firstName} {user.lastName}</div>
-                          <div className="text-sm text-muted-foreground">@{user.username}</div>
+                          <p className="font-medium text-foreground">{user.firstName} {user.lastName}</p>
+                          <p className="text-sm text-muted-foreground">@{user.username}</p>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm">{user.email}</TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                        {user.isActive ? 'Active' : 'Suspended'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{user.followersCount}</TableCell>
-                    <TableCell className="text-sm">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="w-4 h-4" />
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {user.isActive ? (
-                            <DropdownMenuItem
-                              onClick={() => handleSuspendUser(user._id)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <UserX className="w-4 h-4 mr-2" />
-                              Suspend User
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => handleActivateUser(user._id)}>
-                              <UserCheck className="w-4 h-4 mr-2" />
-                              Activate User
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteUser(user._id)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete User
+                          <DropdownMenuItem onClick={() => handleActivateUser(user._id)}>
+                            <UserCheck className="mr-2 h-4 w-4" />
+                            Activate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSuspendUser(user._id)}>
+                            <UserX className="mr-2 h-4 w-4" />
+                            Suspend
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteUser(user._id)} className="text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Email:</span>
+                        <p className="text-foreground truncate">{user.email}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Role:</span>
+                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="ml-1">
+                          {user.role}
+                        </Badge>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge variant={user.isActive ? 'default' : 'destructive'} className="ml-1">
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Joined:</span>
+                        <p className="text-foreground">{new Date(user.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-muted-foreground">User</TableHead>
+                    <TableHead className="text-muted-foreground">Email</TableHead>
+                    <TableHead className="text-muted-foreground">Role</TableHead>
+                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground">Followers</TableHead>
+                    <TableHead className="text-muted-foreground">Joined</TableHead>
+                    <TableHead className="text-muted-foreground">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user._id} className="hover:bg-muted/50">
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={user.avatar || ''} alt={user.username} />
+                            <AvatarFallback className="bg-gradient-primary text-white">
+                              {user.firstName?.[0] || user.username?.[0] || 'U'}
+                              {user.lastName?.[0] || ''}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-foreground">{user.firstName} {user.lastName}</p>
+                            <p className="text-sm text-muted-foreground">@{user.username}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-foreground">{user.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-foreground">{user.followersCount || 0}</TableCell>
+                      <TableCell className="text-foreground">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleActivateUser(user._id)}>
+                              <UserCheck className="mr-2 h-4 w-4" />
+                              Activate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSuspendUser(user._id)}>
+                              <UserX className="mr-2 h-4 w-4" />
+                              Suspend
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteUser(user._id)} className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

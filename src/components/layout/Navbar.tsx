@@ -88,18 +88,19 @@ const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-xl shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">E</span>
+          <Link to="/" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+              <span className="text-white font-bold text-xs sm:text-sm">E</span>
             </div>
-            <span className="font-bold text-xl gradient-text">EndlessChat</span>
+            <span className="font-bold text-lg sm:text-xl gradient-text hidden xs:block">EndlessChat</span>
+            <span className="font-bold text-lg sm:text-xl gradient-text xs:hidden">EC</span>
           </Link>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-4 md:mx-8 relative">
+          {/* Search Bar - Hidden on mobile, shown on tablet+ */}
+          <div className="hidden md:flex flex-1 max-w-md mx-4 lg:mx-8 relative">
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               {isSearching && (
@@ -146,14 +147,46 @@ const Navbar = () => {
           </div>
 
           {/* Navigation Items */}
-          <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Mobile Search Button */}
+            <Button variant="ghost" size="icon" className="md:hidden" asChild>
+              <Link to="/search">
+                <Search className="w-5 h-5" />
+              </Link>
+            </Button>
             {isLoading ? (
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-full bg-muted animate-pulse"></div>
               </div>
             ) : user ? (
               <>
-                 {/* Main Navigation */}
+                 {/* Mobile Navigation */}
+                <div className="flex md:hidden items-center space-x-1">
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link to="/feed">
+                      <Home className="w-5 h-5" />
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="icon" asChild className="relative">
+                    <Link to="/notifications">
+                      <Bell className="w-5 h-5" />
+                      {notifications > 0 && (
+                        <Badge className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 text-xs bg-red-500 text-white flex items-center justify-center">
+                          {notifications > 9 ? '9+' : notifications}
+                        </Badge>
+                      )}
+                    </Link>
+                  </Button>
+                  {user.role === 'admin' && (
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link to="/admin">
+                        <Shield className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+
+                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
                   <Button variant="ghost" size="icon" asChild>
                     <Link to="/feed">
@@ -197,23 +230,23 @@ const Navbar = () => {
                 <Button variant="gradient" size="sm" asChild className="shadow-primary/20 hover:shadow-primary/40 transition-all">
                   <Link to="/create">
                     <Plus className="w-4 h-4" />
-                    <span className="hidden md:inline ml-1">Post</span>
+                    <span className="hidden sm:inline ml-1">Post</span>
                   </Link>
                 </Button>
 
                 {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                      <Avatar className="h-10 w-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
+                    <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
+                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
                         <AvatarImage src={user.avatar} alt={user.username} />
-                        <AvatarFallback className="bg-gradient-primary text-white font-semibold">
+                        <AvatarFallback className="bg-gradient-primary text-white font-semibold text-xs sm:text-sm">
                           {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64" align="end" forceMount>
+                  <DropdownMenuContent className="w-56 sm:w-64" align="end" forceMount>
                     <div className="flex items-center space-x-3 p-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={user.avatar} alt={user.username} />
@@ -262,7 +295,7 @@ const Navbar = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 {/* Theme Toggle for non-authenticated users */}
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   {theme === 'light' ? (
@@ -271,11 +304,17 @@ const Navbar = () => {
                     <Sun className="w-5 h-5" />
                   )}
                 </Button>
-                <Button variant="ghost" asChild>
-                  <Link to="/login">Sign In</Link>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">
+                    <span className="hidden sm:inline">Sign In</span>
+                    <span className="sm:hidden">In</span>
+                  </Link>
                 </Button>
-                <Button variant="gradient" asChild>
-                  <Link to="/register">Sign Up</Link>
+                <Button variant="gradient" size="sm" asChild>
+                  <Link to="/register">
+                    <span className="hidden sm:inline">Sign Up</span>
+                    <span className="sm:hidden">Up</span>
+                  </Link>
                 </Button>
               </div>
             )}

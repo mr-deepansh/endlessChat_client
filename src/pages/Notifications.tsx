@@ -157,35 +157,36 @@ function Notifications() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
+    <div className="max-w-4xl mx-auto py-4 sm:py-6 px-2 sm:px-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+        <div className="flex items-center space-x-3 sm:space-x-4">
           <div className="relative">
-            <Bell className="h-8 w-8 text-primary" />
+            <Bell className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             {unreadCount > 0 && (
-              <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+              <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 text-xs">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </Badge>
             )}
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Notifications</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Notifications</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Stay updated with your latest activities
             </p>
           </div>
         </div>
 
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           {unreadCount > 0 && (
-            <Button onClick={handleMarkAllRead} variant="outline" size="sm">
+            <Button onClick={handleMarkAllRead} variant="outline" size="sm" className="w-full sm:w-auto">
               <CheckCheck className="h-4 w-4 mr-2" />
-              Mark All Read
+              <span className="sm:hidden">Mark All</span>
+              <span className="hidden sm:inline">Mark All Read</span>
             </Button>
           )}
-          <Button onClick={loadNotifications} variant="outline" size="sm">
+          <Button onClick={loadNotifications} variant="outline" size="sm" className="w-full sm:w-auto">
             <Bell className="h-4 w-4 mr-2" />
-            Refresh
+            <span>Refresh</span>
           </Button>
         </div>
       </div>
@@ -209,10 +210,10 @@ function Notifications() {
               ))}
             </div>
           ) : notifications.length === 0 ? (
-            <div className="text-center py-12">
-              <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No notifications yet</h3>
-              <p className="text-muted-foreground">
+            <div className="text-center py-8 sm:py-12">
+              <Bell className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">No notifications yet</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 When you get notifications, they'll show up here.
               </p>
             </div>

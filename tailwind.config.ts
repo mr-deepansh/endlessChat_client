@@ -17,7 +17,14 @@ export default {
 				'2xl': '1400px'
 			}
 		},
-		extend: {
+    screens: {
+      'xs': '475px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -76,7 +83,7 @@ export default {
 				'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
 				'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)'
 			},
-			borderRadius: {
+			extend: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
