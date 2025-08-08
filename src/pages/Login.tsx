@@ -1,4 +1,4 @@
-  import React, { useState, useEffect } from 'react';
+  import React, { useState, useEffect, memo, useCallback } from 'react';
   import { Link, useNavigate } from 'react-router-dom';
   import { Button } from '@/components/ui/button';
   import { Input } from '@/components/ui/input';
@@ -6,54 +6,36 @@
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
   import { useAuth } from '@/contexts/AuthContext';
   import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-  import worldHeroImage from '@/assets/world-hero.jpg';
+  
 
-  const Login = () => {
-    const [emailOrUsername, setEmailOrUsername] = useState('');
+  const Login = memo(() => {
+    const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { login, user } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-      console.log('🔄 Login useEffect - user changed:', user ? { id: user._id, username: user.username } : null);
-      if (user) {
-        console.log('✅ User exists in Login, navigating to /feed');
-        navigate('/feed');
-      }
+      if (user) navigate('/feed', { replace: true });
     }, [user, navigate]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
       e.preventDefault();
-      console.log('📝 Login form submitted with:', { emailOrUsername, password: '***' });
       setIsLoading(true);
-
       try {
-        const success = await login(emailOrUsername, password);
-        console.log('📊 Login result:', success);
-        if (success) {
-          console.log('✅ Login successful, navigating to /feed');
-          navigate('/feed');
-        } else {
-          console.log('❌ Login failed');
-        }
+        await login(identifier, password, rememberMe);
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [identifier, password, rememberMe, login]);
+
+    const togglePassword = useCallback(() => setShowPassword(prev => !prev), []);
 
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        {/* Background */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src={worldHeroImage} 
-            alt="Social platform background" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-        </div>
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" />
 
         {/* Login Form */}
         <div className="relative z-10 w-full max-w-md">
@@ -70,15 +52,15 @@
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="emailOrUsername" className="text-foreground">Email or Username</Label>
+                  <Label htmlFor="identifier" className="text-foreground">Email or Username</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                      id="emailOrUsername"
+                      id="identifier"
                       type="text"
                       placeholder="Enter your email or username"
-                      value={emailOrUsername}
-                      onChange={(e) => setEmailOrUsername(e.target.value)}
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
                       required
                       className="pl-10 bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:bg-background/80"
                     />
@@ -103,7 +85,7 @@
                       variant="ghost"
                       size="icon-sm"
                       className="absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={togglePassword}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
@@ -121,7 +103,13 @@
               </form>
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="remember" className="w-4 h-4 rounded border-border bg-background/50 text-primary focus:ring-primary" />
+                    <input 
+                      type="checkbox" 
+                      id="remember" 
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 rounded border-border bg-background/50 text-primary focus:ring-primary" 
+                    />
                     <label htmlFor="remember" className="text-sm text-muted-foreground">Remember me</label>
                   </div>
                   <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
@@ -141,6 +129,7 @@
         </div>
       </div>
     );
-  };
-
+  });
+  
+  Login.displayName = 'Login';
   export default Login;

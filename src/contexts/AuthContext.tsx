@@ -6,7 +6,7 @@ import { cacheService } from '@/services/core/cache';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (emailOrUsername: string, password: string) => Promise<boolean>;
+  login: (identifier: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -42,12 +42,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      console.log('🔍 Checking auth with token:', token ? 'exists' : 'missing');
       const userData = await userService.getProfile();
-      console.log('✅ Auth check successful, user:', userData.username);
       setUser(userData);
     } catch (error: any) {
-      console.error('❌ Auth check failed:', error);
+      console.error('Auth check failed:', error);
       localStorage.removeItem('token');
       setUser(null);
     } finally {
@@ -55,55 +53,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (emailOrUsername: string, password: string): Promise<boolean> => {
+  const login = async (identifier: string, password: string, rememberMe: boolean = false): Promise<boolean> => {
     try {
-      // Try different login data formats based on backend requirements
-      let loginData: LoginData;
+      const loginData: LoginData = { identifier, password, rememberMe };
+      const response = await userService.login(loginData);
       
-      // First try with emailOrUsername field (common backend pattern)
-      try {
-        loginData = { emailOrUsername, password };
-        const response = await userService.login(loginData);
-        
-        const token = response.data?.accessToken || response.accessToken;
-        const userData = response.data?.user || response.user;
-        
-        console.log('✅ Login successful, user:', userData?.username);
-        localStorage.setItem('token', token);
-        setUser(userData);
-        
-        toast({
-          title: "Welcome back!",
-          description: "You've been successfully logged in.",
-        });
-        
-        return true;
-      } catch (firstError: any) {
-        console.log('🔄 First login attempt failed, trying fallback method');
-        // If emailOrUsername field fails, try separate email/username fields
-        const isEmail = emailOrUsername.includes('@');
-        loginData = isEmail 
-          ? { email: emailOrUsername, password }
-          : { username: emailOrUsername, password };
-        
-        const response = await userService.login(loginData);
-        
-        const token = response.data?.accessToken || response.accessToken;
-        const userData = response.data?.user || response.user;
-        
-        console.log('✅ Login successful (fallback), user:', userData?.username);
-        localStorage.setItem('token', token);
-        setUser(userData);
-        
-        toast({
-          title: "Welcome back!",
-          description: "You've been successfully logged in.",
-        });
-        
-        return true;
-      }
+      const token = response.data?.accessToken || response.accessToken;
+      const userData = response.data?.user || response.user;
+      
+      console.log('✅ Login successful, user:', userData?.username);
+      localStorage.setItem('token', token);
+      setUser(userData);
+      
+      toast({
+        title: "Welcome back!",
+        description: "You've been successfully logged in.",
+      });
+      
+      return true;
     } catch (error: any) {
-      console.error('Login failed:', error);
+
       toast({
         title: "Login failed",
         description: error.response?.data?.message || "Please check your credentials.",

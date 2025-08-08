@@ -70,10 +70,9 @@ export interface UserStats {
 }
 
 export interface LoginData {
-  emailOrUsername?: string;
-  email?: string;
-  username?: string;
+  identifier: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface RegisterData {
@@ -99,6 +98,7 @@ export interface UpdateProfileData {
 export const userService = {
   // Authentication
   login: async (data: LoginData): Promise<{ data: { user: User; accessToken: string } }> => {
+
     return api.post<{ data: { user: User; accessToken: string } }>('/users/login', data);
   },
 
@@ -129,7 +129,7 @@ export const userService = {
     return withErrorHandling(
       () => api.get<User>('/users/profile/me', {
         cache: {
-          ttl: 2 * 60 * 1000, // 2 minutes
+          ttl: 5 * 60 * 1000, // 5 minutes
           tags: ['user', 'profile']
         }
       }),
@@ -141,7 +141,7 @@ export const userService = {
     return withErrorHandling(
       () => api.get<User>(`/users/${userId}`, {
         cache: {
-          ttl: 5 * 60 * 1000, // 5 minutes
+          ttl: 10 * 60 * 1000, // 10 minutes
           tags: ['user', `user_${userId}`]
         }
       }),
@@ -288,7 +288,7 @@ export const userService = {
     return withErrorHandling(
       () => api.get<any[]>(`/users/feed?${queryParams.toString()}`, {
         cache: {
-          ttl: 1 * 60 * 1000, // 1 minute for feed
+          ttl: 30 * 1000, // 30 seconds for feed
           tags: ['feed', 'posts']
         }
       }),

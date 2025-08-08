@@ -4,9 +4,9 @@ import { toast } from '@/hooks/use-toast';
 // API Configuration
 const API_CONFIG = {
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
-  timeout: 30000,
-  retryAttempts: 3,
-  retryDelay: 1000,
+  timeout: 10000,
+  retryAttempts: 2,
+  retryDelay: 500,
 };
 
 // Create axios instance
@@ -54,8 +54,6 @@ apiClient.interceptors.response.use(
       
       return apiClient(originalRequest);
     }
-
-    // Don't show automatic error toasts - let components handle their own error messages
 
     return Promise.reject(error);
   }
