@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { TrendingUp, Users, Sparkles } from 'lucide-react';
+import { TrendingUp, Users, Sparkles, Flame, Clock, Globe, Eye } from 'lucide-react';
 
 interface Post {
   _id: string;
@@ -25,21 +25,34 @@ interface Post {
   likesCount: number;
   commentsCount: number;
   repostsCount: number;
+  sharesCount: number;
+  viewsCount: number;
   isLiked?: boolean;
   isReposted?: boolean;
   isBookmarked?: boolean;
   images?: string[];
+  poll?: {
+    question: string;
+    options: { text: string; votes: number }[];
+    totalVotes: number;
+    endsAt: string;
+  };
+  location?: string;
+  scheduledFor?: string;
+  type?: 'text' | 'article' | 'poll' | 'media';
+  repostOf?: Post;
+  quotedPost?: Post;
 }
 
 const Feed = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [feedType, setFeedType] = useState<'recent' | 'trending' | 'following'>('recent');
+  const [feedType, setFeedType] = useState<'recent' | 'trending' | 'following' | 'hot'>('recent');
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-  // Mock data for demo purposes
+  // Enhanced mock data with new features
   const mockPosts: Post[] = [
     {
       _id: '1',
@@ -55,13 +68,17 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       likesCount: 42,
       commentsCount: 8,
       repostsCount: 12,
+      sharesCount: 5,
+      viewsCount: 1240,
       isLiked: false,
       isReposted: false,
-      isBookmarked: false
+      isBookmarked: false,
+      type: 'text',
+      location: 'San Francisco, CA'
     },
     {
       _id: '2',
-      content: 'Beautiful sunset from my morning run! 🌅 Sometimes you need to step away from the code and enjoy nature.',
+      content: 'Which framework do you prefer for building modern web apps?',
       author: {
         _id: '3',
         username: 'sarahdesign',
@@ -73,13 +90,27 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       likesCount: 128,
       commentsCount: 23,
       repostsCount: 45,
+      sharesCount: 18,
+      viewsCount: 3420,
       isLiked: true,
       isReposted: false,
-      isBookmarked: true
+      isBookmarked: true,
+      type: 'poll',
+      poll: {
+        question: 'Which framework do you prefer for building modern web apps?',
+        options: [
+          { text: 'React', votes: 45 },
+          { text: 'Vue.js', votes: 23 },
+          { text: 'Angular', votes: 12 },
+          { text: 'Svelte', votes: 8 }
+        ],
+        totalVotes: 88,
+        endsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      }
     },
     {
       _id: '3',
-      content: 'Hot take: TypeScript is not just "JavaScript with types". It fundamentally changes how you think about code structure and API design. The type system teaches you to be more intentional with your interfaces.',
+      content: 'Hot take: TypeScript is not just "JavaScript with types". It fundamentally changes how you think about code structure and API design.',
       author: {
         _id: '4',
         username: 'mikecoding',
@@ -91,9 +122,53 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       likesCount: 89,
       commentsCount: 34,
       repostsCount: 67,
+      sharesCount: 23,
+      viewsCount: 2150,
       isLiked: false,
       isReposted: true,
-      isBookmarked: false
+      isBookmarked: false,
+      type: 'article',
+      quotedPost: {
+        _id: '4',
+        content: 'JavaScript is the future of web development',
+        author: {
+          _id: '5',
+          username: 'webdev',
+          firstName: 'Web',
+          lastName: 'Developer',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop&crop=face'
+        },
+        createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+        likesCount: 15,
+        commentsCount: 3,
+        repostsCount: 2,
+        sharesCount: 1,
+        viewsCount: 450,
+        type: 'text'
+      }
+    },
+    {
+      _id: '5',
+      content: 'Beautiful sunset from my morning run! 🌅',
+      author: {
+        _id: '6',
+        username: 'naturelover',
+        firstName: 'Nature',
+        lastName: 'Lover',
+        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face'
+      },
+      createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+      likesCount: 234,
+      commentsCount: 45,
+      repostsCount: 78,
+      sharesCount: 32,
+      viewsCount: 5670,
+      isLiked: false,
+      isReposted: false,
+      isBookmarked: false,
+      type: 'media',
+      images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'],
+      location: 'Golden Gate Park, SF'
     }
   ];
 
@@ -128,12 +203,12 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
     }
   };
 
-  const handleCreatePost = async (content: string) => {
+  const handleCreatePost = async (postData: any) => {
     if (!user) return;
 
     const newPost: Post = {
       _id: Date.now().toString(),
-      content,
+      content: postData.content,
       author: {
         _id: user._id,
         username: user.username,
@@ -145,9 +220,16 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       likesCount: 0,
       commentsCount: 0,
       repostsCount: 0,
+      sharesCount: 0,
+      viewsCount: 0,
       isLiked: false,
       isReposted: false,
-      isBookmarked: false
+      isBookmarked: false,
+      type: postData.type || 'text',
+      images: postData.images,
+      poll: postData.poll,
+      location: postData.location,
+      scheduledFor: postData.scheduledFor
     };
 
     // Optimistic update
@@ -159,7 +241,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
     
     toast({
       title: "Post created!",
-      description: "Your post has been shared with the community.",
+      description: postData.scheduledFor ? "Your post has been scheduled." : "Your post has been shared with the community.",
     });
   };
 
@@ -178,10 +260,61 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
     });
   };
 
-  const handleRepost = (postId: string) => {
+  const handleRepost = (postId: string, withQuote?: boolean, quoteText?: string) => {
+    if (withQuote && quoteText) {
+      // Handle quote repost
+      const originalPost = posts.find(p => p._id === postId);
+      if (originalPost && user) {
+        const quotePost: Post = {
+          _id: Date.now().toString(),
+          content: quoteText,
+          author: {
+            _id: user._id,
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: user.avatar
+          },
+          createdAt: new Date().toISOString(),
+          likesCount: 0,
+          commentsCount: 0,
+          repostsCount: 0,
+          sharesCount: 0,
+          viewsCount: 0,
+          isLiked: false,
+          isReposted: false,
+          isBookmarked: false,
+          type: 'text',
+          quotedPost: originalPost
+        };
+        setPosts(prev => [quotePost, ...prev]);
+      }
+      toast({
+        title: "Quote posted!",
+        description: "Your quote post has been shared.",
+      });
+    } else {
+      toast({
+        title: "Reposted!",
+        description: "Post shared to your timeline.",
+      });
+    }
+  };
+
+  const handleShare = (postId: string) => {
+    // Update share count
+    setPosts(prev => prev.map(post => 
+      post._id === postId 
+        ? { ...post, sharesCount: post.sharesCount + 1 }
+        : post
+    ));
+    
+    // Copy link to clipboard
+    navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
+    
     toast({
-      title: "Reposted!",
-      description: "Post shared to your timeline.",
+      title: "Link copied!",
+      description: "Post link has been copied to clipboard.",
     });
   };
 
@@ -194,7 +327,8 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
   };
 
   const feedTypeButtons = [
-    { type: 'recent' as const, label: 'Recent', icon: Sparkles },
+    { type: 'recent' as const, label: 'Recent', icon: Clock },
+    { type: 'hot' as const, label: 'Hot', icon: Flame },
     { type: 'trending' as const, label: 'Trending', icon: TrendingUp },
     { type: 'following' as const, label: 'Following', icon: Users },
   ];
@@ -202,20 +336,38 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
   return (
     <Layout>
       <div className="max-w-2xl mx-auto py-6 px-4">
-        {/* Feed Type Selector */}
-        <div className="flex items-center justify-center space-x-1 mb-6">
-          {feedTypeButtons.map(({ type, label, icon: Icon }) => (
-            <Button
-              key={type}
-              variant={feedType === type ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setFeedType(type)}
-              className="flex items-center space-x-2"
-            >
-              <Icon className="w-4 h-4" />
-              <span>{label}</span>
-            </Button>
-          ))}
+        {/* Enhanced Feed Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold gradient-text flex items-center gap-2">
+              <Globe className="w-6 h-6" />
+              Feed
+            </h1>
+            <div className="text-sm text-muted-foreground flex items-center gap-1">
+              <Eye className="w-4 h-4" />
+              {posts.length} posts
+            </div>
+          </div>
+          
+          {/* Feed Type Selector */}
+          <div className="flex items-center justify-center space-x-1 p-1 bg-muted/30 rounded-lg backdrop-blur-sm">
+            {feedTypeButtons.map(({ type, label, icon: Icon }) => (
+              <Button
+                key={type}
+                variant={feedType === type ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setFeedType(type)}
+                className={`flex items-center space-x-2 transition-all duration-200 ${
+                  feedType === type 
+                    ? 'bg-primary text-primary-foreground shadow-primary/20 shadow-lg' 
+                    : 'hover:bg-background/50'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="hidden sm:inline">{label}</span>
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Create Post */}
@@ -274,6 +426,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
                 onLike={handleLike}
                 onComment={handleComment}
                 onRepost={handleRepost}
+                onShare={handleShare}
                 onDelete={handleDelete}
               />
             ))

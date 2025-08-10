@@ -264,14 +264,14 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 {/* Theme Toggle for non-authenticated users */}
-                <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                <Button variant="gradient" size="icon" onClick={toggleTheme}>
                   {theme === 'light' ? (
                     <Moon className="w-5 h-5" />
                   ) : (
                     <Sun className="w-5 h-5" />
                   )}
                 </Button>
-                <Button variant="ghost" asChild>
+                <Button variant="gradient" asChild>
                   <Link to="/login">Sign In</Link>
                 </Button>
                 <Button variant="gradient" asChild>

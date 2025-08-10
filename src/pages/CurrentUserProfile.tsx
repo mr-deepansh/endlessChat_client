@@ -43,10 +43,10 @@ const CurrentUserProfile = () => {
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
   
-  // Redirect to username-based URL if user is available
   useEffect(() => {
-    if (user?.username) {
-      navigate(`/@${user.username}`, { replace: true });
+    if (user?.username && user._id && user.email) {
+      const cleanUsername = user.username.replace(/^@+/, '');
+      navigate(`/${cleanUsername}`, { replace: true });
     }
   }, [user, navigate]);
   const [posts, setPosts] = useState<Post[]>([]);

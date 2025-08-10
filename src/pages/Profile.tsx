@@ -39,17 +39,34 @@ const Profile = () => {
       
       try {
         setLoading(true);
-        // Find user by username
-        const users = await userService.searchUsers(username.replace('@', ''));
-        const foundUser = users.find(u => u.username === username.replace('@', ''));
+        const cleanUsername = username.replace(/^@+/, ''); // Remove all leading @ symbols
         
-        if (foundUser) {
-          setUser(foundUser);
-          setIsFollowing(foundUser.isFollowing || false);
+        // Check if this is the current user's profile
+        if (currentUser && currentUser.username === cleanUsername) {
+          setUser(currentUser);
+          setIsFollowing(false);
           
-          // Fetch user posts
-          const userPosts = await userService.getUserPosts(foundUser._id);
-          setPosts(userPosts);
+          // Fetch current user's posts
+          try {
+            const userPosts = await userService.getUserPosts();
+            setPosts(userPosts || []);
+          } catch (error) {
+            console.warn('Posts API not available:', error);
+            setPosts([]);
+          }
+        } else {
+          // Find other user by username
+          const users = await userService.searchUsers(cleanUsername);
+          const foundUser = users.find(u => u.username === cleanUsername);
+          
+          if (foundUser) {
+            setUser(foundUser);
+            setIsFollowing(foundUser.isFollowing || false);
+            
+            // Fetch user posts
+            const userPosts = await userService.getUserPosts(foundUser._id);
+            setPosts(userPosts || []);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
@@ -59,7 +76,7 @@ const Profile = () => {
     };
 
     fetchUserData();
-  }, [username]);
+  }, [username, currentUser]);
 
   const { execute: executeFollow } = useApi({
     showSuccessToast: true,
@@ -106,7 +123,7 @@ const Profile = () => {
         <Navbar />
         <div className="max-w-4xl mx-auto p-4 text-center">
           <h1 className="text-2xl font-bold mb-4">User not found</h1>
-          <p className="text-muted-foreground">The user @{username} does not exist.</p>
+          <p className="text-muted-foreground">The user {cleanUsername} does not exist.</p>
         </div>
       </div>
     );
