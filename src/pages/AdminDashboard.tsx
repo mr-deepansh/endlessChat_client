@@ -47,7 +47,16 @@ const AdminDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (user?.role !== 'admin') {
+    console.log('Admin Dashboard - Current user:', user);
+    console.log('Admin Dashboard - User role:', user?.role);
+    
+    if (!user) {
+      console.log('No user found, redirecting...');
+      return;
+    }
+    
+    if (user.role !== 'admin') {
+      console.log('User is not admin, role:', user.role);
       toast({
         title: "Access Denied",
         description: "You don't have permission to access this page.",
@@ -56,6 +65,7 @@ const AdminDashboard = () => {
       return;
     }
 
+    console.log('User is admin, loading admin data...');
     loadAdminData();
   }, [user]);
 
@@ -166,7 +176,17 @@ const AdminDashboard = () => {
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (user?.role !== 'admin') {
+  // Show loading while checking user
+  if (!user) {
+    return (
+      <Layout>
+        <AdminDashboardSkeleton />
+      </Layout>
+    );
+  }
+
+  // Show access denied for non-admin users
+  if (user.role !== 'admin') {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto py-12 px-4 text-center">
@@ -174,7 +194,12 @@ const AdminDashboard = () => {
             <AlertTriangle className="w-12 h-12 text-destructive" />
           </div>
           <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
-          <p className="text-muted-foreground">You don't have permission to access this page.</p>
+          <p className="text-muted-foreground mb-4">You don't have permission to access this page.</p>
+          <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+            <p>Current user: {user.firstName} {user.lastName}</p>
+            <p>Role: {user.role}</p>
+            <p>Required role: admin</p>
+          </div>
         </div>
       </Layout>
     );

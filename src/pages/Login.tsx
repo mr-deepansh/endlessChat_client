@@ -25,11 +25,14 @@
       e.preventDefault();
       setIsLoading(true);
       try {
-        await login(identifier, password, rememberMe);
+        const success = await login(identifier, password, rememberMe);
+        if (success) {
+          navigate('/feed', { replace: true });
+        }
       } finally {
         setIsLoading(false);
       }
-    }, [identifier, password, rememberMe, login]);
+    }, [identifier, password, rememberMe, login, navigate]);
 
     const togglePassword = useCallback(() => setShowPassword(prev => !prev), []);
 

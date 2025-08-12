@@ -321,19 +321,13 @@ const PostCard: React.FC<PostCardProps> = ({
             </div>
           )}
 
-          {/* Views Count */}
-          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-            <Eye className="w-3 h-3" />
-            <span>{formatNumber(post.viewsCount)} views</span>
-          </div>
-
           {/* Action Buttons */}
           <div className="flex items-center justify-between pt-2 border-t border-border/50">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onComment?.(post._id)}
-              className="flex items-center space-x-2 text-social-comment hover:text-social-comment hover:bg-social-comment/10"
+              className="flex items-center space-x-2 text-social-comment hover:text-social-comment hover:bg-social-comment/10 transition-all duration-200"
             >
               <MessageCircle className="w-4 h-4" />
               <span className="text-sm">{formatNumber(post.commentsCount)}</span>
@@ -344,7 +338,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`flex items-center space-x-2 transition-smooth ${
+                  className={`flex items-center space-x-2 transition-all duration-200 ${
                     isReposted
                       ? 'text-social-repost bg-social-repost/10'
                       : 'text-muted-foreground hover:text-social-repost hover:bg-social-repost/10'
@@ -391,13 +385,13 @@ const PostCard: React.FC<PostCardProps> = ({
               variant="ghost"
               size="sm"
               onClick={handleLike}
-              className={`flex items-center space-x-2 transition-smooth ${
+              className={`flex items-center space-x-2 transition-all duration-200 ${
                 isLiked
-                  ? 'text-social-like bg-social-like/10'
-                  : 'text-muted-foreground hover:text-social-like hover:bg-social-like/10'
+                  ? 'text-social-like bg-social-like/10 scale-105'
+                  : 'text-muted-foreground hover:text-social-like hover:bg-social-like/10 hover:scale-105'
               }`}
             >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+              <Heart className={`w-4 h-4 transition-all duration-200 ${isLiked ? 'fill-current animate-pulse' : ''}`} />
               <span className="text-sm">{formatNumber(likesCount)}</span>
             </Button>
 
@@ -405,11 +399,16 @@ const PostCard: React.FC<PostCardProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => onShare?.(post._id)}
-              className="flex items-center space-x-2 text-muted-foreground hover:text-accent hover:bg-accent/10"
+              className="flex items-center space-x-2 text-muted-foreground hover:text-accent hover:bg-accent/10 transition-all duration-200 hover:scale-105"
             >
               <Share className="w-4 h-4" />
               <span className="text-sm">{formatNumber(post.sharesCount)}</span>
             </Button>
+
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground ml-2">
+              <Eye className="w-3 h-3" />
+              <span>{formatNumber(post.viewsCount)}</span>
+            </div>
           </div>
         </div>
       </CardContent>

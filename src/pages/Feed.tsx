@@ -246,17 +246,36 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
   };
 
   const handleLike = async (postId: string) => {
-    // Optimistic update handled in PostCard component
+    // Optimistic update
+    setPosts(prev => prev.map(post => {
+      if (post._id === postId) {
+        const isLiked = !post.isLiked;
+        return {
+          ...post,
+          isLiked,
+          likesCount: isLiked ? post.likesCount + 1 : post.likesCount - 1
+        };
+      }
+      return post;
+    }));
+
     toast({
-      title: "Post liked!",
-      description: "You liked this post.",
+      title: posts.find(p => p._id === postId)?.isLiked ? "Post unliked!" : "Post liked!",
+      description: posts.find(p => p._id === postId)?.isLiked ? "You unliked this post." : "You liked this post.",
     });
   };
 
   const handleComment = (postId: string) => {
+    // Increment view count when opening comments
+    setPosts(prev => prev.map(post => 
+      post._id === postId 
+        ? { ...post, viewsCount: post.viewsCount + 1 }
+        : post
+    ));
+    
     toast({
       title: "Comments",
-      description: "Comment feature coming soon!",
+      description: "Opening comments section...",
     });
   };
 
@@ -280,7 +299,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
           commentsCount: 0,
           repostsCount: 0,
           sharesCount: 0,
-          viewsCount: 0,
+          viewsCount: 1,
           isLiked: false,
           isReposted: false,
           isBookmarked: false,
@@ -288,33 +307,71 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
           quotedPost: originalPost
         };
         setPosts(prev => [quotePost, ...prev]);
+        
+        // Update original post repost count
+        setPosts(prev => prev.map(post => 
+          post._id === postId 
+            ? { ...post, repostsCount: post.repostsCount + 1 }
+            : post
+        ));
       }
       toast({
         title: "Quote posted!",
         description: "Your quote post has been shared.",
       });
     } else {
+      // Simple repost - update counts
+      setPosts(prev => prev.map(post => {
+        if (post._id === postId) {
+          const isReposted = !post.isReposted;
+          return {
+            ...post,
+            isReposted,
+            repostsCount: isReposted ? post.repostsCount + 1 : post.repostsCount - 1
+          };
+        }
+        return post;
+      }));
+      
       toast({
-        title: "Reposted!",
-        description: "Post shared to your timeline.",
+        title: posts.find(p => p._id === postId)?.isReposted ? "Unreposted!" : "Reposted!",
+        description: posts.find(p => p._id === postId)?.isReposted ? "Removed from your timeline." : "Post shared to your timeline.",
       });
     }
   };
 
   const handleShare = (postId: string) => {
-    // Update share count
+    // Update share count and view count
     setPosts(prev => prev.map(post => 
       post._id === postId 
-        ? { ...post, sharesCount: post.sharesCount + 1 }
+        ? { 
+            ...post, 
+            sharesCount: post.sharesCount + 1,
+            viewsCount: post.viewsCount + 1
+          }
         : post
     ));
     
     // Copy link to clipboard
-    navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
-    
-    toast({
-      title: "Link copied!",
-      description: "Post link has been copied to clipboard.",
+    const postUrl = `${window.location.origin}/post/${postId}`;
+    navigator.clipboard.writeText(postUrl).then(() => {
+      toast({
+        title: "Link copied!",
+        description: "Post link has been copied to clipboard.",
+      });
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = postUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      toast({
+        title: "Link copied!",
+        description: "Post link has been copied to clipboard.",
+      });
     });
   };
 
