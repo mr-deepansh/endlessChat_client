@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/layout/Navbar';
@@ -187,25 +188,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 bg-card border-t">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center mr-3">
-              <span className="text-white font-bold">E</span>
-            </div>
-            <span className="text-2xl font-bold gradient-text">EndlessChat</span>
-          </div>
-          <p className="text-muted-foreground mb-6">
-            Building endless conversations, one chat at a time.
-          </p>
-          <div className="text-sm text-muted-foreground flex items-center justify-center gap-4">
-            <span>© 2024 EndlessChat. All rights reserved.</span>
-            <span>•</span>
-            <span>Created by <a href="https://github.com/mr-deepansh" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Deepansh Gangwar</a></span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Modals */}
       <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} title="Sign In">

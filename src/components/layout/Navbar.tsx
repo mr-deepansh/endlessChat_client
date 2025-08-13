@@ -98,52 +98,72 @@ const Navbar = () => {
             <span className="font-bold text-xl gradient-text">EndlessChat</span>
           </Link>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-4 md:mx-8 relative">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              {isSearching && (
-                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 animate-spin" />
-              )}
-              <Input
-                type="text"
-                placeholder="Search users, posts..."
-                value={searchQuery}
-                onChange={(e) => handleSearchInput(e.target.value)}
-                onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
-                onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-                className="pl-10 pr-10 bg-muted/50 border-none focus:bg-background transition-smooth"
-              />
-            </form>
-            
-            {/* Search Results Dropdown */}
-            {showSearchResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
-                {searchResults.map((result: any) => (
-                  <div
-                    key={result._id}
-                    className="flex items-center p-3 hover:bg-muted cursor-pointer transition-colors"
-                    onClick={() => {
-                      navigate(`/@${result.username}`);
-                      setShowSearchResults(false);
-                      setSearchQuery('');
-                    }}
-                  >
-                    <Avatar className="h-8 w-8 mr-3">
-                      <AvatarImage src={result.avatar} alt={result.username} />
-                      <AvatarFallback className="bg-gradient-primary text-white text-xs">
-                        {result.firstName?.[0] || result.username?.[0] || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{result.firstName} {result.lastName}</p>
-                      <p className="text-xs text-muted-foreground">@{result.username}</p>
+          {/* Search Bar - Only show when user is logged in */}
+          {user && (
+            <div className="flex-1 max-w-md mx-4 md:mx-8 relative">
+              <form onSubmit={handleSearch} className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                {isSearching && (
+                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 animate-spin" />
+                )}
+                <Input
+                  type="text"
+                  placeholder="Search users, posts..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchInput(e.target.value)}
+                  onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                  onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+                  className="pl-10 pr-10 bg-muted/50 border-none focus:bg-background transition-smooth"
+                />
+              </form>
+              
+              {/* Search Results Dropdown */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                  {searchResults.map((result: any) => (
+                    <div
+                      key={result._id}
+                      className="flex items-center p-3 hover:bg-muted cursor-pointer transition-colors"
+                      onClick={() => {
+                        navigate(`/@${result.username}`);
+                        setShowSearchResults(false);
+                        setSearchQuery('');
+                      }}
+                    >
+                      <Avatar className="h-8 w-8 mr-3">
+                        <AvatarImage src={result.avatar} alt={result.username} />
+                        <AvatarFallback className="bg-gradient-primary text-white text-xs">
+                          {result.firstName?.[0] || result.username?.[0] || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{result.firstName} {result.lastName}</p>
+                        <p className="text-xs text-muted-foreground">@{result.username}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Navigation Links - Show when user is not logged in */}
+          {!user && (
+            <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
+              <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+                Home
+              </Link>
+              <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
+                About
+              </Link>
+              <Link to="/features" className="text-sm font-medium hover:text-primary transition-colors">
+                Features
+              </Link>
+              <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">
+                Contact
+              </Link>
+            </div>
+          )}
 
           {/* Navigation Items */}
           <div className="flex items-center space-x-2 md:space-x-4">
@@ -264,14 +284,14 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 {/* Theme Toggle for non-authenticated users */}
-                <Button variant="gradient" size="icon" onClick={toggleTheme}>
+                <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   {theme === 'light' ? (
                     <Moon className="w-5 h-5" />
                   ) : (
                     <Sun className="w-5 h-5" />
                   )}
                 </Button>
-                <Button variant="gradient" asChild>
+                <Button variant="outline" asChild>
                   <Link to="/login">Sign In</Link>
                 </Button>
                 <Button variant="gradient" asChild>

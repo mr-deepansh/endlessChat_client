@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Footer from '@/components/layout/Footer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -47,21 +48,16 @@ const AdminDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    console.log('Admin Dashboard - Current user:', user);
-    console.log('Admin Dashboard - User role:', user?.role);
+    console.log('AdminDashboard - Current user:', user);
+    console.log('AdminDashboard - User role:', user?.role);
     
     if (!user) {
-      console.log('No user found, redirecting...');
+      console.log('No user found');
       return;
     }
     
     if (user.role !== 'admin') {
       console.log('User is not admin, role:', user.role);
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -73,7 +69,6 @@ const AdminDashboard = () => {
     try {
       setIsLoading(true);
       
-      // Load stats and users in parallel for better performance
       const [statsData, usersData] = await Promise.all([
         adminService.getStats(),
         adminService.getUsers({ limit: 20 })
@@ -118,6 +113,11 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       console.error('Failed to activate user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to activate user.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -133,6 +133,11 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       console.error('Failed to suspend user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to suspend user.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -147,12 +152,17 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       console.error('Failed to delete user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleExportUsers = async () => {
     try {
-      const blob = await adminService.exportUsers('csv');
+      const blob = await adminService.bulkExportUsers('csv');
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -166,6 +176,11 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       console.error('Failed to export users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to export users.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -287,41 +302,40 @@ const AdminDashboard = () => {
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalComments?.toLocaleString() || '0'}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.commentsToday ? `+${stats.commentsToday} today` : '+15% from last week'}
+                  +15% from last week
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-card border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Suspended</CardTitle>
-                <UserX className="h-4 w-4 text-destructive" />
+                <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+                <TrendingUp className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.suspendedUsers?.toLocaleString() || '0'}</div>
+                <div className="text-2xl font-bold">{stats.engagementRate?.toFixed(1) || '68.5'}%</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.totalUsers ? `${((stats.suspendedUsers / stats.totalUsers) * 100).toFixed(1)}% of total` : '4.5% of total users'}
+                  +2.1% from last week
                 </p>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* User Management */}
+        {/* Users Management */}
         <Card className="bg-gradient-card border-none shadow-soft">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>View and manage all platform users</CardDescription>
-              </div>
-              <div className="relative w-72">
+              <CardTitle>User Management</CardTitle>
+              <div className="relative">
+                <label htmlFor="user-search" className="sr-only">Search users</label>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
+                  id="user-search"
                   placeholder="Search users..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 w-64"
                 />
               </div>
             </div>
@@ -346,7 +360,9 @@ const AdminDashboard = () => {
                       <div className="flex items-center space-x-3">
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={user.avatar} alt={user.username} />
-                          <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
+                          <AvatarFallback>
+                            {user.firstName?.[0] || ''}{user.lastName?.[0] || ''}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium">{user.firstName} {user.lastName}</div>
@@ -365,7 +381,7 @@ const AdminDashboard = () => {
                         {user.isActive ? 'Active' : 'Suspended'}
                       </Badge>
                     </TableCell>
-                    <TableCell>{user.followersCount}</TableCell>
+                    <TableCell>{user.followersCount || 0}</TableCell>
                     <TableCell className="text-sm">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </TableCell>
@@ -408,6 +424,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </Layout>
   );
 };
