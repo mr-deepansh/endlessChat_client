@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,7 @@ const Navbar = () => {
   const { user, logout, isLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -66,7 +67,7 @@ const Navbar = () => {
       setSearchResults([]);
       setShowSearchResults(false);
     }
-  }, 300);
+  }, 500);
 
   const handleSearchInput = (query: string) => {
     setSearchQuery(query);
@@ -99,7 +100,7 @@ const Navbar = () => {
           </Link>
 
           {/* Search Bar - Only show when user is logged in */}
-          {user && (
+          {user && !isLoading && (
             <div className="flex-1 max-w-md mx-4 md:mx-8 relative">
               <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -150,16 +151,24 @@ const Navbar = () => {
           {/* Navigation Links - Show when user is not logged in */}
           {!user && (
             <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
-              <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link to="/" className={`text-sm font-medium transition-colors ${
+                location.pathname === '/' ? 'text-primary' : 'hover:text-primary'
+              }`}>
                 Home
               </Link>
-              <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link to="/about" className={`text-sm font-medium transition-colors ${
+                location.pathname === '/about' ? 'text-primary' : 'hover:text-primary'
+              }`}>
                 About
               </Link>
-              <Link to="/features" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link to="/features" className={`text-sm font-medium transition-colors ${
+                location.pathname === '/features' ? 'text-primary' : 'hover:text-primary'
+              }`}>
                 Features
               </Link>
-              <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link to="/contact" className={`text-sm font-medium transition-colors ${
+                location.pathname === '/contact' ? 'text-primary' : 'hover:text-primary'
+              }`}>
                 Contact
               </Link>
             </div>

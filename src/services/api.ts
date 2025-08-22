@@ -1,13 +1,19 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import { toast } from '@/hooks/use-toast';
+import ENV from '@/config/environment';
 
 // API Configuration
 const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
-  timeout: 10000,
-  retryAttempts: 2,
-  retryDelay: 500,
+  baseURL: ENV.API_BASE_URL,
+  timeout: 15000,
+  retryAttempts: 3,
+  retryDelay: 1000,
 };
+
+// Environment validation
+if (!ENV.API_BASE_URL && ENV.IS_DEVELOPMENT) {
+  console.warn('⚠️ VITE_API_BASE_URL not set, using default:', API_CONFIG.baseURL);
+}
 
 // Create axios instance
 const apiClient = axios.create({
@@ -117,8 +123,11 @@ export const withErrorHandling = async <T>(
 ): Promise<T> => {
   try {
     return await apiCall();
-  } catch (error) {
-    console.error('API call failed:', errorMessage || 'Unknown error', error);
+  } catch (error: any) {
+    // Only log errors in production or for non-404 errors
+    if (ENV.IS_PRODUCTION || (error.response?.status !== 404 && ENV.ENABLE_DEBUG)) {
+      console.error('API call failed:', errorMessage || 'Unknown error', error);
+    }
     throw error;
   }
 };

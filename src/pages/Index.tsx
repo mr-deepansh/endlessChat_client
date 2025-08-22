@@ -16,7 +16,13 @@ const Index = () => {
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  // Removed automatic redirect - let users choose where to go
+  
+  // Redirect logged in users to feed
+  useEffect(() => {
+    if (user) {
+      navigate('/feed', { replace: true });
+    }
+  }, [user, navigate]);
   const features = [{
     icon: Users,
     title: 'Connect & Follow',

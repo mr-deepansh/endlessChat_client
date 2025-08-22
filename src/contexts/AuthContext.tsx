@@ -52,22 +52,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      const cachedUser = localStorage.getItem('user');
       
       if (!token) {
         setIsLoading(false);
         return;
       }
 
-      // Always fetch fresh user data to ensure it's complete and up-to-date
-      console.log('🔍 Fetching user profile from API...');
       const userData = await userService.getProfile();
-      console.log('📊 API Response:', userData);
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
     } catch (error: any) {
-      console.error('Auth check failed:', error);
-      if (error.response?.status === 401) {
+      // Silent error handling - only clear auth on 401
+      if (error.response?.status === 401 || error.response?.status === 404) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
@@ -79,7 +75,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (identifier: string, password: string, rememberMe: boolean = false): Promise<boolean> => {
     try {
-      const loginData: LoginData = { identifier, password, rememberMe };
+      // Remove mailto: prefix if present
+      const cleanIdentifier = identifier.startsWith('mailto:') ? identifier.replace('mailto:', '') : identifier;
+      const loginData: LoginData = { identifier: cleanIdentifier, password, rememberMe };
       console.log('🔄 AuthContext: Calling login with:', loginData);
       
       const response = await userService.login(loginData);
@@ -90,36 +88,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('🔑 Token:', token ? 'exists' : 'missing');
       console.log('👤 User data:', userData);
-      
-      // Test admin account - if login fails, create mock admin user
-      if (!userData && (identifier === 'admin' || identifier === 'admin@admin.com')) {
-        const mockAdminUser = {
-          _id: 'admin-123',
-          username: 'admin',
-          email: 'admin@admin.com',
-          firstName: 'Admin',
-          lastName: 'User',
-          role: 'admin' as const,
-          isActive: true,
-          followersCount: 0,
-          followingCount: 0,
-          postsCount: 0,
-          createdAt: new Date().toISOString(),
-          lastActive: new Date().toISOString(),
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
-        };
-        
-        localStorage.setItem('token', 'mock-admin-token');
-        localStorage.setItem('user', JSON.stringify(mockAdminUser));
-        setUser(mockAdminUser);
-        
-        toast({
-          title: "Admin Login Successful!",
-          description: "Welcome to the admin dashboard.",
-        });
-        
-        return true;
-      }
       
       if (!token) {
         throw new Error('No access token received from server');
@@ -147,9 +115,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('❌ Error response:', error.response);
       console.error('❌ Error data:', error.response?.data);
       
+      // Fallback authentication for development/demo
+      if (import.meta.env.VITE_ENABLE_DEBUG === 'true' && 
+          (identifier === 'admin@admin.com' || identifier === 'test@test.com')) {
+        const mockUser = {
+          _id: identifier === 'admin@admin.com' ? 'admin-123' : 'user-123',
+          username: identifier === 'admin@admin.com' ? 'admin' : 'testuser',
+          email: identifier,
+          firstName: identifier === 'admin@admin.com' ? 'Admin' : 'Test',
+          lastName: 'User',
+          role: (identifier === 'admin@admin.com' ? 'admin' : 'user') as const,
+          isActive: true,
+          followersCount: 0,
+          followingCount: 0,
+          postsCount: 0,
+          createdAt: new Date().toISOString(),
+          lastActive: new Date().toISOString(),
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
+        };
+        
+        localStorage.setItem('token', `mock-${mockUser.role}-token`);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        setUser(mockUser);
+        
+        toast({
+          title: "Demo Login Successful!",
+          description: "Using fallback authentication for development.",
+        });
+        
+        return true;
+      }
+      
       toast({
         title: "Login failed",
-        description: error.response?.data?.message || error.message || "Please check your credentials.",
+        description: error.response?.data?.message || error.message || "Please check your credentials and ensure the backend is running.",
         variant: "destructive",
       });
       return false;

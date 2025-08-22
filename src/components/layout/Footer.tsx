@@ -12,7 +12,7 @@ const Footer = () => {
             <span className="font-semibold gradient-text">EndlessChat</span>
           </div>
           <div className="text-sm text-muted-foreground text-center md:text-right">
-            <div className="mb-1">© 2024 EndlessChat. All rights reserved.</div>
+            <div className="mb-1">© 2025 EndlessChat. All rights reserved.</div>
             <div>Crafted with ❤️ by <span className="text-primary font-medium">Deepansh Gangwar</span></div>
           </div>
         </div>

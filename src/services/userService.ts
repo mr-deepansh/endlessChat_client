@@ -98,9 +98,7 @@ export interface UpdateProfileData {
 export const userService = {
   // Authentication
   login: async (data: LoginData): Promise<{ data: { user: User; accessToken: string } }> => {
-    console.log('🔄 Login API call with data:', data);
     const response = await api.post<{ data: { user: User; accessToken: string } }>('/users/login', data);
-    console.log('📊 Login API response:', response);
     return response;
   },
 
@@ -128,18 +126,8 @@ export const userService = {
 
   // Profile Management
   getProfile: async (): Promise<User> => {
-    console.log('🔄 GetProfile API call to /users/profile/me');
     return withErrorHandling(
-      async () => {
-        const response = await api.get<User>('/users/profile/me', {
-          cache: {
-            ttl: 5 * 60 * 1000, // 5 minutes
-            tags: ['user', 'profile']
-          }
-        });
-        console.log('📊 GetProfile API response:', response);
-        return response;
-      },
+      () => api.get<User>('/users/profile/me'),
       'Failed to load profile'
     );
   },
