@@ -28,9 +28,9 @@ const Register = () => {
   const handleSubmit = async (data: RegisterData) => {
     setIsLoading(true);
     try {
-      const success = await register(data);
-      if (success) {
-        navigate('/login');
+      const result = await register(data);
+      if (result.success) {
+        navigate('/feed');
       }
     } finally {
       setIsLoading(false);

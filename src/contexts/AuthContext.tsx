@@ -6,12 +6,14 @@ import { cacheService } from '@/services/core/cache';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  registrationError: string | null;
   login: (identifier: string, password: string, rememberMe?: boolean) => Promise<boolean>;
-  register: (userData: RegisterData) => Promise<boolean>;
+  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   updateUser: (userData: User) => void;
   refreshUser: () => Promise<void>;
+  clearRegistrationError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -44,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -77,11 +80,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Remove mailto: prefix if present
       const cleanIdentifier = identifier.startsWith('mailto:') ? identifier.replace('mailto:', '') : identifier;
-      const loginData: LoginData = { identifier: cleanIdentifier, password, rememberMe };
+      
+      // Try different data formats that backend might expect
+      const loginData = {
+        identifier: cleanIdentifier,
+        password: password,
+        rememberMe: rememberMe
+      };
+      
       console.log('🔄 AuthContext: Calling login with:', loginData);
       
       const response = await userService.login(loginData);
       console.log('📊 AuthContext: Login response received:', response);
+      console.log('📊 Full response structure:', JSON.stringify(response, null, 2));
       
       const token = response.data?.accessToken || response.accessToken;
       const userData = response.data?.user || response.user;
@@ -104,9 +115,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       
+      const welcomeMessage = userData.role === 'admin' || userData.role === 'superadmin' 
+        ? `Welcome back, ${userData.role}!` 
+        : "Welcome back!";
+      
       toast({
-        title: "Welcome back!",
-        description: "You've been successfully logged in.",
+        title: welcomeMessage,
+        description: userData.role === 'admin' || userData.role === 'superadmin'
+          ? "Redirecting to admin dashboard..."
+          : "You've been successfully logged in.",
       });
       
       return true;
@@ -155,19 +172,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (userData: RegisterData): Promise<boolean> => {
+  const register = async (userData: RegisterData): Promise<{ success: boolean; error?: string }> => {
+    setRegistrationError(null);
+    
     try {
       await userService.register(userData);
       
-      toast({
-        title: "Registration successful!",
-        description: "Please login with your new account.",
-      });
+      // Auto-login after successful registration
+      const loginSuccess = await login(userData.email, userData.password);
       
-      return true;
+      // If email login fails, try with username
+      if (!loginSuccess) {
+        console.log('Email login failed, trying with username...');
+        await login(userData.username, userData.password);
+      }
+      
+      if (loginSuccess) {
+        // Toast message will be handled by login function based on role
+      } else {
+        toast({
+          title: "Registration successful!",
+          description: "Please login with your new account.",
+        });
+      }
+      
+      return { success: true };
     } catch (error: any) {
       console.error('Registration failed:', error);
-      return false;
+      
+      // Handle specific error messages securely
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (error.response?.data?.error) {
+        const serverError = error.response.data.error;
+        if (serverError.includes('Email address is already registered')) {
+          errorMessage = "This email address is already registered. Please use a different email or try logging in.";
+        } else if (serverError.includes('Username already exists')) {
+          errorMessage = "This username is already taken. Please choose a different username.";
+        } else if (serverError.includes('Password')) {
+          errorMessage = "Password does not meet security requirements.";
+        }
+      }
+      
+      setRegistrationError(errorMessage);
+      
+      toast({
+        title: "Registration Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -224,15 +279,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const clearRegistrationError = (): void => {
+    setRegistrationError(null);
+  };
+
   const value = {
     user,
     isLoading,
+    registrationError,
     login,
     register,
     logout,
     updateProfile,
     updateUser,
     refreshUser,
+    clearRegistrationError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

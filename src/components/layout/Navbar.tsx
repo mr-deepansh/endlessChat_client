@@ -16,6 +16,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { userService } from '@/services/userService';
 import { socialService } from '@/services/socialService';
 import { debounce } from '@/utils/debounce';
+import { isAdmin } from '@/utils/roleUtils';
 import {
   Search,
   Home,
@@ -204,7 +205,7 @@ const Navbar = () => {
                       <MessageCircle className="w-5 h-5" />
                     </Link>
                   </Button>
-                  {user.role === 'admin' && (
+                  {isAdmin(user) && (
                     <Button variant="ghost" size="icon" asChild>
                       <Link to="/admin">
                         <Shield className="w-5 h-5" />
@@ -255,6 +256,11 @@ const Navbar = () => {
                           {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'User'}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground mt-1">@{user.username || 'username'}</p>
+                        {isAdmin(user) && (
+                          <Badge variant="secondary" className="text-xs mt-1 bg-primary/10 text-primary">
+                            {user.role}
+                          </Badge>
+                        )}
                         <div className="flex items-center space-x-3 mt-2 text-xs text-muted-foreground">
                           <span>{user.followersCount || 0} followers</span>
                           <span>{user.followingCount || 0} following</span>
@@ -274,11 +280,11 @@ const Navbar = () => {
                         Settings
                       </Link>
                     </DropdownMenuItem>
-                    {user.role === 'admin' && (
+                    {isAdmin(user) && (
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="cursor-pointer">
                           <Shield className="mr-2 h-4 w-4" />
-                          Admin Panel
+                          {(user.role === 'superadmin' || user.role === 'super_admin') ? 'Super Admin Panel' : 'Admin Panel'}
                         </Link>
                       </DropdownMenuItem>
                     )}

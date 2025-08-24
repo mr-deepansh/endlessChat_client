@@ -1,29 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/layout/Navbar';
-import { Modal } from '@/components/ui/modal';
-import Login from './Login';
-import Register from './Register';
+import Footer from '@/components/layout/Footer';
 import { Users, MessageCircle, Heart, Zap, Shield, Globe, ArrowRight, Star } from 'lucide-react';
+import { isAdmin } from '@/utils/roleUtils';
 import worldHeroImage from '@/assets/world-hero.jpg';
 const Index = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   
-  // Redirect logged in users to feed
+  // Redirect logged in users based on role
   useEffect(() => {
     if (user) {
-      navigate('/feed', { replace: true });
+      if (isAdmin(user)) {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/feed', { replace: true });
+      }
     }
   }, [user, navigate]);
-  const features = [{
+  const features = useMemo(() => [{
     icon: Users,
     title: 'Connect & Follow',
     description: 'Build your network by following interesting people and discovering new voices.'
@@ -47,8 +45,9 @@ const Index = () => {
     icon: Globe,
     title: 'Global Community',
     description: 'Connect with people from around the world and expand your horizons.'
-  }];
-  const stats = [{
+  }], []);
+  
+  const stats = useMemo(() => [{
     label: 'Active Users',
     value: '50K+'
   }, {
@@ -60,7 +59,8 @@ const Index = () => {
   }, {
     label: 'Communities',
     value: '500+'
-  }];
+  }], []);
+  
   return <div className="min-h-screen">
       <Navbar />
       {/* Hero Section */}
@@ -90,16 +90,33 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             {user ? (
               <>
-                <Link to="/feed">
-                  <Button variant="hero" size="lg" className="px-8 py-4 text-lg w-full sm:w-auto">
-                    Go to Feed <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link to={user ? `/@${user.username}` : '/profile/me'}>
-                  <Button variant="secondary" size="lg" className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30 w-full sm:w-auto">
-                    My Profile
-                  </Button>
-                </Link>
+                {isAdmin(user) ? (
+                  <>
+                    <Link to="/admin">
+                      <Button variant="hero" size="lg" className="px-8 py-4 text-lg w-full sm:w-auto">
+                        Admin Dashboard <ArrowRight className="ml-2 w-5 h-5" />
+                      </Button>
+                    </Link>
+                    <Link to="/feed">
+                      <Button variant="secondary" size="lg" className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30 w-full sm:w-auto">
+                        User Feed
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/feed">
+                      <Button variant="hero" size="lg" className="px-8 py-4 text-lg w-full sm:w-auto">
+                        Go to Feed <ArrowRight className="ml-2 w-5 h-5" />
+                      </Button>
+                    </Link>
+                    <Link to={user ? `/@${user.username}` : '/profile/me'}>
+                      <Button variant="secondary" size="lg" className="px-8 py-4 text-lg bg-white/20 text-white border-white/30 hover:bg-white/30 w-full sm:w-auto">
+                        My Profile
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </>
             ) : (
               <>
@@ -146,7 +163,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 cursor-pointer">
             {features.map((feature, index) => <div key={index} className="group">
                 <div className="p-8 rounded-2xl bg-gradient-card border-none shadow-soft hover:shadow-primary/20 transition-all duration-300 hover:-translate-y-2">
                   <div className="w-16 h-16 rounded-xl bg-gradient-primary flex items-center justify-center mb-6 group-hover:shadow-primary transition-all duration-300">
@@ -195,19 +212,6 @@ const Index = () => {
       </section>
 
       <Footer />
-
-      {/* Modals */}
-      <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} title="Sign In">
-        <div className="bg-transparent">
-          <Login />
-        </div>
-      </Modal>
-
-      <Modal isOpen={showRegisterModal} onClose={() => setShowRegisterModal(false)} title="Sign Up">
-        <div className="bg-transparent">
-          <Register />
-        </div>
-      </Modal>
     </div>;
 };
 export default Index;

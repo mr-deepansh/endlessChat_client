@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, User, Mail, Lock, Shield, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface StepFormProps {
   onSubmit: (data: RegisterData) => Promise<void>;
@@ -26,6 +27,8 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const { registrationError, clearRegistrationError } = useAuth();
   const [formData, setFormData] = useState<RegisterData>({
     username: '',
     email: '',
@@ -41,6 +44,14 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
 
   const updateFormData = (field: keyof RegisterData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear field-specific errors when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    // Clear registration error when user modifies form
+    if (registrationError) {
+      clearRegistrationError();
+    }
   };
 
   const nextStep = () => {
@@ -55,7 +66,12 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setFieldErrors({});
     await onSubmit(formData);
   };
 
@@ -151,8 +167,13 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
                 placeholder="Choose a unique username"
                 value={formData.username}
                 onChange={(e) => updateFormData('username', e.target.value)}
-                className="bg-background/50 border-border focus:border-primary"
+                className={`bg-background/50 border-border focus:border-primary ${
+                  registrationError?.includes('username') ? 'border-destructive focus:border-destructive' : ''
+                }`}
               />
+              {registrationError?.includes('username') && (
+                <p className="text-sm text-destructive mt-1">{registrationError}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email" className="text-card-foreground">Email</Label>
@@ -162,8 +183,13 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
                 placeholder="Enter your email address"
                 value={formData.email}
                 onChange={(e) => updateFormData('email', e.target.value)}
-                className="bg-background/50 border-border focus:border-primary"
+                className={`bg-background/50 border-border focus:border-primary ${
+                  registrationError?.includes('email') ? 'border-destructive focus:border-destructive' : ''
+                }`}
               />
+              {registrationError?.includes('email') && (
+                <p className="text-sm text-destructive mt-1">{registrationError}</p>
+              )}
             </div>
           </div>
         );
@@ -250,7 +276,9 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {renderStepContent()}
+        <form onSubmit={handleSubmit}>
+          {renderStepContent()}
+        </form>
         
         <div className="flex justify-between gap-2">
           <Button
@@ -279,7 +307,7 @@ const StepForm: React.FC<StepFormProps> = ({ onSubmit, isLoading }) => {
             <Button
               type="button"
               variant="gradient"
-              onClick={handleSubmit}
+              onClick={(e) => handleSubmit(e)}
               disabled={!canProceed() || isLoading}
               className="flex-1"
             >

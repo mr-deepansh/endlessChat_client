@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/utils/roleUtils';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -16,7 +17,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   adminOnly = false,
   redirectTo
 }) => {
-  const { user, isLoading } = useAuth();
+  let user, isLoading;
+  
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+    isLoading = authContext.isLoading;
+  } catch (error) {
+    console.error('ProtectedRoute: AuthContext not available:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <p className="text-destructive">Authentication system unavailable</p>
+        </div>
+      </div>
+    );
+  }
+  
   const location = useLocation();
 
   if (isLoading) {
@@ -36,7 +53,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If admin access is required but user is not admin
-  if (adminOnly && user?.role !== 'admin') {
+  if (adminOnly && !isAdmin(user)) {
     return <Navigate to="/feed" replace />;
   }
 

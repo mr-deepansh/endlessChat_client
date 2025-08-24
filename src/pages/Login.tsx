@@ -21,14 +21,20 @@
       if (user) navigate('/feed', { replace: true });
     }, [user, navigate]);
 
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-      e.preventDefault();
+    const handleSubmit = useCallback(async () => {
+      if (!identifier.trim() || !password.trim()) {
+        return;
+      }
+      
       setIsLoading(true);
       try {
         const success = await login(identifier, password, rememberMe);
         if (success) {
-          navigate('/feed', { replace: true });
+          // Navigation will be handled by AuthContext based on user role
+          // Admin/superadmin -> /admin, regular users -> /feed
         }
+      } catch (error) {
+        console.error('Login error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -53,7 +59,7 @@
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                 <div className="space-y-2">
                   <Label htmlFor="identifier" className="text-foreground">Email or Username</Label>
                   <div className="relative">
@@ -64,8 +70,13 @@
                       placeholder="Enter your email or username"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      required
                       className="pl-10 bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:bg-background/80"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSubmit();
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -79,9 +90,13 @@
                       placeholder="Enter your password (min 8 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={8}
                       className="pl-10 pr-10 bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:bg-background/80"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSubmit();
+                        }
+                      }}
                     />
                     <Button
                       type="button"
@@ -95,15 +110,20 @@
                   </div>
                 </div>
                 <Button
-                  type="submit"
+                  type="button"
                   variant="hero"
                   size="lg"
                   className="w-full"
                   disabled={isLoading}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSubmit();
+                  }}
                 >
                   {isLoading ? 'Signing In...' : 'Sign In'}
                 </Button>
-              </form>
+              </div>
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <input 

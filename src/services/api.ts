@@ -38,15 +38,41 @@ apiClient.interceptors.request.use(
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    if (ENV.ENABLE_DEBUG) {
+      console.log('API Response:', {
+        url: response.config.url,
+        status: response.status,
+        data: response.data
+      });
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    // Handle 401 errors (unauthorized)
+    if (ENV.ENABLE_DEBUG) {
+      console.error('API Error:', {
+        url: error.config?.url,
+        status: error.response?.status,
+        message: error.response?.data || error.message
+      });
+    }
+
+    // Handle 401 errors (unauthorized) - but don't redirect during login attempts
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      
+      // Don't redirect if this is a login request
+      if (!originalRequest.url?.includes('/login') && !originalRequest.url?.includes('/register')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        // Use history API instead of window.location to prevent page refresh
+        if (window.location.pathname !== '/login') {
+          window.history.pushState({}, '', '/login');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      }
       return Promise.reject(error);
     }
 
@@ -57,6 +83,7 @@ apiClient.interceptors.response.use(
       await new Promise(resolve => 
         setTimeout(resolve, API_CONFIG.retryDelay * originalRequest._retryCount)
       );
+      
       
       return apiClient(originalRequest);
     }
@@ -69,6 +96,9 @@ apiClient.interceptors.response.use(
 export const api = {
   // GET request
   get: async <T>(url: string, config?: any): Promise<T> => {
+    if (ENV.ENABLE_DEBUG) {
+      console.log('API GET:', url, config);
+    }
     const response = await apiClient.get<T>(url, config);
     return response.data;
   },
@@ -122,12 +152,18 @@ export const withErrorHandling = async <T>(
   errorMessage?: string
 ): Promise<T> => {
   try {
-    return await apiCall();
-  } catch (error: any) {
-    // Only log errors in production or for non-404 errors
-    if (ENV.IS_PRODUCTION || (error.response?.status !== 404 && ENV.ENABLE_DEBUG)) {
-      console.error('API call failed:', errorMessage || 'Unknown error', error);
+    const result = await apiCall();
+    if (ENV.ENABLE_DEBUG) {
+      console.log('API call successful:', errorMessage || 'API call', result);
     }
+    return result;
+  } catch (error: any) {
+    console.error('API call failed:', errorMessage || 'Unknown error', {
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message,
+      url: error.config?.url,
+      method: error.config?.method
+    });
     throw error;
   }
 };

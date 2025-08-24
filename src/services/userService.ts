@@ -98,12 +98,17 @@ export interface UpdateProfileData {
 export const userService = {
   // Authentication
   login: async (data: LoginData): Promise<{ data: { user: User; accessToken: string } }> => {
+    console.log('🔄 UserService: Sending login data:', data);
     const response = await api.post<{ data: { user: User; accessToken: string } }>('/users/login', data);
+    console.log('📊 UserService: Login response:', response);
     return response;
   },
 
   register: async (data: RegisterData): Promise<{ message: string }> => {
-    return api.post<{ message: string }>('/users/register', data);
+    console.log('🔄 UserService: Sending register data:', data);
+    const response = await api.post<{ message: string }>('/users/register', data);
+    console.log('📊 UserService: Register response:', response);
+    return response;
   },
 
   logout: async (): Promise<{ message: string }> => {

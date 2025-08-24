@@ -22,8 +22,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { AdminDashboardSkeleton } from '@/components/loaders/AdminDashboardSkeleton';
+// import { AdminDashboardSkeleton } from '@/components/loaders/AdminDashboardSkeleton';
 import { adminService, type AdminStats, type AdminUser } from '@/services/adminService';
+import { isAdmin } from '@/utils/roleUtils';
 import {
   Users,
   MessageSquare,
@@ -56,7 +57,7 @@ const AdminDashboard = () => {
       return;
     }
     
-    if (user.role !== 'admin') {
+    if (!isAdmin(user)) {
       console.log('User is not admin, role:', user.role);
       return;
     }
@@ -69,18 +70,49 @@ const AdminDashboard = () => {
     try {
       setIsLoading(true);
       
-      const [statsData, usersData] = await Promise.all([
-        adminService.getStats(),
-        adminService.getUsers({ limit: 20 })
-      ]);
+      // Load users data first
+      try {
+        const usersData = await adminService.getUsers({ limit: 50 });
+        console.log('Users API response:', usersData);
+        
+        // Handle different response formats
+        if (usersData?.data && Array.isArray(usersData.data)) {
+          setUsers(usersData.data);
+        } else if (Array.isArray(usersData)) {
+          setUsers(usersData);
+        } else {
+          console.warn('Unexpected users data format:', usersData);
+          setUsers([]);
+        }
+      } catch (usersError) {
+        console.error('Failed to load users:', usersError);
+        setUsers([]);
+      }
       
-      setStats(statsData);
-      setUsers(usersData.data);
+      // Load stats data
+      try {
+        const statsData = await adminService.getStats();
+        setStats(statsData);
+      } catch (statsError) {
+        console.error('Failed to load stats:', statsError);
+        // Set default stats if API fails
+        setStats({
+          totalUsers: users.length || 0,
+          activeUsers: users.filter(u => u.isActive).length || 0,
+          totalPosts: 0,
+          totalComments: 0,
+          newUsersToday: 0,
+          postsToday: 0,
+          engagementRate: 0,
+          averageSessionTime: 0
+        });
+      }
+      
     } catch (error) {
       console.error('Failed to load admin data:', error);
       toast({
         title: "Error",
-        description: "Failed to load admin data. Please try again.",
+        description: "Failed to load some admin data. Check console for details.",
         variant: "destructive",
       });
     } finally {
@@ -162,12 +194,43 @@ const AdminDashboard = () => {
 
   const handleExportUsers = async () => {
     try {
-      const blob = await adminService.bulkExportUsers('csv');
+      // Generate CSV from current users data as fallback
+      const generateCSV = (users: AdminUser[]) => {
+        const headers = ['Username', 'Email', 'First Name', 'Last Name', 'Role', 'Status', 'Created At', 'Last Active', 'Followers', 'Posts'];
+        const rows = users.map(user => [
+          user.username || '',
+          user.email || '',
+          user.firstName || '',
+          user.lastName || '',
+          user.role || '',
+          user.isActive ? 'Active' : 'Suspended',
+          new Date(user.createdAt).toLocaleDateString(),
+          new Date(user.lastActive).toLocaleDateString(),
+          user.followersCount || 0,
+          user.postsCount || 0
+        ]);
+        
+        return [headers, ...rows].map(row => row.join(',')).join('\n');
+      };
+
+      let blob: Blob;
+      try {
+        // Try to get from API first
+        blob = await adminService.bulkExportUsers('csv');
+      } catch (apiError) {
+        console.warn('API export failed, generating CSV from current data:', apiError);
+        // Fallback: generate CSV from current users data
+        const csvContent = generateCSV(users);
+        blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      }
+      
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
       
       toast({
@@ -178,30 +241,40 @@ const AdminDashboard = () => {
       console.error('Failed to export users:', error);
       toast({
         title: "Error",
-        description: "Failed to export users.",
+        description: "Failed to export users. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = Array.isArray(users) ? users.filter(user =>
+    user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) : [];
 
   // Show loading while checking user
   if (!user) {
     return (
       <Layout>
-        <AdminDashboardSkeleton />
+        <div className="max-w-7xl mx-auto py-6 px-4">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-64 mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded"></div>
+              ))}
+            </div>
+            <div className="h-96 bg-muted rounded"></div>
+          </div>
+        </div>
       </Layout>
     );
   }
 
   // Show access denied for non-admin users
-  if (user.role !== 'admin') {
+  if (!isAdmin(user)) {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto py-12 px-4 text-center">
@@ -213,7 +286,7 @@ const AdminDashboard = () => {
           <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
             <p>Current user: {user.firstName} {user.lastName}</p>
             <p>Role: {user.role}</p>
-            <p>Required role: admin</p>
+            <p>Required role: admin or super_admin</p>
           </div>
         </div>
       </Layout>
@@ -223,7 +296,17 @@ const AdminDashboard = () => {
   if (isLoading) {
     return (
       <Layout>
-        <AdminDashboardSkeleton />
+        <div className="max-w-7xl mx-auto py-6 px-4">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-64 mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded"></div>
+              ))}
+            </div>
+            <div className="h-96 bg-muted rounded"></div>
+          </div>
+        </div>
       </Layout>
     );
   }
@@ -243,7 +326,7 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="outline" onClick={handleExportUsers}>
               <Download className="w-4 h-4 mr-2" />
-              Export Users
+              Export CSV
             </Button>
             <Badge variant="secondary" className="bg-gradient-primary text-white">
               <Shield className="w-4 h-4 mr-1" />
@@ -372,8 +455,12 @@ const AdminDashboard = () => {
                     </TableCell>
                     <TableCell className="text-sm">{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                        {user.role}
+                      <Badge variant={
+                        user.role === 'super_admin' ? 'destructive' : 
+                        user.role === 'admin' ? 'default' : 'secondary'
+                      }>
+                        {user.role === 'super_admin' ? 'Super Admin' : 
+                         user.role === 'admin' ? 'Admin' : 'User'}
                       </Badge>
                     </TableCell>
                     <TableCell>
