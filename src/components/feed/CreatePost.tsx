@@ -49,34 +49,48 @@ export const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
               <Textarea
                 placeholder="What's happening?"
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={e => setContent(e.target.value)}
                 className="min-h-[100px] resize-none border-none focus:ring-0 text-lg placeholder:text-muted-foreground"
                 maxLength={280}
               />
               <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center space-x-4">
-                  <Button type="button" variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:bg-primary/10"
+                  >
                     <Image className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:bg-primary/10"
+                  >
                     <Smile className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:bg-primary/10"
+                  >
                     <MapPin className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:bg-primary/10"
+                  >
                     <Calendar className="w-4 h-4" />
                   </Button>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-muted-foreground">
-                    {280 - content.length}
-                  </span>
-                  <Button
-                    type="submit"
-                    disabled={!content.trim() || isPosting}
-                    className="px-6"
-                  >
+                  <span className="text-sm text-muted-foreground">{280 - content.length}</span>
+                  <Button type="submit" disabled={!content.trim() || isPosting} className="px-6">
                     {isPosting ? 'Posting...' : 'Post'}
                   </Button>
                 </div>

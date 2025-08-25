@@ -87,7 +87,7 @@ export interface SystemHealth {
 
 export const adminService = {
   // ===== BASIC ADMIN ROUTES =====
-  
+
   getStats: async (): Promise<AdminStats> => {
     try {
       return await api.get<AdminStats>('/admin/stats');
@@ -101,7 +101,7 @@ export const adminService = {
         newUsersToday: 23,
         postsToday: 156,
         engagementRate: 68.5,
-        averageSessionTime: 24.3
+        averageSessionTime: 24.3,
       };
     }
   },
@@ -131,7 +131,7 @@ export const adminService = {
           }
         });
       }
-      
+
       return await api.get(`/admin/users?${queryParams.toString()}`);
     } catch (error) {
       console.warn('Admin users API failed, using mock data');
@@ -146,10 +146,11 @@ export const adminService = {
           isActive: true,
           createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
           lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+          avatar:
+            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
           followersCount: 245,
           followingCount: 180,
-          postsCount: 42
+          postsCount: 42,
         },
         {
           _id: '2',
@@ -161,18 +162,19 @@ export const adminService = {
           isActive: true,
           createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
           lastActive: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612c8e8?w=400&h=400&fit=crop&crop=face',
+          avatar:
+            'https://images.unsplash.com/photo-1494790108755-2616b612c8e8?w=400&h=400&fit=crop&crop=face',
           followersCount: 892,
           followingCount: 320,
-          postsCount: 128
-        }
+          postsCount: 128,
+        },
       ];
-      
+
       return {
         data: mockUsers,
         total: mockUsers.length,
         page: 1,
-        limit: 20
+        limit: 20,
       };
     }
   },
@@ -221,7 +223,9 @@ export const adminService = {
     );
   },
 
-  getUserGrowthAnalytics: async (period: string = '30d'): Promise<{ date: string; count: number }[]> => {
+  getUserGrowthAnalytics: async (
+    period: string = '30d'
+  ): Promise<{ date: string; count: number }[]> => {
     return withErrorHandling(
       () => api.get(`/admin/analytics/users/growth?period=${period}`),
       'Failed to load user growth analytics'
@@ -259,14 +263,14 @@ export const adminService = {
   exportReport: async (type: string, format: 'csv' | 'json' = 'csv'): Promise<Blob> => {
     try {
       return await api.get(`/admin/reports/export?type=${type}&format=${format}`, {
-        responseType: 'blob'
+        responseType: 'blob',
       });
     } catch (error: any) {
       // Fallback for different endpoint structures
       if (error.response?.status === 400 || error.response?.status === 404) {
         try {
           return await api.get(`/admin/export/${type}?format=${format}`, {
-            responseType: 'blob'
+            responseType: 'blob',
           });
         } catch (fallbackError) {
           throw new Error(`Failed to export ${type} report`);
@@ -299,7 +303,10 @@ export const adminService = {
     );
   },
 
-  getLoginAttempts: async (params?: { limit?: number; failed?: boolean }): Promise<LoginAttempt[]> => {
+  getLoginAttempts: async (params?: {
+    limit?: number;
+    failed?: boolean;
+  }): Promise<LoginAttempt[]> => {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -308,7 +315,7 @@ export const adminService = {
         }
       });
     }
-    
+
     return withErrorHandling(
       () => api.get<LoginAttempt[]>(`/admin/security/login-attempts?${queryParams.toString()}`),
       'Failed to load login attempts'
@@ -343,7 +350,11 @@ export const adminService = {
     );
   },
 
-  reviewContent: async (contentId: string, action: 'approve' | 'reject', reason?: string): Promise<{ message: string }> => {
+  reviewContent: async (
+    contentId: string,
+    action: 'approve' | 'reject',
+    reason?: string
+  ): Promise<{ message: string }> => {
     return withErrorHandling(
       () => api.post('/admin/moderation/review-content', { contentId, action, reason }),
       'Failed to review content'
@@ -361,7 +372,7 @@ export const adminService = {
         }
       });
     }
-    
+
     return withErrorHandling(
       () => api.get<AdminUser[]>(`/admin/users/search?${queryParams.toString()}`),
       'Failed to search users'
@@ -371,7 +382,7 @@ export const adminService = {
   bulkExportUsers: async (format: 'csv' | 'json' = 'csv'): Promise<Blob> => {
     try {
       const response = await api.get(`/admin/users/export?format=${format}`, {
-        responseType: 'blob'
+        responseType: 'blob',
       });
       return response;
     } catch (error: any) {
@@ -379,7 +390,7 @@ export const adminService = {
       if (error.response?.status === 400 || error.response?.status === 404) {
         try {
           return await api.get(`/admin/export/users?format=${format}`, {
-            responseType: 'blob'
+            responseType: 'blob',
           });
         } catch (fallbackError) {
           // Generate mock CSV data as last resort
@@ -393,17 +404,23 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
     }
   },
 
-  bulkImportUsers: async (file: File): Promise<{ message: string; imported: number; failed: number }> => {
+  bulkImportUsers: async (
+    file: File
+  ): Promise<{ message: string; imported: number; failed: number }> => {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     return withErrorHandling(
       () => api.upload('/admin/users/bulk-import', formData),
       'Failed to import users'
     );
   },
 
-  bulkUserActions: async (userIds: string[], action: string, data?: any): Promise<{ message: string; affected: number }> => {
+  bulkUserActions: async (
+    userIds: string[],
+    action: string,
+    data?: any
+  ): Promise<{ message: string; affected: number }> => {
     return withErrorHandling(
       () => api.post('/admin/users/bulk-actions', { userIds, action, data }),
       'Failed to perform bulk action'
@@ -431,7 +448,10 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
     );
   },
 
-  sendUserNotification: async (userId: string, notification: { title: string; message: string; type?: string }): Promise<{ message: string }> => {
+  sendUserNotification: async (
+    userId: string,
+    notification: { title: string; message: string; type?: string }
+  ): Promise<{ message: string }> => {
     return withErrorHandling(
       () => api.post(`/admin/users/${userId}/send-notification`, notification),
       'Failed to send notification'
@@ -454,7 +474,11 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
 
   // ===== CONTENT MANAGEMENT =====
 
-  getAllPosts: async (params?: { page?: number; limit?: number; status?: string }): Promise<any> => {
+  getAllPosts: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }): Promise<any> => {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -463,7 +487,7 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
         }
       });
     }
-    
+
     return withErrorHandling(
       () => api.get(`/admin/content/posts?${queryParams.toString()}`),
       'Failed to load posts'
@@ -570,14 +594,21 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
     );
   },
 
-  getMaintenanceMode: async (): Promise<{ enabled: boolean; message?: string; scheduledAt?: string }> => {
+  getMaintenanceMode: async (): Promise<{
+    enabled: boolean;
+    message?: string;
+    scheduledAt?: string;
+  }> => {
     return withErrorHandling(
       () => api.get('/admin/config/maintenance-mode'),
       'Failed to load maintenance mode status'
     );
   },
 
-  enableMaintenanceMode: async (message?: string, scheduledAt?: string): Promise<{ message: string }> => {
+  enableMaintenanceMode: async (
+    message?: string,
+    scheduledAt?: string
+  ): Promise<{ message: string }> => {
     return withErrorHandling(
       () => api.post('/admin/config/maintenance-mode/enable', { message, scheduledAt }),
       'Failed to enable maintenance mode'
@@ -623,7 +654,7 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
         }
       });
     }
-    
+
     return withErrorHandling(
       () => api.get(`/admin/monitoring/error-logs?${queryParams.toString()}`),
       'Failed to load error logs'
@@ -653,7 +684,9 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
     );
   },
 
-  createNotificationTemplate: async (template: any): Promise<{ message: string; templateId: string }> => {
+  createNotificationTemplate: async (
+    template: any
+  ): Promise<{ message: string; templateId: string }> => {
     return withErrorHandling(
       () => api.post('/admin/notifications/templates', template),
       'Failed to create notification template'
@@ -681,7 +714,9 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
     );
   },
 
-  createAnnouncement: async (announcement: any): Promise<{ message: string; announcementId: string }> => {
+  createAnnouncement: async (
+    announcement: any
+  ): Promise<{ message: string; announcementId: string }> => {
     return withErrorHandling(
       () => api.post('/admin/announcements/create', announcement),
       'Failed to create announcement'
@@ -700,7 +735,7 @@ sarahdesign,sarah@example.com,Sarah,Designer,user,active,${new Date().toISOStrin
       () => api.patch(`/admin/announcements/${announcementId}/publish`),
       'Failed to publish announcement'
     );
-  }
+  },
 };
 
 export default adminService;

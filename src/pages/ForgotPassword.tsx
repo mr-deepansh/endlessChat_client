@@ -24,14 +24,14 @@ const ForgotPassword = () => {
       await axios.post(`${API_BASE}/users/forgot-password`, { email });
       setIsEmailSent(true);
       toast({
-        title: "Reset link sent!",
-        description: "Please check your email for password reset instructions.",
+        title: 'Reset link sent!',
+        description: 'Please check your email for password reset instructions.',
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to send reset email",
-        variant: "destructive",
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to send reset email',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -42,9 +42,9 @@ const ForgotPassword = () => {
     <div className="min-h-screen flex items-center justify-center p-4">
       {/* Background */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={worldHeroImage} 
-          alt="Social platform background" 
+        <img
+          src={worldHeroImage}
+          alt="Social platform background"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
@@ -61,17 +61,18 @@ const ForgotPassword = () => {
               {isEmailSent ? 'Check Your Email' : 'Forgot Password?'}
             </CardTitle>
             <CardDescription className="text-white/80">
-              {isEmailSent 
+              {isEmailSent
                 ? 'We have sent password reset instructions to your email'
-                : 'Enter your email address and we will send you reset instructions'
-              }
+                : 'Enter your email address and we will send you reset instructions'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {!isEmailSent ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white/90">Email</Label>
+                  <Label htmlFor="email" className="text-white/90">
+                    Email
+                  </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
                     <Input
@@ -79,7 +80,7 @@ const ForgotPassword = () => {
                       type="email"
                       placeholder="Enter your email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={e => setEmail(e.target.value)}
                       required
                       className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
                     />
@@ -111,10 +112,10 @@ const ForgotPassword = () => {
                 </div>
               </div>
             )}
-            
+
             <div className="mt-6 text-center">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="inline-flex items-center text-white/60 hover:text-white/80 text-sm"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />

@@ -112,13 +112,13 @@ const Navbar = () => {
                   type="text"
                   placeholder="Search users, posts..."
                   value={searchQuery}
-                  onChange={(e) => handleSearchInput(e.target.value)}
+                  onChange={e => handleSearchInput(e.target.value)}
                   onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
                   onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
                   className="pl-10 pr-10 bg-muted/50 border-none focus:bg-background transition-smooth"
                 />
               </form>
-              
+
               {/* Search Results Dropdown */}
               {showSearchResults && searchResults.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
@@ -139,7 +139,9 @@ const Navbar = () => {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{result.firstName} {result.lastName}</p>
+                        <p className="text-sm font-medium">
+                          {result.firstName} {result.lastName}
+                        </p>
                         <p className="text-xs text-muted-foreground">@{result.username}</p>
                       </div>
                     </div>
@@ -148,28 +150,40 @@ const Navbar = () => {
               )}
             </div>
           )}
-          
+
           {/* Navigation Links - Show when user is not logged in */}
           {!user && (
             <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
-              <Link to="/" className={`text-sm font-medium transition-colors ${
-                location.pathname === '/' ? 'text-primary' : 'hover:text-primary'
-              }`}>
+              <Link
+                to="/"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === '/' ? 'text-primary' : 'hover:text-primary'
+                }`}
+              >
                 Home
               </Link>
-              <Link to="/about" className={`text-sm font-medium transition-colors ${
-                location.pathname === '/about' ? 'text-primary' : 'hover:text-primary'
-              }`}>
+              <Link
+                to="/about"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === '/about' ? 'text-primary' : 'hover:text-primary'
+                }`}
+              >
                 About
               </Link>
-              <Link to="/features" className={`text-sm font-medium transition-colors ${
-                location.pathname === '/features' ? 'text-primary' : 'hover:text-primary'
-              }`}>
+              <Link
+                to="/features"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === '/features' ? 'text-primary' : 'hover:text-primary'
+                }`}
+              >
                 Features
               </Link>
-              <Link to="/contact" className={`text-sm font-medium transition-colors ${
-                location.pathname === '/contact' ? 'text-primary' : 'hover:text-primary'
-              }`}>
+              <Link
+                to="/contact"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === '/contact' ? 'text-primary' : 'hover:text-primary'
+                }`}
+              >
                 Contact
               </Link>
             </div>
@@ -183,7 +197,7 @@ const Navbar = () => {
               </div>
             ) : user ? (
               <>
-                 {/* Main Navigation */}
+                {/* Main Navigation */}
                 <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
                   <Button variant="ghost" size="icon" asChild>
                     <Link to="/feed">
@@ -212,19 +226,20 @@ const Navbar = () => {
                       </Link>
                     </Button>
                   )}
-                  
+
                   {/* Theme Toggle */}
                   <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                    {theme === 'light' ? (
-                      <Moon className="w-5 h-5" />
-                    ) : (
-                      <Sun className="w-5 h-5" />
-                    )}
+                    {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                   </Button>
                 </div>
 
                 {/* Create Post Button */}
-                <Button variant="gradient" size="sm" asChild className="shadow-primary/20 hover:shadow-primary/40 transition-all">
+                <Button
+                  variant="gradient"
+                  size="sm"
+                  asChild
+                  className="shadow-primary/20 hover:shadow-primary/40 transition-all"
+                >
                   <Link to="/create">
                     <Plus className="w-4 h-4" />
                     <span className="hidden md:inline ml-1">Post</span>
@@ -238,7 +253,8 @@ const Navbar = () => {
                       <Avatar className="h-10 w-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
                         <AvatarImage src={user.avatar} alt={user.username} />
                         <AvatarFallback className="bg-gradient-primary text-white font-semibold">
-                          {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
+                          {user.firstName?.[0] || user.username?.[0] || 'U'}
+                          {user.lastName?.[0] || ''}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -248,16 +264,24 @@ const Navbar = () => {
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={user.avatar} alt={user.username} />
                         <AvatarFallback className="bg-gradient-primary text-white">
-                          {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
+                          {user.firstName?.[0] || user.username?.[0] || 'U'}
+                          {user.lastName?.[0] || ''}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <p className="text-sm font-medium leading-none">
-                          {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'User'}
+                          {user.firstName && user.lastName
+                            ? `${user.firstName} ${user.lastName}`
+                            : user.username || 'User'}
                         </p>
-                        <p className="text-xs leading-none text-muted-foreground mt-1">@{user.username || 'username'}</p>
+                        <p className="text-xs leading-none text-muted-foreground mt-1">
+                          @{user.username || 'username'}
+                        </p>
                         {isAdmin(user) && (
-                          <Badge variant="secondary" className="text-xs mt-1 bg-primary/10 text-primary">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs mt-1 bg-primary/10 text-primary"
+                          >
                             {user.role}
                           </Badge>
                         )}
@@ -269,7 +293,10 @@ const Navbar = () => {
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to={user.username ? `/@${user.username}` : '/profile/me'} className="cursor-pointer">
+                      <Link
+                        to={user.username ? `/@${user.username}` : '/profile/me'}
+                        className="cursor-pointer"
+                      >
                         <User className="mr-2 h-4 w-4" />
                         My Profile
                       </Link>
@@ -284,7 +311,9 @@ const Navbar = () => {
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="cursor-pointer">
                           <Shield className="mr-2 h-4 w-4" />
-                          {(user.role === 'superadmin' || user.role === 'super_admin') ? 'Super Admin Panel' : 'Admin Panel'}
+                          {user.role === 'superadmin' || user.role === 'super_admin'
+                            ? 'Super Admin Panel'
+                            : 'Admin Panel'}
                         </Link>
                       </DropdownMenuItem>
                     )}
@@ -300,11 +329,7 @@ const Navbar = () => {
               <div className="flex items-center space-x-2">
                 {/* Theme Toggle for non-authenticated users */}
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                  {theme === 'light' ? (
-                    <Moon className="w-5 h-5" />
-                  ) : (
-                    <Sun className="w-5 h-5" />
-                  )}
+                  {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </Button>
                 <Button variant="outline" asChild>
                   <Link to="/login">Sign In</Link>

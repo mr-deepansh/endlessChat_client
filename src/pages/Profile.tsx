@@ -9,11 +9,11 @@ import Navbar from '@/components/layout/Navbar';
 import { userService, socialService, User, Post } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApi } from '@/hooks/useApi';
-import { 
-  MessageCircle, 
-  Heart, 
-  Repeat2, 
-  Eye, 
+import {
+  MessageCircle,
+  Heart,
+  Repeat2,
+  Eye,
   Calendar,
   MapPin,
   Link as LinkIcon,
@@ -21,7 +21,7 @@ import {
   Linkedin,
   UserPlus,
   UserMinus,
-  Settings
+  Settings,
 } from 'lucide-react';
 
 const Profile = () => {
@@ -36,16 +36,16 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!username) return;
-      
+
       try {
         setLoading(true);
         const cleanUsername = username.replace(/^@+/, ''); // Remove all leading @ symbols
-        
+
         // Check if this is the current user's profile
         if (currentUser && currentUser.username === cleanUsername) {
           setUser(currentUser);
           setIsFollowing(false);
-          
+
           // Fetch current user's posts
           try {
             const userPosts = await userService.getUserPosts();
@@ -58,11 +58,11 @@ const Profile = () => {
           // Find other user by username
           const users = await userService.searchUsers(cleanUsername);
           const foundUser = users.find(u => u.username === cleanUsername);
-          
+
           if (foundUser) {
             setUser(foundUser);
             setIsFollowing(foundUser.isFollowing || false);
-            
+
             // Fetch user posts
             const userPosts = await userService.getUserPosts(foundUser._id);
             setPosts(userPosts || []);
@@ -80,26 +80,28 @@ const Profile = () => {
 
   const { execute: executeFollow } = useApi({
     showSuccessToast: true,
-    successMessage: 'Follow status updated successfully'
+    successMessage: 'Follow status updated successfully',
   });
 
   const handleFollow = async () => {
     if (!user) return;
-    
+
     const result = await executeFollow(async () => {
-      return isFollowing 
+      return isFollowing
         ? await socialService.unfollowUser(user._id)
         : await socialService.followUser(user._id);
     });
-    
+
     if (result) {
       setIsFollowing(!isFollowing);
-      setUser(prev => prev ? {
-        ...prev,
-        followersCount: isFollowing 
-          ? prev.followersCount - 1 
-          : prev.followersCount + 1
-      } : null);
+      setUser(prev =>
+        prev
+          ? {
+              ...prev,
+              followersCount: isFollowing ? prev.followersCount - 1 : prev.followersCount + 1,
+            }
+          : null
+      );
     }
   };
 
@@ -134,7 +136,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="max-w-4xl mx-auto p-4">
         {/* Profile Header */}
         <Card className="mb-6">
@@ -143,17 +145,20 @@ const Profile = () => {
               <Avatar className="h-32 w-32 ring-4 ring-primary/20">
                 <AvatarImage src={user.avatar} alt={user.username} />
                 <AvatarFallback className="bg-gradient-primary text-white text-2xl">
-                  {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
+                  {user.firstName?.[0] || user.username?.[0] || 'U'}
+                  {user.lastName?.[0] || ''}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="flex-1">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                   <div>
-                    <h1 className="text-2xl font-bold">{user.firstName} {user.lastName}</h1>
+                    <h1 className="text-2xl font-bold">
+                      {user.firstName} {user.lastName}
+                    </h1>
                     <p className="text-muted-foreground">@{user.username}</p>
                   </div>
-                  
+
                   <div className="flex gap-2 mt-4 md:mt-0">
                     {isOwnProfile ? (
                       <Button variant="outline" asChild>
@@ -163,10 +168,7 @@ const Profile = () => {
                         </Link>
                       </Button>
                     ) : (
-                      <Button 
-                        variant={isFollowing ? "outline" : "default"}
-                        onClick={handleFollow}
-                      >
+                      <Button variant={isFollowing ? 'outline' : 'default'} onClick={handleFollow}>
                         {isFollowing ? (
                           <>
                             <UserMinus className="w-4 h-4 mr-2" />
@@ -182,11 +184,9 @@ const Profile = () => {
                     )}
                   </div>
                 </div>
-                
-                {user.bio && (
-                  <p className="text-foreground mb-4">{user.bio}</p>
-                )}
-                
+
+                {user.bio && <p className="text-foreground mb-4">{user.bio}</p>}
+
                 <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
                   {user.location && (
                     <div className="flex items-center gap-1">
@@ -196,21 +196,30 @@ const Profile = () => {
                   )}
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    Joined{' '}
+                    {new Date(user.createdAt).toLocaleDateString('en-US', {
+                      month: 'long',
+                      year: 'numeric',
+                    })}
                   </div>
                 </div>
-                
+
                 {user.website && (
                   <div className="flex items-center gap-1 text-sm mb-4">
                     <LinkIcon className="w-4 h-4" />
-                    <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    <a
+                      href={user.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
                       {user.website}
                     </a>
                   </div>
                 )}
               </div>
             </div>
-            
+
             {/* Stats */}
             <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t">
               <div className="text-center">
@@ -232,7 +241,7 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
@@ -242,11 +251,11 @@ const Profile = () => {
             <TabsTrigger value="likes">Likes</TabsTrigger>
             <TabsTrigger value="views">Views</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="posts" className="mt-6">
             <div className="space-y-4">
               {posts.length > 0 ? (
-                posts.map((post) => (
+                posts.map(post => (
                   <Card key={post._id}>
                     <CardContent className="p-6">
                       <div className="flex items-start gap-3">
@@ -258,7 +267,9 @@ const Profile = () => {
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold">{post.author.firstName} {post.author.lastName}</span>
+                            <span className="font-semibold">
+                              {post.author.firstName} {post.author.lastName}
+                            </span>
                             <span className="text-muted-foreground">@{post.author.username}</span>
                             <span className="text-muted-foreground">·</span>
                             <span className="text-muted-foreground text-sm">
@@ -266,7 +277,7 @@ const Profile = () => {
                             </span>
                           </div>
                           <p className="mb-4">{post.content}</p>
-                          
+
                           <div className="flex items-center gap-6 text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <MessageCircle className="w-4 h-4" />
@@ -297,25 +308,25 @@ const Profile = () => {
               )}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="reposts" className="mt-6">
             <div className="text-center py-12">
               <p className="text-muted-foreground">No reposts yet</p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="comments" className="mt-6">
             <div className="text-center py-12">
               <p className="text-muted-foreground">No comments yet</p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="likes" className="mt-6">
             <div className="text-center py-12">
               <p className="text-muted-foreground">No liked posts yet</p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="views" className="mt-6">
             <div className="text-center py-12">
               <p className="text-muted-foreground">No viewed posts yet</p>

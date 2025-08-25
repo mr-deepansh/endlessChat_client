@@ -3,10 +3,23 @@ import { Link } from 'react-router-dom';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/layout/Navbar';
-import { 
-  Users, MessageCircle, Heart, Zap, Shield, Globe, 
-  Search, Bell, Share2, Bookmark, Camera, MapPin,
-  Calendar, BarChart3, Settings, Lock
+import {
+  Users,
+  MessageCircle,
+  Heart,
+  Zap,
+  Shield,
+  Globe,
+  Search,
+  Bell,
+  Share2,
+  Bookmark,
+  Camera,
+  MapPin,
+  Calendar,
+  BarChart3,
+  Settings,
+  Lock,
 } from 'lucide-react';
 
 const Features = () => {
@@ -15,83 +28,92 @@ const Features = () => {
       icon: Users,
       title: 'Social Networking',
       description: 'Follow users, build your network, and discover new voices in your community.',
-      features: ['Follow/Unfollow users', 'Discover new people', 'View profiles', 'Social connections']
+      features: [
+        'Follow/Unfollow users',
+        'Discover new people',
+        'View profiles',
+        'Social connections',
+      ],
     },
     {
       icon: MessageCircle,
       title: 'Rich Posting',
       description: 'Share your thoughts with text, images, polls, and scheduled posts.',
-      features: ['Text & media posts', 'Polls & surveys', 'Post scheduling', 'Article creation']
+      features: ['Text & media posts', 'Polls & surveys', 'Post scheduling', 'Article creation'],
     },
     {
       icon: Heart,
       title: 'Engagement',
       description: 'Like, comment, repost, and share content that resonates with you.',
-      features: ['Like & comment', 'Repost with quotes', 'Share posts', 'Bookmark content']
+      features: ['Like & comment', 'Repost with quotes', 'Share posts', 'Bookmark content'],
     },
     {
       icon: Bell,
       title: 'Real-time Notifications',
       description: 'Stay updated with instant notifications for all your social interactions.',
-      features: ['Follow notifications', 'Like & comment alerts', 'Mention notifications', 'Real-time updates']
-    }
+      features: [
+        'Follow notifications',
+        'Like & comment alerts',
+        'Mention notifications',
+        'Real-time updates',
+      ],
+    },
   ];
 
   const advancedFeatures = [
     {
       icon: Search,
       title: 'Smart Search',
-      description: 'Find users, posts, and content with our intelligent search system.'
+      description: 'Find users, posts, and content with our intelligent search system.',
     },
     {
       icon: Camera,
       title: 'Media Upload',
-      description: 'Share photos and videos with drag-and-drop media uploading.'
+      description: 'Share photos and videos with drag-and-drop media uploading.',
     },
     {
       icon: MapPin,
       title: 'Location Tagging',
-      description: 'Add location context to your posts and discover local content.'
+      description: 'Add location context to your posts and discover local content.',
     },
     {
       icon: Calendar,
       title: 'Post Scheduling',
-      description: 'Schedule your posts for optimal engagement times.'
+      description: 'Schedule your posts for optimal engagement times.',
     },
     {
       icon: BarChart3,
       title: 'Analytics',
-      description: 'Track your post performance and engagement metrics.'
+      description: 'Track your post performance and engagement metrics.',
     },
     {
       icon: Shield,
       title: 'Content Moderation',
-      description: 'Advanced moderation tools ensure a safe and positive environment.'
+      description: 'Advanced moderation tools ensure a safe and positive environment.',
     },
     {
       icon: Settings,
       title: 'Customization',
-      description: 'Personalize your experience with themes and privacy settings.'
+      description: 'Personalize your experience with themes and privacy settings.',
     },
     {
       icon: Lock,
       title: 'Privacy Controls',
-      description: 'Full control over your data and who can see your content.'
-    }
+      description: 'Full control over your data and who can see your content.',
+    },
   ];
 
   return (
     <div className="min-h-screen">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">
-            Powerful Features
-          </h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">Powerful Features</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Everything you need for meaningful social interactions, built with modern technology and user experience in mind.
+            Everything you need for meaningful social interactions, built with modern technology and
+            user experience in mind.
           </p>
           <Button variant="gradient" size="lg" asChild>
             <Link to="/register">Try All Features</Link>
@@ -135,7 +157,10 @@ const Features = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Advanced Features</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {advancedFeatures.map((feature, index) => (
-              <div key={index} className="p-6 rounded-xl bg-background shadow-soft hover:shadow-primary/20 transition-all duration-300 hover:-translate-y-1">
+              <div
+                key={index}
+                className="p-6 rounded-xl bg-background shadow-soft hover:shadow-primary/20 transition-all duration-300 hover:-translate-y-1"
+              >
                 <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center mb-4">
                   <feature.icon className="w-5 h-5 text-white" />
                 </div>
@@ -159,7 +184,7 @@ const Features = () => {
               { label: 'Secure', icon: '🔒' },
               { label: 'Fast', icon: '⚡' },
               { label: 'Reliable', icon: '🛡️' },
-              { label: 'Modern', icon: '🚀' }
+              { label: 'Modern', icon: '🚀' },
             ].map((item, index) => (
               <div key={index} className="p-4 rounded-lg bg-muted/50 text-center">
                 <div className="text-2xl mb-2">{item.icon}</div>
@@ -178,10 +203,20 @@ const Features = () => {
             Join thousands of users who are already enjoying the full EndlessChat experience.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="lg" className="bg-white text-primary hover:bg-white/90" asChild>
+            <Button
+              variant="hero"
+              size="lg"
+              className="bg-white text-primary hover:bg-white/90"
+              asChild
+            >
               <Link to="/register">Get Started Free</Link>
             </Button>
-            <Button variant="hero" size="lg" className="bg-white/20 text-white border-white/30 hover:bg-white/30" asChild>
+            <Button
+              variant="hero"
+              size="lg"
+              className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+              asChild
+            >
               <Link to="/login">Sign In</Link>
             </Button>
           </div>

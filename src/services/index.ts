@@ -6,7 +6,15 @@ export { api } from './api';
 export { cacheService } from './core/cache';
 
 // Export types
-export type { User, Post, Comment, UserStats, LoginData, RegisterData, UpdateProfileData } from './userService';
+export type {
+  User,
+  Post,
+  Comment,
+  UserStats,
+  LoginData,
+  RegisterData,
+  UpdateProfileData,
+} from './userService';
 export type { FollowResponse, FeedParams, FeedPost } from './socialService';
 export type { AdminStats, AdminUser } from './adminService';
 
@@ -18,7 +26,7 @@ export const API_ENDPOINTS = {
     REGISTER: '/users/register',
     LOGOUT: '/users/logout',
   },
-  
+
   // Profile Management
   PROFILE: {
     GET_CURRENT: '/users/profile/me',
@@ -26,14 +34,14 @@ export const API_ENDPOINTS = {
     UPLOAD_AVATAR: '/users/upload-avatar',
     CHANGE_PASSWORD: '/users/change-password',
   },
-  
+
   // User Actions
   USERS: {
     GET_ALL: '/users',
     GET_BY_ID: (id: string) => `/users/${id}`,
     SEARCH: '/users/search',
   },
-  
+
   // Social Features
   SOCIAL: {
     FOLLOW: (id: string) => `/users/follow/${id}`,
@@ -42,7 +50,7 @@ export const API_ENDPOINTS = {
     FOLLOWING: (id: string) => `/users/following/${id}`,
     FEED: '/users/feed',
   },
-  
+
   // Admin Routes
   ADMIN: {
     STATS: '/admin/stats',

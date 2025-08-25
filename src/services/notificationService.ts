@@ -52,12 +52,13 @@ export const notificationService = {
     }
 
     return withErrorHandling(
-      () => api.get<Notification[]>(`/notifications?${queryParams.toString()}`, {
-        cache: {
-          ttl: 30 * 1000, // 30 seconds
-          tags: ['notifications']
-        }
-      }),
+      () =>
+        api.get<Notification[]>(`/notifications?${queryParams.toString()}`, {
+          cache: {
+            ttl: 30 * 1000, // 30 seconds
+            tags: ['notifications'],
+          },
+        }),
       'Failed to load notifications'
     );
   },
@@ -65,12 +66,13 @@ export const notificationService = {
   // Get notification statistics
   getNotificationStats: async (): Promise<NotificationStats> => {
     return withErrorHandling(
-      () => api.get<NotificationStats>('/notifications/stats', {
-        cache: {
-          ttl: 60 * 1000, // 1 minute
-          tags: ['notifications', 'stats']
-        }
-      }),
+      () =>
+        api.get<NotificationStats>('/notifications/stats', {
+          cache: {
+            ttl: 60 * 1000, // 1 minute
+            tags: ['notifications', 'stats'],
+          },
+        }),
       'Failed to load notification stats'
     );
   },
@@ -124,12 +126,13 @@ export const notificationService = {
   // Get unread count
   getUnreadCount: async (): Promise<{ count: number }> => {
     return withErrorHandling(
-      () => api.get<{ count: number }>('/notifications/unread-count', {
-        cache: {
-          ttl: 10 * 1000, // 10 seconds
-          tags: ['notifications', 'unread']
-        }
-      }),
+      () =>
+        api.get<{ count: number }>('/notifications/unread-count', {
+          cache: {
+            ttl: 10 * 1000, // 10 seconds
+            tags: ['notifications', 'unread'],
+          },
+        }),
       'Failed to get unread count'
     );
   },
@@ -165,15 +168,16 @@ export const notificationService = {
     };
   }> => {
     return withErrorHandling(
-      () => api.get('/notifications/preferences', {
-        cache: {
-          ttl: 5 * 60 * 1000, // 5 minutes
-          tags: ['notifications', 'preferences']
-        }
-      }),
+      () =>
+        api.get('/notifications/preferences', {
+          cache: {
+            ttl: 5 * 60 * 1000, // 5 minutes
+            tags: ['notifications', 'preferences'],
+          },
+        }),
       'Failed to get notification preferences'
     );
-  }
+  },
 };
 
 export default notificationService;

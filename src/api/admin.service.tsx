@@ -137,26 +137,26 @@ class AdminApiService {
   private setupInterceptors() {
     // Request interceptor - Add auth token
     this.api.interceptors.request.use(
-      (config) => {
+      config => {
         const token = localStorage.getItem('admin_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error)
     );
 
     // Response interceptor - Handle errors globally
     this.api.interceptors.response.use(
       (response: AxiosResponse<ApiResponse>) => response,
-      (error) => {
+      error => {
         if (error.response?.status === 401) {
           // Handle unauthorized - redirect to login
           localStorage.removeItem('admin_token');
           window.location.href = '/admin/login';
         }
-        
+
         if (error.response?.status === 403) {
           // Handle forbidden - show permission error
           console.error('Access denied:', error.response.data.message);
@@ -227,21 +227,30 @@ class AdminApiService {
     return response.data;
   }
 
-  async updateUser(userId: string, data: {
-    name?: string;
-    email?: string;
-    role?: string;
-    status?: string;
-  }): Promise<ApiResponse> {
+  async updateUser(
+    userId: string,
+    data: {
+      name?: string;
+      email?: string;
+      role?: string;
+      status?: string;
+    }
+  ): Promise<ApiResponse> {
     const response = await this.api.put(buildApiUrl('/admin/users/:id', { id: userId }), data);
     return response.data;
   }
 
-  async suspendUser(userId: string, data: {
-    reason: string;
-    duration?: number;
-  }): Promise<ApiResponse> {
-    const response = await this.api.patch(buildApiUrl('/admin/users/:id/suspend', { id: userId }), data);
+  async suspendUser(
+    userId: string,
+    data: {
+      reason: string;
+      duration?: number;
+    }
+  ): Promise<ApiResponse> {
+    const response = await this.api.patch(
+      buildApiUrl('/admin/users/:id/suspend', { id: userId }),
+      data
+    );
     return response.data;
   }
 
@@ -255,11 +264,14 @@ class AdminApiService {
     return response.data;
   }
 
-  async getUserActivityLog(userId: string, params?: {
-    startDate?: string;
-    endDate?: string;
-    type?: string;
-  }): Promise<ApiResponse> {
+  async getUserActivityLog(
+    userId: string,
+    params?: {
+      startDate?: string;
+      endDate?: string;
+      type?: string;
+    }
+  ): Promise<ApiResponse> {
     const response = await this.api.get(
       buildApiUrl('/admin/users/:id/activity-log', { id: userId }),
       { params }
@@ -343,10 +355,7 @@ class AdminApiService {
     return response.data;
   }
 
-  async getTrendingPosts(params?: {
-    timeframe?: string;
-    limit?: number;
-  }): Promise<ApiResponse> {
+  async getTrendingPosts(params?: { timeframe?: string; limit?: number }): Promise<ApiResponse> {
     const response = await this.api.get('/admin/content/posts/trending', { params });
     return response.data;
   }
@@ -365,7 +374,9 @@ class AdminApiService {
   }
 
   async featurePost(postId: string): Promise<ApiResponse> {
-    const response = await this.api.patch(buildApiUrl('/admin/content/posts/:id/feature', { id: postId }));
+    const response = await this.api.patch(
+      buildApiUrl('/admin/content/posts/:id/feature', { id: postId })
+    );
     return response.data;
   }
 
@@ -387,11 +398,17 @@ class AdminApiService {
     return response.data;
   }
 
-  async toggleFeatureFlag(flag: string, data: {
-    enabled: boolean;
-    config?: Record<string, any>;
-  }): Promise<ApiResponse> {
-    const response = await this.api.patch(buildApiUrl('/admin/config/feature-flags/:flag', { flag }), data);
+  async toggleFeatureFlag(
+    flag: string,
+    data: {
+      enabled: boolean;
+      config?: Record<string, any>;
+    }
+  ): Promise<ApiResponse> {
+    const response = await this.api.patch(
+      buildApiUrl('/admin/config/feature-flags/:flag', { flag }),
+      data
+    );
     return response.data;
   }
 

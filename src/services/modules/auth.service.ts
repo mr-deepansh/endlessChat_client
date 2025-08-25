@@ -1,11 +1,11 @@
 import { apiClient } from '../core/apiClient';
-import { 
-  LoginRequest, 
-  LoginResponse, 
-  RegisterRequest, 
+import {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
   ChangePasswordRequest,
   MessageResponse,
-  User
+  User,
 } from '../core/types';
 
 /**
@@ -43,17 +43,25 @@ class AuthService {
    * Change password
    */
   async changePassword(passwordData: ChangePasswordRequest): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/change-password`, passwordData);
+    const response = await apiClient.post<MessageResponse>(
+      `${this.baseUrl}/change-password`,
+      passwordData
+    );
     return response.data;
   }
 
   /**
    * Refresh access token
    */
-  async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken?: string }> {
-    const response = await apiClient.post<{ accessToken: string; refreshToken?: string }>('/auth/refresh', {
-      refreshToken
-    });
+  async refreshToken(
+    refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken?: string }> {
+    const response = await apiClient.post<{ accessToken: string; refreshToken?: string }>(
+      '/auth/refresh',
+      {
+        refreshToken,
+      }
+    );
     return response.data;
   }
 
@@ -71,7 +79,7 @@ class AuthService {
   async resetPassword(token: string, newPassword: string): Promise<MessageResponse> {
     const response = await apiClient.post<MessageResponse>('/auth/reset-password', {
       token,
-      newPassword
+      newPassword,
     });
     return response.data;
   }
@@ -123,7 +131,7 @@ class AuthService {
         firstName: payload.firstName,
         lastName: payload.lastName,
         role: payload.role,
-        isActive: payload.isActive
+        isActive: payload.isActive,
       };
     } catch {
       return null;

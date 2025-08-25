@@ -22,21 +22,18 @@ export const postService = {
   createPost: async (data: CreatePostData): Promise<Post> => {
     const formData = new FormData();
     formData.append('content', data.content);
-    
+
     if (data.repostId) {
       formData.append('repostId', data.repostId);
     }
-    
+
     if (data.media && data.media.length > 0) {
       data.media.forEach((file, index) => {
         formData.append(`media`, file);
       });
     }
 
-    return withErrorHandling(
-      () => api.upload<Post>('/posts', formData),
-      'Failed to create post'
-    );
+    return withErrorHandling(() => api.upload<Post>('/posts', formData), 'Failed to create post');
   },
 
   // Get feed posts
@@ -52,7 +49,11 @@ export const postService = {
   },
 
   // Get user posts
-  getUserPosts: async (userId?: string, cursor?: string, limit: number = 20): Promise<PostsResponse> => {
+  getUserPosts: async (
+    userId?: string,
+    cursor?: string,
+    limit: number = 20
+  ): Promise<PostsResponse> => {
     const params = new URLSearchParams();
     if (cursor) params.append('cursor', cursor);
     params.append('limit', limit.toString());
@@ -66,10 +67,7 @@ export const postService = {
 
   // Get single post
   getPost: async (postId: string): Promise<Post> => {
-    return withErrorHandling(
-      () => api.get<Post>(`/posts/${postId}`),
-      'Failed to load post'
-    );
+    return withErrorHandling(() => api.get<Post>(`/posts/${postId}`), 'Failed to load post');
   },
 
   // Update post
@@ -125,7 +123,11 @@ export const postService = {
   },
 
   // Search posts
-  searchPosts: async (query: string, cursor?: string, limit: number = 20): Promise<PostsResponse> => {
+  searchPosts: async (
+    query: string,
+    cursor?: string,
+    limit: number = 20
+  ): Promise<PostsResponse> => {
     const params = new URLSearchParams();
     params.append('q', query);
     if (cursor) params.append('cursor', cursor);

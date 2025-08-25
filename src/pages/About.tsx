@@ -9,15 +9,14 @@ const About = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">
-            About EndlessChat
-          </h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">About EndlessChat</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A social platform built with passion, designed to foster authentic connections and meaningful conversations.
+            A social platform built with passion, designed to foster authentic connections and
+            meaningful conversations.
           </p>
         </div>
       </section>
@@ -29,20 +28,26 @@ const About = () => {
             <div>
               <h2 className="text-3xl font-bold mb-6">Our Story</h2>
               <p className="text-muted-foreground mb-4">
-                EndlessChat was born from a simple idea: social media should bring people together, not divide them. 
-                Created by <span className="font-semibold text-primary">Deepansh Gangwar</span>, this platform focuses 
-                on quality interactions over quantity metrics.
+                EndlessChat was born from a simple idea: social media should bring people together,
+                not divide them. Created by{' '}
+                <span className="font-semibold text-primary">Deepansh Gangwar</span>, this platform
+                focuses on quality interactions over quantity metrics.
               </p>
               <p className="text-muted-foreground mb-6">
-                We believe in creating a space where every voice matters, where conversations flow naturally, 
-                and where genuine connections can flourish without the noise of algorithms and ads.
+                We believe in creating a space where every voice matters, where conversations flow
+                naturally, and where genuine connections can flourish without the noise of
+                algorithms and ads.
               </p>
               <div className="flex gap-4">
                 <Button variant="gradient" asChild>
                   <Link to="/register">Join Us Today</Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <a href="https://github.com/mr-deepansh" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="https://github.com/mr-deepansh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Github className="w-4 h-4 mr-2" />
                     GitHub
                   </a>
@@ -70,14 +75,16 @@ const About = () => {
               <Heart className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-3">Authenticity</h3>
               <p className="text-muted-foreground">
-                We encourage genuine interactions and real connections, not performative social media.
+                We encourage genuine interactions and real connections, not performative social
+                media.
               </p>
             </div>
             <div className="text-center p-6">
               <Globe className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-3">Inclusivity</h3>
               <p className="text-muted-foreground">
-                Everyone deserves a voice. We create a welcoming space for all backgrounds and perspectives.
+                Everyone deserves a voice. We create a welcoming space for all backgrounds and
+                perspectives.
               </p>
             </div>
             <div className="text-center p-6">
@@ -99,9 +106,10 @@ const About = () => {
             <h2 className="text-3xl font-bold">Meet the Developer</h2>
           </div>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Hi! I'm <span className="font-semibold text-primary">Deepansh Gangwar</span>, a passionate full-stack developer 
-            who believes in the power of technology to bring people together. EndlessChat is my vision of what 
-            social media can be when it's built with care and purpose.
+            Hi! I'm <span className="font-semibold text-primary">Deepansh Gangwar</span>, a
+            passionate full-stack developer who believes in the power of technology to bring people
+            together. EndlessChat is my vision of what social media can be when it's built with care
+            and purpose.
           </p>
           <Button variant="gradient" asChild>
             <a href="https://github.com/mr-deepansh" target="_blank" rel="noopener noreferrer">

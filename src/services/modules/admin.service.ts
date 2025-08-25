@@ -1,12 +1,12 @@
 import { apiClient } from '../core/apiClient';
 import { buildQueryString } from '../core/utils';
-import { 
-  AdminStats, 
-  AdminUser, 
+import {
+  AdminStats,
+  AdminUser,
   User,
   MessageResponse,
   UserSearchParams,
-  PaginatedResponse
+  PaginatedResponse,
 } from '../core/types';
 
 /**
@@ -37,7 +37,9 @@ class AdminService {
    */
   async getAllUsers(params: UserSearchParams = {}): Promise<PaginatedResponse<AdminUser>> {
     const queryString = buildQueryString(params);
-    const response = await apiClient.get<PaginatedResponse<AdminUser>>(`${this.baseUrl}/users${queryString}`);
+    const response = await apiClient.get<PaginatedResponse<AdminUser>>(
+      `${this.baseUrl}/users${queryString}`
+    );
     return response.data;
   }
 
@@ -69,7 +71,9 @@ class AdminService {
    * Activate user
    */
   async activateUser(userId: string): Promise<MessageResponse> {
-    const response = await apiClient.patch<MessageResponse>(`${this.baseUrl}/users/${userId}/activate`);
+    const response = await apiClient.patch<MessageResponse>(
+      `${this.baseUrl}/users/${userId}/activate`
+    );
     return response.data;
   }
 
@@ -77,7 +81,10 @@ class AdminService {
    * Suspend user
    */
   async suspendUser(userId: string, reason?: string): Promise<MessageResponse> {
-    const response = await apiClient.patch<MessageResponse>(`${this.baseUrl}/users/${userId}/suspend`, { reason });
+    const response = await apiClient.patch<MessageResponse>(
+      `${this.baseUrl}/users/${userId}/suspend`,
+      { reason }
+    );
     return response.data;
   }
 
@@ -154,7 +161,7 @@ class AdminService {
    */
   async exportUsers(format: 'csv' | 'json' = 'csv'): Promise<Blob> {
     const response = await apiClient.get(`${this.baseUrl}/export/users?format=${format}`, {
-      responseType: 'blob'
+      responseType: 'blob',
     });
     return response.data;
   }
@@ -164,7 +171,7 @@ class AdminService {
    */
   async exportPosts(format: 'csv' | 'json' = 'csv'): Promise<Blob> {
     const response = await apiClient.get(`${this.baseUrl}/export/posts?format=${format}`, {
-      responseType: 'blob'
+      responseType: 'blob',
     });
     return response.data;
   }
@@ -224,11 +231,18 @@ class AdminService {
   /**
    * Moderate content
    */
-  async moderateContent(contentId: string, action: 'approve' | 'reject' | 'delete', reason?: string): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/moderation/content/${contentId}`, {
-      action,
-      reason
-    });
+  async moderateContent(
+    contentId: string,
+    action: 'approve' | 'reject' | 'delete',
+    reason?: string
+  ): Promise<MessageResponse> {
+    const response = await apiClient.post<MessageResponse>(
+      `${this.baseUrl}/moderation/content/${contentId}`,
+      {
+        action,
+        reason,
+      }
+    );
     return response.data;
   }
 
@@ -242,7 +256,10 @@ class AdminService {
     targetUsers?: string[];
     broadcast?: boolean;
   }): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/notifications/system`, notification);
+    const response = await apiClient.post<MessageResponse>(
+      `${this.baseUrl}/notifications/system`,
+      notification
+    );
     return response.data;
   }
 

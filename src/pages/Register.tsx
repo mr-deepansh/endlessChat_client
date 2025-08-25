@@ -41,9 +41,9 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center p-4">
       {/* Background */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={worldHeroImage} 
-          alt="Social platform background" 
+        <img
+          src={worldHeroImage}
+          alt="Social platform background"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
@@ -51,10 +51,7 @@ const Register = () => {
 
       {/* Registration Form */}
       <div className="relative z-10 w-full max-w-md">
-        <StepForm 
-          onSubmit={handleSubmit} 
-          isLoading={isLoading}
-        />
+        <StepForm onSubmit={handleSubmit} isLoading={isLoading} />
       </div>
     </div>
   );

@@ -1,15 +1,15 @@
 import { apiClient } from '../core/apiClient';
 import { buildQueryString } from '../core/utils';
-import { 
-  User, 
-  UpdateProfileRequest, 
+import {
+  User,
+  UpdateProfileRequest,
   UploadAvatarRequest,
   MessageResponse,
   UserSearchParams,
   UserSearchByUsernameParams,
   FeedParams,
   FollowParams,
-  PaginatedResponse
+  PaginatedResponse,
 } from '../core/types';
 
 /**
@@ -47,7 +47,10 @@ class ProfileService {
    * Upload avatar
    */
   async uploadAvatar(avatarData: UploadAvatarRequest): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/upload-avatar`, avatarData);
+    const response = await apiClient.post<MessageResponse>(
+      `${this.baseUrl}/upload-avatar`,
+      avatarData
+    );
     return response.data;
   }
 
@@ -99,7 +102,9 @@ class ProfileService {
    */
   async getFollowers(userId: string, params: FollowParams = {}): Promise<User[]> {
     const queryString = buildQueryString(params);
-    const response = await apiClient.get<User[]>(`${this.baseUrl}/followers/${userId}${queryString}`);
+    const response = await apiClient.get<User[]>(
+      `${this.baseUrl}/followers/${userId}${queryString}`
+    );
     return response.data;
   }
 
@@ -108,7 +113,9 @@ class ProfileService {
    */
   async getFollowing(userId: string, params: FollowParams = {}): Promise<User[]> {
     const queryString = buildQueryString(params);
-    const response = await apiClient.get<User[]>(`${this.baseUrl}/following/${userId}${queryString}`);
+    const response = await apiClient.get<User[]>(
+      `${this.baseUrl}/following/${userId}${queryString}`
+    );
     return response.data;
   }
 
@@ -159,7 +166,9 @@ class ProfileService {
    * Report user
    */
   async reportUser(userId: string, reason: string): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/report/${userId}`, { reason });
+    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/report/${userId}`, {
+      reason,
+    });
     return response.data;
   }
 
@@ -184,7 +193,7 @@ class ProfileService {
    */
   async deleteAccount(password: string): Promise<MessageResponse> {
     const response = await apiClient.delete<MessageResponse>(`${this.baseUrl}/account`, {
-      data: { password }
+      data: { password },
     });
     return response.data;
   }

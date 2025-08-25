@@ -13,25 +13,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Image, 
-  Smile, 
-  MapPin, 
-  Calendar as CalendarIcon, 
-  BarChart3, 
-  FileText, 
-  X, 
+import {
+  Image,
+  Smile,
+  MapPin,
+  Calendar as CalendarIcon,
+  BarChart3,
+  FileText,
+  X,
   Plus,
   Clock,
-  Globe
+  Globe,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -44,13 +40,10 @@ interface PollOption {
   text: string;
 }
 
-const CreatePost: React.FC<CreatePostProps> = ({
-  onSubmit,
-  placeholder = "What's happening?",
-}) => {
+const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's happening?" }) => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<'text' | 'article' | 'poll' | 'media'>('text');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,13 +51,10 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [location, setLocation] = useState('');
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState('');
-  
+
   // Poll state
   const [pollQuestion, setPollQuestion] = useState('');
-  const [pollOptions, setPollOptions] = useState<PollOption[]>([
-    { text: '' },
-    { text: '' }
-  ]);
+  const [pollOptions, setPollOptions] = useState<PollOption[]>([{ text: '' }, { text: '' }]);
   const [pollDuration, setPollDuration] = useState(24); // hours
 
   // Article state
@@ -72,7 +62,11 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
   const handleSubmit = async () => {
     if (!content.trim() && postType !== 'poll') return;
-    if (postType === 'poll' && (!pollQuestion.trim() || pollOptions.filter(opt => opt.text.trim()).length < 2)) return;
+    if (
+      postType === 'poll' &&
+      (!pollQuestion.trim() || pollOptions.filter(opt => opt.text.trim()).length < 2)
+    )
+      return;
 
     setIsSubmitting(true);
     try {
@@ -81,21 +75,25 @@ const CreatePost: React.FC<CreatePostProps> = ({
         type: postType,
         images: images.length > 0 ? images : undefined,
         location: location.trim() || undefined,
-        scheduledFor: scheduledDate && scheduledTime ? 
-          new Date(`${format(scheduledDate, 'yyyy-MM-dd')}T${scheduledTime}`).toISOString() : undefined
+        scheduledFor:
+          scheduledDate && scheduledTime
+            ? new Date(`${format(scheduledDate, 'yyyy-MM-dd')}T${scheduledTime}`).toISOString()
+            : undefined,
       };
 
       if (postType === 'poll') {
         postData.poll = {
           question: pollQuestion,
-          options: pollOptions.filter(opt => opt.text.trim()).map(opt => ({ text: opt.text, votes: 0 })),
+          options: pollOptions
+            .filter(opt => opt.text.trim())
+            .map(opt => ({ text: opt.text, votes: 0 })),
           totalVotes: 0,
-          endsAt: new Date(Date.now() + pollDuration * 60 * 60 * 1000).toISOString()
+          endsAt: new Date(Date.now() + pollDuration * 60 * 60 * 1000).toISOString(),
         };
       }
 
       await onSubmit?.(postData);
-      
+
       // Reset form
       setContent('');
       setPostType('text');
@@ -116,7 +114,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
     if (files) {
       Array.from(files).forEach(file => {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
           if (e.target?.result) {
             setImages(prev => [...prev, e.target!.result as string]);
           }
@@ -143,7 +141,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
   };
 
   const updatePollOption = (index: number, text: string) => {
-    setPollOptions(prev => prev.map((opt, i) => i === index ? { text } : opt));
+    setPollOptions(prev => prev.map((opt, i) => (i === index ? { text } : opt)));
   };
 
   const characterLimit = postType === 'article' ? 2000 : 280;
@@ -152,10 +150,14 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
   const getPostTypeColor = () => {
     switch (postType) {
-      case 'poll': return 'bg-blue-500/10 text-blue-600 border-blue-200';
-      case 'article': return 'bg-green-500/10 text-green-600 border-green-200';
-      case 'media': return 'bg-purple-500/10 text-purple-600 border-purple-200';
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-200';
+      case 'poll':
+        return 'bg-blue-500/10 text-blue-600 border-blue-200';
+      case 'article':
+        return 'bg-green-500/10 text-green-600 border-green-200';
+      case 'media':
+        return 'bg-purple-500/10 text-purple-600 border-purple-200';
+      default:
+        return 'bg-gray-500/10 text-gray-600 border-gray-200';
     }
   };
 
@@ -168,10 +170,11 @@ const CreatePost: React.FC<CreatePostProps> = ({
           <Avatar className="w-12 h-12 ring-2 ring-primary/20">
             <AvatarImage src={user.avatar} alt={user.username} />
             <AvatarFallback className="bg-gradient-primary text-white">
-              {user.firstName?.[0] || user.username?.[0] || 'U'}{user.lastName?.[0] || ''}
+              {user.firstName?.[0] || user.username?.[0] || 'U'}
+              {user.lastName?.[0] || ''}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1 space-y-4">
             {/* Post Type Selector */}
             <div className="flex items-center space-x-2">
@@ -223,7 +226,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
               <Input
                 placeholder="Article title..."
                 value={articleTitle}
-                onChange={(e) => setArticleTitle(e.target.value)}
+                onChange={e => setArticleTitle(e.target.value)}
                 className="text-lg font-semibold border-none bg-transparent focus-visible:ring-0"
               />
             )}
@@ -234,7 +237,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 <Input
                   placeholder="Ask a question..."
                   value={pollQuestion}
-                  onChange={(e) => setPollQuestion(e.target.value)}
+                  onChange={e => setPollQuestion(e.target.value)}
                   className="font-medium"
                 />
                 <div className="space-y-2">
@@ -243,7 +246,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                       <Input
                         placeholder={`Option ${index + 1}`}
                         value={option.text}
-                        onChange={(e) => updatePollOption(index, e.target.value)}
+                        onChange={e => updatePollOption(index, e.target.value)}
                         className="flex-1"
                       />
                       {pollOptions.length > 2 && (
@@ -270,11 +273,13 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Label htmlFor="poll-duration" className="text-sm">Duration:</Label>
+                  <Label htmlFor="poll-duration" className="text-sm">
+                    Duration:
+                  </Label>
                   <select
                     id="poll-duration"
                     value={pollDuration}
-                    onChange={(e) => setPollDuration(Number(e.target.value))}
+                    onChange={e => setPollDuration(Number(e.target.value))}
                     className="text-sm border rounded px-2 py-1"
                   >
                     <option value={1}>1 hour</option>
@@ -292,7 +297,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
             <Textarea
               placeholder={postType === 'poll' ? 'Add context to your poll...' : placeholder}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={e => setContent(e.target.value)}
               className="min-h-[120px] border-none bg-transparent text-lg placeholder:text-muted-foreground resize-none focus-visible:ring-0"
             />
 
@@ -303,14 +308,10 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 <Input
                   placeholder="Add location..."
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={e => setLocation(e.target.value)}
                   className="border-none bg-transparent focus-visible:ring-0"
                 />
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => setLocation('')}
-                >
+                <Button variant="ghost" size="icon-sm" onClick={() => setLocation('')}>
                   <X className="w-3 h-3" />
                 </Button>
               </div>
@@ -343,7 +344,9 @@ const CreatePost: React.FC<CreatePostProps> = ({
             {scheduledDate && scheduledTime && (
               <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded">
                 <Clock className="w-4 h-4" />
-                <span>Scheduled for {format(scheduledDate, 'MMM d, yyyy')} at {scheduledTime}</span>
+                <span>
+                  Scheduled for {format(scheduledDate, 'MMM d, yyyy')} at {scheduledTime}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon-sm"
@@ -360,9 +363,9 @@ const CreatePost: React.FC<CreatePostProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-1">
                 {/* Media Upload */}
-                <Button 
-                  variant="ghost" 
-                  size="icon-sm" 
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   className="text-primary hover:bg-primary/10"
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -383,9 +386,9 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 </Button>
 
                 {/* Location */}
-                <Button 
-                  variant="ghost" 
-                  size="icon-sm" 
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   className="text-primary hover:bg-primary/10"
                   onClick={() => setLocation(location === '' ? 'Current location' : '')}
                 >
@@ -395,7 +398,11 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 {/* Schedule */}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon-sm" className="text-primary hover:bg-primary/10">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-primary hover:bg-primary/10"
+                    >
                       <CalendarIcon className="w-5 h-5" />
                     </Button>
                   </DialogTrigger>
@@ -410,7 +417,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                           mode="single"
                           selected={scheduledDate}
                           onSelect={setScheduledDate}
-                          disabled={(date) => date < new Date()}
+                          disabled={date => date < new Date()}
                           className="rounded-md border"
                         />
                       </div>
@@ -419,7 +426,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                         <Input
                           type="time"
                           value={scheduledTime}
-                          onChange={(e) => setScheduledTime(e.target.value)}
+                          onChange={e => setScheduledTime(e.target.value)}
                         />
                       </div>
                     </div>
@@ -430,21 +437,22 @@ const CreatePost: React.FC<CreatePostProps> = ({
               <div className="flex items-center space-x-3">
                 {content.length > 0 && (
                   <div className="flex items-center space-x-2">
-                    <div className={`text-sm ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    <div
+                      className={`text-sm ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}
+                    >
                       {remainingChars}
                     </div>
-                    <Progress 
-                      value={(content.length / characterLimit) * 100} 
-                      className="w-8 h-2"
-                    />
+                    <Progress value={(content.length / characterLimit) * 100} className="w-8 h-2" />
                   </div>
                 )}
                 <Button
                   onClick={handleSubmit}
                   disabled={
-                    (!content.trim() && postType !== 'poll') || 
-                    (postType === 'poll' && (!pollQuestion.trim() || pollOptions.filter(opt => opt.text.trim()).length < 2)) ||
-                    isOverLimit || 
+                    (!content.trim() && postType !== 'poll') ||
+                    (postType === 'poll' &&
+                      (!pollQuestion.trim() ||
+                        pollOptions.filter(opt => opt.text.trim()).length < 2)) ||
+                    isOverLimit ||
                     isSubmitting
                   }
                   variant="gradient"

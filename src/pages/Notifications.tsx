@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
-import { Bell, Check, CheckCheck, Trash2, User, Heart, MessageCircle, Share, UserPlus, Repeat2, Eye, Settings } from 'lucide-react';
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  User,
+  Heart,
+  MessageCircle,
+  Share,
+  UserPlus,
+  Repeat2,
+  Eye,
+  Settings,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -98,28 +111,31 @@ const NotificationItem: React.FC<{
       onUnfollow(notification.from._id);
       setIsFollowing(false);
       toast({
-        title: "Unfollowed",
+        title: 'Unfollowed',
         description: `You unfollowed ${notification.from.firstName} ${notification.from.lastName}`,
       });
     } else {
       onFollow(notification.from._id);
       setIsFollowing(true);
       toast({
-        title: "Following",
+        title: 'Following',
         description: `You are now following ${notification.from.firstName} ${notification.from.lastName}`,
       });
     }
   };
 
   return (
-    <div className={`flex items-start space-x-4 p-4 border-b border-border transition-all duration-200 hover:bg-muted/30 ${
-      !notification.isRead ? 'bg-primary/5 border-l-4 border-l-primary' : ''
-    }`}>
+    <div
+      className={`flex items-start space-x-4 p-4 border-b border-border transition-all duration-200 hover:bg-muted/30 ${
+        !notification.isRead ? 'bg-primary/5 border-l-4 border-l-primary' : ''
+      }`}
+    >
       <div className="relative">
         <Avatar className="h-12 w-12 ring-2 ring-primary/20">
           <AvatarImage src={notification.from.avatar} alt={notification.from.username} />
           <AvatarFallback className="bg-gradient-primary text-white">
-            {notification.from.firstName?.[0]}{notification.from.lastName?.[0]}
+            {notification.from.firstName?.[0]}
+            {notification.from.lastName?.[0]}
           </AvatarFallback>
         </Avatar>
         <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 shadow-sm">
@@ -131,8 +147,9 @@ const NotificationItem: React.FC<{
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-sm text-foreground">
-              <span className="font-semibold">{notification.from.firstName} {notification.from.lastName}</span>
-              {' '}
+              <span className="font-semibold">
+                {notification.from.firstName} {notification.from.lastName}
+              </span>{' '}
               <span className="text-muted-foreground">{getNotificationMessage(notification)}</span>
             </p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -149,7 +166,7 @@ const NotificationItem: React.FC<{
           <div className="ml-4 flex items-center space-x-2">
             {(notification.type === 'follow' || notification.type === 'unfollow') && (
               <Button
-                variant={isFollowing ? "outline" : "default"}
+                variant={isFollowing ? 'outline' : 'default'}
                 size="sm"
                 onClick={handleFollowToggle}
                 className="text-xs px-3 py-1"
@@ -157,22 +174,25 @@ const NotificationItem: React.FC<{
                 {isFollowing ? 'Following' : 'Follow'}
               </Button>
             )}
-            
+
             {notification.postImage && (
               <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
-                <img 
-                  src={notification.postImage} 
-                  alt="Post" 
+                <img
+                  src={notification.postImage}
+                  alt="Post"
                   className="w-full h-full object-cover"
                 />
               </div>
             )}
-            
-            {!notification.postImage && (notification.type === 'like' || notification.type === 'comment' || notification.type === 'repost') && (
-              <div className="w-16 h-16 rounded-lg bg-gradient-primary/10 flex items-center justify-center">
-                <span className="text-2xl">📝</span>
-              </div>
-            )}
+
+            {!notification.postImage &&
+              (notification.type === 'like' ||
+                notification.type === 'comment' ||
+                notification.type === 'repost') && (
+                <div className="w-16 h-16 rounded-lg bg-gradient-primary/10 flex items-center justify-center">
+                  <span className="text-2xl">📝</span>
+                </div>
+              )}
           </div>
         </div>
 
@@ -221,14 +241,15 @@ function Notifications() {
         username: 'johndev',
         firstName: 'John',
         lastName: 'Developer',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
+        avatar:
+          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
       },
       to: user?._id || '',
       postId: '1',
       isRead: false,
       createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
       postContent: 'Just launched my new project! Excited to share it with the community.',
-      postImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=400&fit=crop'
+      postImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=400&fit=crop',
     },
     {
       _id: '2',
@@ -239,11 +260,12 @@ function Notifications() {
         username: 'sarahdesign',
         firstName: 'Sarah',
         lastName: 'Designer',
-        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612c8e8?w=400&h=400&fit=crop&crop=face'
+        avatar:
+          'https://images.unsplash.com/photo-1494790108755-2616b612c8e8?w=400&h=400&fit=crop&crop=face',
       },
       to: user?._id || '',
       isRead: false,
-      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
     },
     {
       _id: '3',
@@ -254,14 +276,16 @@ function Notifications() {
         username: 'mikecoding',
         firstName: 'Mike',
         lastName: 'Engineer',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
+        avatar:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
       },
       to: user?._id || '',
       postId: '2',
       isRead: true,
       createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
       postContent: 'Beautiful sunset from my morning run! 🌅',
-      postImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop'
+      postImage:
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
     },
     {
       _id: '4',
@@ -272,13 +296,14 @@ function Notifications() {
         username: 'alextech',
         firstName: 'Alex',
         lastName: 'Tech',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop&crop=face'
+        avatar:
+          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop&crop=face',
       },
       to: user?._id || '',
       postId: '3',
       isRead: true,
       createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      postContent: 'Hot take: TypeScript is not just JavaScript with types...'
+      postContent: 'Hot take: TypeScript is not just JavaScript with types...',
     },
     {
       _id: '5',
@@ -289,12 +314,13 @@ function Notifications() {
         username: 'emmaui',
         firstName: 'Emma',
         lastName: 'UI Designer',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face'
+        avatar:
+          'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
       },
       to: user?._id || '',
       commentId: '1',
       isRead: false,
-      createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+      createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
     },
     {
       _id: '6',
@@ -305,14 +331,15 @@ function Notifications() {
         username: 'davidcode',
         firstName: 'David',
         lastName: 'Coder',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face'
+        avatar:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face',
       },
       to: user?._id || '',
       postId: '4',
       isRead: true,
       createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-      postContent: 'Great discussion with @you about React best practices!'
-    }
+      postContent: 'Great discussion with @you about React best practices!',
+    },
   ];
 
   const loadNotifications = async () => {
@@ -324,9 +351,9 @@ function Notifications() {
       setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to load notifications",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load notifications',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -334,8 +361,8 @@ function Notifications() {
   };
 
   const handleMarkRead = async (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
+    setNotifications(prev =>
+      prev.map(n => (n._id === notificationId ? { ...n, isRead: true } : n))
     );
     setUnreadCount(prev => Math.max(0, prev - 1));
   };
@@ -344,7 +371,7 @@ function Notifications() {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     setUnreadCount(0);
     toast({
-      title: "All notifications marked as read",
+      title: 'All notifications marked as read',
       description: "You're all caught up!",
     });
   };
@@ -420,10 +447,18 @@ function Notifications() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid w-full grid-cols-4 bg-muted/30">
-            <TabsTrigger value="all" className="text-sm">All</TabsTrigger>
-            <TabsTrigger value="follows" className="text-sm">Follows</TabsTrigger>
-            <TabsTrigger value="likes" className="text-sm">Likes</TabsTrigger>
-            <TabsTrigger value="comments" className="text-sm">Comments</TabsTrigger>
+            <TabsTrigger value="all" className="text-sm">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="follows" className="text-sm">
+              Follows
+            </TabsTrigger>
+            <TabsTrigger value="likes" className="text-sm">
+              Likes
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="text-sm">
+              Comments
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
@@ -440,15 +475,14 @@ function Notifications() {
                     <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-foreground mb-2">No notifications</h3>
                     <p className="text-muted-foreground">
-                      {activeTab === 'all' 
+                      {activeTab === 'all'
                         ? "When you get notifications, they'll show up here."
-                        : `No ${activeTab} notifications yet.`
-                      }
+                        : `No ${activeTab} notifications yet.`}
                     </p>
                   </div>
                 ) : (
                   <div>
-                    {getFilteredNotifications().map((notification) => (
+                    {getFilteredNotifications().map(notification => (
                       <NotificationItem
                         key={notification._id}
                         notification={notification}

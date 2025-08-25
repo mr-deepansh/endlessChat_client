@@ -46,7 +46,7 @@ const UserCard: React.FC<UserCardProps> = ({
   const handleFollowToggle = () => {
     const newIsFollowing = !isFollowing;
     setIsFollowing(newIsFollowing);
-    setFollowersCount(prev => newIsFollowing ? prev + 1 : prev - 1);
+    setFollowersCount(prev => (newIsFollowing ? prev + 1 : prev - 1));
 
     if (newIsFollowing) {
       onFollow?.(user._id);
@@ -63,7 +63,8 @@ const UserCard: React.FC<UserCardProps> = ({
             <Avatar className="w-16 h-16 ring-2 ring-primary/20 hover:ring-primary/40 transition-smooth">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback className="bg-gradient-primary text-white text-lg">
-                {user.firstName[0]}{user.lastName[0]}
+                {user.firstName[0]}
+                {user.lastName[0]}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -84,17 +85,13 @@ const UserCard: React.FC<UserCardProps> = ({
                       Admin
                     </Badge>
                   )}
-                  {!user.isActive && (
-                    <Badge variant="destructive">
-                      Suspended
-                    </Badge>
-                  )}
+                  {!user.isActive && <Badge variant="destructive">Suspended</Badge>}
                 </div>
               </div>
 
               {!isOwnProfile && (
                 <Button
-                  variant={isFollowing ? "unfollow" : "follow"}
+                  variant={isFollowing ? 'unfollow' : 'follow'}
                   size="sm"
                   onClick={handleFollowToggle}
                   className="ml-4"
@@ -114,11 +111,7 @@ const UserCard: React.FC<UserCardProps> = ({
               )}
             </div>
 
-            {user.bio && (
-              <p className="text-foreground mt-3 leading-relaxed">
-                {user.bio}
-              </p>
-            )}
+            {user.bio && <p className="text-foreground mt-3 leading-relaxed">{user.bio}</p>}
 
             <div className="flex items-center space-x-4 mt-4 text-sm text-muted-foreground">
               {user.location && (
@@ -129,19 +122,21 @@ const UserCard: React.FC<UserCardProps> = ({
               )}
               <div className="flex items-center space-x-1">
                 <Calendar className="w-4 h-4" />
-                <span>Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</span>
+                <span>
+                  Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                </span>
               </div>
             </div>
 
             <div className="flex items-center space-x-6 mt-4">
-              <Link 
+              <Link
                 to={`/profile/${user._id}/following`}
                 className="text-sm hover:text-primary transition-smooth"
               >
                 <span className="font-semibold text-foreground">{user.followingCount}</span>
                 <span className="text-muted-foreground ml-1">Following</span>
               </Link>
-              <Link 
+              <Link
                 to={`/profile/${user._id}/followers`}
                 className="text-sm hover:text-primary transition-smooth"
               >

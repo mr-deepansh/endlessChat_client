@@ -16,8 +16,8 @@ export const hasAdminRights = (user: User | null): boolean => {
 };
 
 export const getUserDisplayName = (user: User): string => {
-  return user.firstName && user.lastName 
-    ? `${user.firstName} ${user.lastName}` 
+  return user.firstName && user.lastName
+    ? `${user.firstName} ${user.lastName}`
     : user.username || 'User';
 };
 

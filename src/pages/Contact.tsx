@@ -14,18 +14,18 @@ const Contact = () => {
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     setTimeout(() => {
       toast({
-        title: "Message Sent!",
+        title: 'Message Sent!',
         description: "Thank you for reaching out. We'll get back to you soon.",
       });
       setFormData({ name: '', email: '', subject: '', message: '' });
@@ -36,20 +36,18 @@ const Contact = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
   return (
     <div className="min-h-screen">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">
-            Get in Touch
-          </h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">Get in Touch</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Have questions, feedback, or just want to say hello? We'd love to hear from you.
           </p>
@@ -69,7 +67,9 @@ const Contact = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="contact-name" className="text-sm font-medium mb-2 block">Name</label>
+                      <label htmlFor="contact-name" className="text-sm font-medium mb-2 block">
+                        Name
+                      </label>
                       <Input
                         id="contact-name"
                         name="name"
@@ -80,7 +80,9 @@ const Contact = () => {
                       />
                     </div>
                     <div>
-                      <label htmlFor="contact-email" className="text-sm font-medium mb-2 block">Email</label>
+                      <label htmlFor="contact-email" className="text-sm font-medium mb-2 block">
+                        Email
+                      </label>
                       <Input
                         id="contact-email"
                         name="email"
@@ -93,7 +95,9 @@ const Contact = () => {
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="contact-subject" className="text-sm font-medium mb-2 block">Subject</label>
+                    <label htmlFor="contact-subject" className="text-sm font-medium mb-2 block">
+                      Subject
+                    </label>
                     <Input
                       id="contact-subject"
                       name="subject"
@@ -104,7 +108,9 @@ const Contact = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="contact-message" className="text-sm font-medium mb-2 block">Message</label>
+                    <label htmlFor="contact-message" className="text-sm font-medium mb-2 block">
+                      Message
+                    </label>
                     <Textarea
                       id="contact-message"
                       name="message"
@@ -115,10 +121,10 @@ const Contact = () => {
                       required
                     />
                   </div>
-                  <Button 
-                    type="submit" 
-                    variant="gradient" 
-                    size="lg" 
+                  <Button
+                    type="submit"
+                    variant="gradient"
+                    size="lg"
                     className="w-full"
                     disabled={isSubmitting}
                   >
@@ -140,8 +146,8 @@ const Contact = () => {
               <div>
                 <h2 className="text-2xl font-bold mb-6">Let's Connect</h2>
                 <p className="text-muted-foreground mb-8">
-                  Whether you have questions about features, need technical support, or want to share feedback, 
-                  we're here to help. Choose the best way to reach us.
+                  Whether you have questions about features, need technical support, or want to
+                  share feedback, we're here to help. Choose the best way to reach us.
                 </p>
               </div>
 
@@ -156,7 +162,10 @@ const Contact = () => {
                       <p className="text-muted-foreground text-sm mb-2">
                         For general inquiries and support
                       </p>
-                      <a href="mailto:support@endlesschat.com" className="text-primary hover:underline">
+                      <a
+                        href="mailto:support@endlesschat.com"
+                        className="text-primary hover:underline"
+                      >
                         support@endlesschat.com
                       </a>
                     </div>
@@ -170,12 +179,10 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-2">Developer</h3>
-                      <p className="text-muted-foreground text-sm mb-2">
-                        Connect with the creator
-                      </p>
-                      <a 
-                        href="https://github.com/mr-deepansh" 
-                        target="_blank" 
+                      <p className="text-muted-foreground text-sm mb-2">Connect with the creator</p>
+                      <a
+                        href="https://github.com/mr-deepansh"
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
@@ -209,7 +216,11 @@ const Contact = () => {
                     <p className="text-white/90 text-sm mb-4">
                       Check out our FAQ section for instant answers to common questions.
                     </p>
-                    <Button variant="hero" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+                    <Button
+                      variant="hero"
+                      size="sm"
+                      className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                    >
                       View FAQ
                     </Button>
                   </div>

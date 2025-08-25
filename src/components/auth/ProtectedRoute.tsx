@@ -11,14 +11,14 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
   requireAuth = true,
   adminOnly = false,
-  redirectTo
+  redirectTo,
 }) => {
   let user, isLoading;
-  
+
   try {
     const authContext = useAuth();
     user = authContext.user;
@@ -33,7 +33,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       </div>
     );
   }
-  
+
   const location = useLocation();
 
   if (isLoading) {
@@ -49,7 +49,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If authentication is required but user is not logged in
   if (requireAuth && !user) {
-    return <Navigate to={redirectTo || "/login"} state={{ from: location }} replace />;
+    return <Navigate to={redirectTo || '/login'} state={{ from: location }} replace />;
   }
 
   // If admin access is required but user is not admin

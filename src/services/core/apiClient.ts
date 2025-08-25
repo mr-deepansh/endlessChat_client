@@ -58,11 +58,11 @@ class ApiClient {
         // Retry logic for network errors
         if (!error.response && originalRequest._retryCount < this.config.retryAttempts) {
           originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
-          
-          await new Promise(resolve => 
+
+          await new Promise(resolve =>
             setTimeout(resolve, this.config.retryDelay * originalRequest._retryCount)
           );
-          
+
           return this.client(originalRequest);
         }
 

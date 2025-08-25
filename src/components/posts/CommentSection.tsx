@@ -57,7 +57,7 @@ const CommentItem: React.FC<{
   const handleLike = () => {
     const newIsLiked = !isLiked;
     setIsLiked(newIsLiked);
-    setLikesCount(prev => newIsLiked ? prev + 1 : prev - 1);
+    setLikesCount(prev => (newIsLiked ? prev + 1 : prev - 1));
     onLike?.(comment._id);
   };
 
@@ -75,21 +75,24 @@ const CommentItem: React.FC<{
         <Avatar className="w-8 h-8">
           <AvatarImage src={comment.author.avatar} alt={comment.author.username} />
           <AvatarFallback className="text-xs">
-            {comment.author.firstName[0]}{comment.author.lastName[0]}
+            {comment.author.firstName[0]}
+            {comment.author.lastName[0]}
           </AvatarFallback>
         </Avatar>
-        
+
         <div className="flex-1 space-y-2">
           <div className="bg-muted/30 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center space-x-2">
-                <span className="font-medium text-sm">{comment.author.firstName} {comment.author.lastName}</span>
+                <span className="font-medium text-sm">
+                  {comment.author.firstName} {comment.author.lastName}
+                </span>
                 <span className="text-xs text-muted-foreground">@{comment.author.username}</span>
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                 </span>
               </div>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon-sm">
@@ -115,10 +118,10 @@ const CommentItem: React.FC<{
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            
+
             <p className="text-sm text-foreground">{comment.content}</p>
           </div>
-          
+
           <div className="flex items-center space-x-4 text-xs">
             <Button
               variant="ghost"
@@ -131,7 +134,7 @@ const CommentItem: React.FC<{
               <Heart className={`w-3 h-3 mr-1 ${isLiked ? 'fill-current' : ''}`} />
               {likesCount > 0 && likesCount}
             </Button>
-            
+
             {!isReply && (
               <Button
                 variant="ghost"
@@ -144,7 +147,7 @@ const CommentItem: React.FC<{
               </Button>
             )}
           </div>
-          
+
           {showReplyBox && (
             <div className="flex space-x-2 mt-2">
               <Avatar className="w-6 h-6">
@@ -154,7 +157,7 @@ const CommentItem: React.FC<{
                 <Textarea
                   placeholder="Write a reply..."
                   value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
+                  onChange={e => setReplyContent(e.target.value)}
                   className="min-h-[60px] text-sm"
                 />
                 <div className="flex space-x-2">
@@ -170,19 +173,20 @@ const CommentItem: React.FC<{
           )}
         </div>
       </div>
-      
+
       {/* Render replies */}
-      {comment.replies && comment.replies.map((reply) => (
-        <CommentItem
-          key={reply._id}
-          comment={reply}
-          currentUserId={currentUserId}
-          onLike={onLike}
-          onDelete={onDelete}
-          onReply={onReply}
-          isReply={true}
-        />
-      ))}
+      {comment.replies &&
+        comment.replies.map(reply => (
+          <CommentItem
+            key={reply._id}
+            comment={reply}
+            currentUserId={currentUserId}
+            onLike={onLike}
+            onDelete={onDelete}
+            onReply={onReply}
+            isReply={true}
+          />
+        ))}
     </div>
   );
 };
@@ -200,7 +204,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;
-    
+
     setIsSubmitting(true);
     try {
       await onAddComment?.(postId, newComment);
@@ -227,7 +231,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               <Textarea
                 placeholder="Write a comment..."
                 value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                onChange={e => setNewComment(e.target.value)}
                 className="min-h-[80px] border-none bg-muted/30 focus-visible:ring-0"
               />
               <div className="flex justify-end">
@@ -242,7 +246,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               </div>
             </div>
           </div>
-          
+
           {/* Comments List */}
           <div className="space-y-1">
             {comments.length === 0 ? (
@@ -250,7 +254,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 No comments yet. Be the first to comment!
               </p>
             ) : (
-              comments.map((comment) => (
+              comments.map(comment => (
                 <CommentItem
                   key={comment._id}
                   comment={comment}

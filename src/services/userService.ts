@@ -99,7 +99,10 @@ export const userService = {
   // Authentication
   login: async (data: LoginData): Promise<{ data: { user: User; accessToken: string } }> => {
     console.log('🔄 UserService: Sending login data:', data);
-    const response = await api.post<{ data: { user: User; accessToken: string } }>('/users/login', data);
+    const response = await api.post<{ data: { user: User; accessToken: string } }>(
+      '/users/login',
+      data
+    );
     console.log('📊 UserService: Login response:', response);
     return response;
   },
@@ -131,20 +134,18 @@ export const userService = {
 
   // Profile Management
   getProfile: async (): Promise<User> => {
-    return withErrorHandling(
-      () => api.get<User>('/users/profile/me'),
-      'Failed to load profile'
-    );
+    return withErrorHandling(() => api.get<User>('/users/profile/me'), 'Failed to load profile');
   },
 
   getUserProfile: async (userId: string): Promise<User> => {
     return withErrorHandling(
-      () => api.get<User>(`/users/${userId}`, {
-        cache: {
-          ttl: 10 * 60 * 1000, // 10 minutes
-          tags: ['user', `user_${userId}`]
-        }
-      }),
+      () =>
+        api.get<User>(`/users/${userId}`, {
+          cache: {
+            ttl: 10 * 60 * 1000, // 10 minutes
+            tags: ['user', `user_${userId}`],
+          },
+        }),
       'Failed to load user profile'
     );
   },
@@ -163,9 +164,18 @@ export const userService = {
     );
   },
 
-  changePassword: async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ message: string }> => {
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string,
+    confirmNewPassword: string
+  ): Promise<{ message: string }> => {
     return withErrorHandling(
-      () => api.post<{ message: string }>('/users/change-password', { currentPassword, newPassword, confirmNewPassword }),
+      () =>
+        api.post<{ message: string }>('/users/change-password', {
+          currentPassword,
+          newPassword,
+          confirmNewPassword,
+        }),
       'Failed to change password'
     );
   },
@@ -217,7 +227,7 @@ export const userService = {
           followingCount: 0,
           mutualFollowersCount: 0,
           likesReceived: 0,
-          commentsReceived: 0
+          commentsReceived: 0,
         };
       }
       throw error;
@@ -228,10 +238,7 @@ export const userService = {
   getUserPosts: async (userId?: string): Promise<Post[]> => {
     const endpoint = userId ? `/posts/user/${userId}` : '/posts/me';
     try {
-      return await withErrorHandling(
-        () => api.get<Post[]>(endpoint),
-        'Failed to load posts'
-      );
+      return await withErrorHandling(() => api.get<Post[]>(endpoint), 'Failed to load posts');
     } catch (error: any) {
       // Return empty array if endpoint doesn't exist yet
       if (error.response?.status === 404) {
@@ -260,7 +267,7 @@ export const userService = {
         }
       });
     }
-    
+
     return api.get<User[]>(`/users?${queryParams.toString()}`);
   },
 
@@ -284,14 +291,15 @@ export const userService = {
         }
       });
     }
-    
+
     return withErrorHandling(
-      () => api.get<any[]>(`/users/feed?${queryParams.toString()}`, {
-        cache: {
-          ttl: 30 * 1000, // 30 seconds for feed
-          tags: ['feed', 'posts']
-        }
-      }),
+      () =>
+        api.get<any[]>(`/users/feed?${queryParams.toString()}`, {
+          cache: {
+            ttl: 30 * 1000, // 30 seconds for feed
+            tags: ['feed', 'posts'],
+          },
+        }),
       'Failed to load feed'
     );
   },

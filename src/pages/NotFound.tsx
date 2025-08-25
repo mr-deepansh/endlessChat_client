@@ -1,16 +1,13 @@
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Home, Search, ArrowLeft, AlertTriangle } from "lucide-react";
+import { useLocation, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Home, Search, ArrowLeft, AlertTriangle } from 'lucide-react';
 
 const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
+    console.error('404 Error: User attempted to access non-existent route:', location.pathname);
   }, [location.pathname]);
 
   return (
@@ -34,7 +31,10 @@ const NotFound = () => {
       <div className="max-w-2xl mx-auto text-center p-8 relative z-10">
         {/* 3D Rotating Cube */}
         <div className="perspective-1000 mb-12">
-          <div className="cube-3d mx-auto relative float-animation" style={{ width: '100px', height: '100px' }}>
+          <div
+            className="cube-3d mx-auto relative float-animation"
+            style={{ width: '100px', height: '100px' }}
+          >
             <div className="cube-face flex items-center justify-center">
               <span className="text-2xl font-bold text-primary">4</span>
             </div>
@@ -60,9 +60,10 @@ const NotFound = () => {
           Page Not Found
         </h1>
         <p className="text-muted-foreground mb-8 leading-relaxed text-lg max-w-md mx-auto animate-fade-in">
-          Oops! The page you're looking for seems to have vanished into the digital void. Let's get you back on track.
+          Oops! The page you're looking for seems to have vanished into the digital void. Let's get
+          you back on track.
         </p>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in">
           <Button asChild className="w-full transition-spring hover-scale" variant="gradient">
             <Link to="/">
@@ -76,8 +77,8 @@ const NotFound = () => {
               Go to Feed
             </Link>
           </Button>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => window.history.back()}
             className="w-full transition-spring hover-scale"
           >

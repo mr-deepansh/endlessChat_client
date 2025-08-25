@@ -15,11 +15,8 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
       {/* Modal Content */}
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* Close Button */}
@@ -31,7 +28,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
         >
           <X className="w-6 h-6" />
         </Button> */}
-        
+
         {children}
       </div>
     </div>

@@ -27,7 +27,11 @@ export const commentService = {
   },
 
   // Get post comments
-  getPostComments: async (postId: string, cursor?: string, limit: number = 20): Promise<CommentsResponse> => {
+  getPostComments: async (
+    postId: string,
+    cursor?: string,
+    limit: number = 20
+  ): Promise<CommentsResponse> => {
     const params = new URLSearchParams();
     if (cursor) params.append('cursor', cursor);
     params.append('limit', limit.toString());
@@ -39,7 +43,11 @@ export const commentService = {
   },
 
   // Get comment replies
-  getCommentReplies: async (commentId: string, cursor?: string, limit: number = 10): Promise<CommentsResponse> => {
+  getCommentReplies: async (
+    commentId: string,
+    cursor?: string,
+    limit: number = 10
+  ): Promise<CommentsResponse> => {
     const params = new URLSearchParams();
     if (cursor) params.append('cursor', cursor);
     params.append('limit', limit.toString());

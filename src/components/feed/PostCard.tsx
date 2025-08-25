@@ -42,7 +42,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   onLike,
   onComment,
   onRepost,
-  onBookmark
+  onBookmark,
 }) => {
   const [isLiking, setIsLiking] = useState(false);
   const [isReposting, setIsReposting] = useState(false);
@@ -77,7 +77,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               {post.author.firstName?.[0] || post.author.username?.[0] || 'U'}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
@@ -112,7 +112,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            
+
             <div className="mt-2">
               <p className="text-foreground whitespace-pre-wrap break-words">
                 {post.content.split(/(@\w+|#\w+)/g).map((part, index) => {
@@ -132,7 +132,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   return part;
                 })}
               </p>
-              
+
               {post.media && post.media.length > 0 && (
                 <div className="mt-3 rounded-lg overflow-hidden">
                   <img
@@ -143,7 +143,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className="flex items-center justify-between mt-4">
               <Button
                 variant="ghost"
@@ -154,7 +154,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <MessageCircle className="w-4 h-4" />
                 <span className="text-sm">{post.commentsCount}</span>
               </Button>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -179,7 +179,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -192,7 +192,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
                 <span className="text-sm">{post.likesCount}</span>
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"

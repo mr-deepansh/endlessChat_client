@@ -39,20 +39,26 @@ export const socialService = {
   },
 
   // Followers/Following
-  getFollowers: async (userId: string, params?: { limit?: number; page?: number }): Promise<User[]> => {
+  getFollowers: async (
+    userId: string,
+    params?: { limit?: number; page?: number }
+  ): Promise<User[]> => {
     const queryParams = new URLSearchParams();
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.page) queryParams.append('page', params.page.toString());
-    
+
     const query = queryParams.toString();
     return api.get<User[]>(`/users/followers/${userId}${query ? `?${query}` : ''}`);
   },
 
-  getFollowing: async (userId: string, params?: { limit?: number; page?: number }): Promise<User[]> => {
+  getFollowing: async (
+    userId: string,
+    params?: { limit?: number; page?: number }
+  ): Promise<User[]> => {
     const queryParams = new URLSearchParams();
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.page) queryParams.append('page', params.page.toString());
-    
+
     const query = queryParams.toString();
     return api.get<User[]>(`/users/following/${userId}${query ? `?${query}` : ''}`);
   },
@@ -63,7 +69,7 @@ export const socialService = {
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.sort) queryParams.append('sort', params.sort);
-    
+
     const query = queryParams.toString();
     return api.get<FeedPost[]>(`/users/feed${query ? `?${query}` : ''}`);
   },

@@ -26,14 +26,14 @@ const apiClient = axios.create({
 
 // Request interceptor for auth token
 apiClient.interceptors.request.use(
-  (config) => {
+  config => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error)
 );
 
 // Response interceptor for error handling
@@ -43,7 +43,7 @@ apiClient.interceptors.response.use(
       console.log('API Response:', {
         url: response.config.url,
         status: response.status,
-        data: response.data
+        data: response.data,
       });
     }
     return response;
@@ -55,14 +55,14 @@ apiClient.interceptors.response.use(
       console.error('API Error:', {
         url: error.config?.url,
         status: error.response?.status,
-        message: error.response?.data || error.message
+        message: error.response?.data || error.message,
       });
     }
 
     // Handle 401 errors (unauthorized) - but don't redirect during login attempts
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       // Don't redirect if this is a login request
       if (!originalRequest.url?.includes('/login') && !originalRequest.url?.includes('/register')) {
         localStorage.removeItem('token');
@@ -79,12 +79,11 @@ apiClient.interceptors.response.use(
     // Handle network errors with retry logic
     if (!error.response && originalRequest._retryCount < API_CONFIG.retryAttempts) {
       originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
-      
-      await new Promise(resolve => 
+
+      await new Promise(resolve =>
         setTimeout(resolve, API_CONFIG.retryDelay * originalRequest._retryCount)
       );
-      
-      
+
       return apiClient(originalRequest);
     }
 
@@ -142,7 +141,8 @@ export const api = {
 
 // Helper functions
 export const handleApiError = (error: any, defaultMessage: string = 'An error occurred') => {
-  const message = (error as any)?.response?.data?.message || (error as any)?.message || defaultMessage;
+  const message =
+    (error as any)?.response?.data?.message || (error as any)?.message || defaultMessage;
   console.error('API Error:', message);
   throw error;
 };
@@ -162,7 +162,7 @@ export const withErrorHandling = async <T>(
       status: error.response?.status,
       message: error.response?.data?.message || error.message,
       url: error.config?.url,
-      method: error.config?.method
+      method: error.config?.method,
     });
     throw error;
   }

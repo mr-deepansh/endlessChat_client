@@ -8,21 +8,19 @@ interface LayoutProps {
   onFeedTypeChange?: (type: 'recent' | 'hot' | 'trending' | 'following') => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  showFeedFilters = false, 
-  feedType = 'recent', 
-  onFeedTypeChange 
+const Layout: React.FC<LayoutProps> = ({
+  children,
+  showFeedFilters = false,
+  feedType = 'recent',
+  onFeedTypeChange,
 }) => {
   return (
     <div className="min-h-screen bg-background">
-      <Navbar 
+      <Navbar
         feedType={showFeedFilters ? feedType : undefined}
         onFeedTypeChange={showFeedFilters ? onFeedTypeChange : undefined}
       />
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 };

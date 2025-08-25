@@ -28,14 +28,11 @@ class CacheService {
       data,
       timestamp: Date.now(),
       ttl,
-      tags: config?.tags
+      tags: config?.tags,
     };
 
     try {
-      localStorage.setItem(
-        this.prefix + key,
-        JSON.stringify(cacheItem)
-      );
+      localStorage.setItem(this.prefix + key, JSON.stringify(cacheItem));
     } catch (error) {
       console.warn('Cache set failed:', error);
     }
@@ -208,8 +205,11 @@ class CacheService {
 export const cacheService = new CacheService();
 
 // Auto cleanup every 5 minutes
-setInterval(() => {
-  cacheService.cleanup();
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    cacheService.cleanup();
+  },
+  5 * 60 * 1000
+);
 
 export default cacheService;

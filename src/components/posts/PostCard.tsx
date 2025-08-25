@@ -106,14 +106,14 @@ const PostCard: React.FC<PostCardProps> = ({
   const handleLike = () => {
     const newIsLiked = !isLiked;
     setIsLiked(newIsLiked);
-    setLikesCount(prev => newIsLiked ? prev + 1 : prev - 1);
+    setLikesCount(prev => (newIsLiked ? prev + 1 : prev - 1));
     onLike?.(post._id);
   };
 
   const handleRepost = () => {
     const newIsReposted = !isReposted;
     setIsReposted(newIsReposted);
-    setRepostsCount(prev => newIsReposted ? prev + 1 : prev - 1);
+    setRepostsCount(prev => (newIsReposted ? prev + 1 : prev - 1));
     onRepost?.(post._id);
   };
 
@@ -143,10 +143,14 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const getPostTypeIcon = () => {
     switch (post.type) {
-      case 'poll': return <BarChart3 className="w-4 h-4" />;
-      case 'article': return <FileText className="w-4 h-4" />;
-      case 'media': return <Eye className="w-4 h-4" />;
-      default: return null;
+      case 'poll':
+        return <BarChart3 className="w-4 h-4" />;
+      case 'article':
+        return <FileText className="w-4 h-4" />;
+      case 'media':
+        return <Eye className="w-4 h-4" />;
+      default:
+        return null;
     }
   };
 
@@ -156,10 +160,13 @@ const PostCard: React.FC<PostCardProps> = ({
         <Avatar className="w-6 h-6">
           <AvatarImage src={quotedPost.author.avatar} alt={quotedPost.author.username} />
           <AvatarFallback className="text-xs">
-            {quotedPost.author.firstName[0]}{quotedPost.author.lastName[0]}
+            {quotedPost.author.firstName[0]}
+            {quotedPost.author.lastName[0]}
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium">{quotedPost.author.firstName} {quotedPost.author.lastName}</span>
+        <span className="text-sm font-medium">
+          {quotedPost.author.firstName} {quotedPost.author.lastName}
+        </span>
         <span className="text-xs text-muted-foreground">@{quotedPost.author.username}</span>
       </div>
       <p className="text-sm text-foreground/80">{quotedPost.content}</p>
@@ -180,9 +187,10 @@ const PostCard: React.FC<PostCardProps> = ({
         </h4>
         <div className="space-y-2">
           {post.poll.options.map((option, index) => {
-            const percentage = post.poll!.totalVotes > 0 ? (option.votes / post.poll!.totalVotes) * 100 : 0;
+            const percentage =
+              post.poll!.totalVotes > 0 ? (option.votes / post.poll!.totalVotes) * 100 : 0;
             const isSelected = selectedPollOption === index;
-            
+
             return (
               <div key={index} className="relative">
                 <Button
@@ -201,9 +209,9 @@ const PostCard: React.FC<PostCardProps> = ({
                   </div>
                 </Button>
                 {(hasVoted || isExpired) && (
-                  <Progress 
-                    value={percentage} 
-                    className="absolute bottom-0 left-0 right-0 h-1 rounded-none" 
+                  <Progress
+                    value={percentage}
+                    className="absolute bottom-0 left-0 right-0 h-1 rounded-none"
                   />
                 )}
               </div>
@@ -229,7 +237,8 @@ const PostCard: React.FC<PostCardProps> = ({
             <Avatar className="w-12 h-12 ring-2 ring-primary/20">
               <AvatarImage src={post.author.avatar} alt={post.author.username} />
               <AvatarFallback className="bg-gradient-primary text-white">
-                {post.author.firstName[0]}{post.author.lastName[0]}
+                {post.author.firstName[0]}
+                {post.author.lastName[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
@@ -237,9 +246,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 <span className="font-semibold text-foreground">
                   {post.author.firstName} {post.author.lastName}
                 </span>
-                <span className="text-muted-foreground text-sm">
-                  @{post.author.username}
-                </span>
+                <span className="text-muted-foreground text-sm">@{post.author.username}</span>
                 <span className="text-muted-foreground text-sm">•</span>
                 <span className="text-muted-foreground text-sm">
                   {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
@@ -297,9 +304,7 @@ const PostCard: React.FC<PostCardProps> = ({
       <CardContent className="pt-0">
         <div className="space-y-4">
           {/* Post Content */}
-          <p className="text-foreground leading-relaxed whitespace-pre-wrap">
-            {post.content}
-          </p>
+          <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
 
           {/* Poll */}
           {renderPoll()}
@@ -355,7 +360,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 </DropdownMenuItem>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <DropdownMenuItem onSelect={e => e.preventDefault()}>
                       <Quote className="w-4 h-4 mr-2" />
                       Quote Repost
                     </DropdownMenuItem>
@@ -368,7 +373,7 @@ const PostCard: React.FC<PostCardProps> = ({
                       <Textarea
                         placeholder="Add your thoughts..."
                         value={quoteText}
-                        onChange={(e) => setQuoteText(e.target.value)}
+                        onChange={e => setQuoteText(e.target.value)}
                         className="min-h-[100px]"
                       />
                       {renderQuotedPost(post)}
@@ -391,7 +396,9 @@ const PostCard: React.FC<PostCardProps> = ({
                   : 'text-muted-foreground hover:text-social-like hover:bg-social-like/10 hover:scale-105'
               }`}
             >
-              <Heart className={`w-4 h-4 transition-all duration-200 ${isLiked ? 'fill-current animate-pulse' : ''}`} />
+              <Heart
+                className={`w-4 h-4 transition-all duration-200 ${isLiked ? 'fill-current animate-pulse' : ''}`}
+              />
               <span className="text-sm">{formatNumber(likesCount)}</span>
             </Button>
 

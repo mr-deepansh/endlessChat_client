@@ -7,18 +7,15 @@ interface LoadingSkeletonProps {
   height?: string;
 }
 
-export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ 
-  className = '', 
-  count = 1, 
-  height = 'h-4' 
+export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
+  className = '',
+  count = 1,
+  height = 'h-4',
 }) => {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className={`animate-pulse bg-muted rounded ${height} ${className}`}
-        />
+        <div key={i} className={`animate-pulse bg-muted rounded ${height} ${className}`} />
       ))}
     </>
   );
