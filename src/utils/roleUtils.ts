@@ -15,6 +15,23 @@ export const hasAdminRights = (user: User | null): boolean => {
   return isAdmin(user);
 };
 
+export const isRegularAdmin = (user: User | null): boolean => {
+  if (!user) return false;
+  return user.role === ROLES.ADMIN;
+};
+
+export const canManageUsers = (user: User | null): boolean => {
+  return isAdmin(user);
+};
+
+export const canManageAdmins = (user: User | null): boolean => {
+  return isSuperAdmin(user);
+};
+
+export const canAccessSystemSettings = (user: User | null): boolean => {
+  return isSuperAdmin(user);
+};
+
 export const getUserDisplayName = (user: User): string => {
   return user.firstName && user.lastName
     ? `${user.firstName} ${user.lastName}`

@@ -18,6 +18,7 @@ import Profile from './pages/Profile';
 import CurrentUserProfile from './pages/CurrentUserProfile';
 import Settings from './pages/Settings';
 import AdminDashboard from './pages/AdminDashboard';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
 
@@ -103,6 +104,16 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly={true}>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Super Admin only routes */}
+                <Route
+                  path="/super-admin"
+                  element={
+                    <ProtectedRoute superAdminOnly={true}>
+                      <SuperAdminDashboard />
                     </ProtectedRoute>
                   }
                 />

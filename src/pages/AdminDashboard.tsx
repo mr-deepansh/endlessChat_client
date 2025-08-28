@@ -1,9 +1,16 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import Footer from '@/components/layout/Footer';
+import Layout from '@/components/layout/Layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -12,32 +19,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { adminService, type AdminStats, type AdminUser } from '@/services/adminService';
 import { isAdmin } from '@/utils/roleUtils';
-import Layout from '@/components/layout/Layout';
-import Footer from '@/components/layout/Footer';
 import {
-  Users,
-  MessageSquare,
-  TrendingUp,
-  Shield,
-  Search,
-  MoreHorizontal,
-  UserCheck,
-  UserX,
-  Trash2,
   AlertTriangle,
   Download,
+  MessageSquare,
+  MoreHorizontal,
   RefreshCw,
+  Search,
+  Shield,
+  Trash2,
+  TrendingUp,
+  UserCheck,
+  Users,
+  UserX,
 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Constants
 const ITEMS_PER_PAGE = 50;
@@ -394,6 +394,7 @@ const AdminDashboard: React.FC = () => {
           'Last Active',
           'Followers',
           'Posts',
+          'Posts Count',
         ];
 
         const rows = users.map(user => [

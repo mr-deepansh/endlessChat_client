@@ -1,13 +1,14 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/utils/roleUtils';
+import { isAdmin, isSuperAdmin } from '@/utils/roleUtils';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean;
   adminOnly?: boolean;
+  superAdminOnly?: boolean;
   redirectTo?: string;
 }
 
@@ -15,6 +16,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAuth = true,
   adminOnly = false,
+  superAdminOnly = false,
   redirectTo,
 }) => {
   let user, isLoading;
@@ -54,6 +56,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If admin access is required but user is not admin
   if (adminOnly && !isAdmin(user)) {
+    return <Navigate to="/feed" replace />;
+  }
+  
+  // If super admin access is required but user is not super admin
+  if (superAdminOnly && !isSuperAdmin(user)) {
     return <Navigate to="/feed" replace />;
   }
 
