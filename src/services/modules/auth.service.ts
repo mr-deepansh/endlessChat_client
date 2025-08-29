@@ -1,149 +1,231 @@
 import { apiClient } from '../core/apiClient';
 import {
+  ApiResponse,
   LoginRequest,
-  LoginResponse,
   RegisterRequest,
-  ChangePasswordRequest,
-  MessageResponse,
+  AuthResponse,
   User,
-} from '../core/types';
+  ChangePasswordRequest,
+  ActivityLog,
+  LocationAnalytics,
+} from '../../types/api';
 
-/**
- * Authentication Service
- * Handles all authentication-related API calls
- */
 class AuthService {
   private readonly baseUrl = '/users';
+  private readonly authUrl = '/auth';
 
-  /**
-   * User login
-   */
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>(`${this.baseUrl}/login`, credentials);
-    return response.data;
-  }
+  // Authentication Methods
+  async login(credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> {
+    const response = await apiClient.post<AuthResponse>(`${this.baseUrl}/login`, credentials);
 
-  /**
-   * User registration
-   */
-  async register(userData: RegisterRequest): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/register`, userData);
-    return response.data;
-  }
+    if (response.success && response.data) {
+      // Extract token from response data
+      const token = response.data.token || response.data.accessToken;
 
-  /**
-   * User logout
-   */
-  async logout(): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(`${this.baseUrl}/logout`);
-    return response.data;
-  }
-
-  /**
-   * Change password
-   */
-  async changePassword(passwordData: ChangePasswordRequest): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>(
-      `${this.baseUrl}/change-password`,
-      passwordData
-    );
-    return response.data;
-  }
-
-  /**
-   * Refresh access token
-   */
-  async refreshToken(
-    refreshToken: string
-  ): Promise<{ accessToken: string; refreshToken?: string }> {
-    const response = await apiClient.post<{ accessToken: string; refreshToken?: string }>(
-      '/auth/refresh',
-      {
-        refreshToken,
+      if (token) {
+        apiClient.setToken(token);
+        console.log('Token stored successfully:', token.substring(0, 20) + '...');
       }
-    );
-    return response.data;
+
+      // Store refresh token if provided
+      const refreshToken = response.data.refreshToken || response.data.refresh_token;
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
+      }
+    }
+
+    return response;
   }
 
-  /**
-   * Forgot password
-   */
-  async forgotPassword(email: string): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>('/auth/forgot-password', { email });
-    return response.data;
+  async register(userData: RegisterRequest): Promise<ApiResponse<AuthResponse>> {
+    const response = await apiClient.post<AuthResponse>(`${this.baseUrl}/register`, userData);
+
+    if (response.success && response.data?.token) {
+      apiClient.setToken(response.data.token);
+
+      if (response.data.refreshToken) {
+        localStorage.setItem('refresh_token', response.data.refreshToken);
+      }
+    }
+
+    return response;
   }
 
-  /**
-   * Reset password
-   */
-  async resetPassword(token: string, newPassword: string): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>('/auth/reset-password', {
-      token,
-      newPassword,
-    });
-    return response.data;
-  }
-
-  /**
-   * Verify email
-   */
-  async verifyEmail(token: string): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>('/auth/verify-email', { token });
-    return response.data;
-  }
-
-  /**
-   * Resend verification email
-   */
-  async resendVerificationEmail(email: string): Promise<MessageResponse> {
-    const response = await apiClient.post<MessageResponse>('/auth/resend-verification', { email });
-    return response.data;
-  }
-
-  /**
-   * Check if user is authenticated
-   */
-  isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
-    if (!token) return false;
-
+  async logout(): Promise<ApiResponse<void>> {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp * 1000 > Date.now();
-    } catch {
-      return false;
+      const response = await apiClient.post<void>(`${this.baseUrl}/logout`);
+      return response;
+    } finally {
+      // Always clear local auth data
+      apiClient.clearAuth();
     }
   }
 
-  /**
-   * Get current user from token
-   */
-  getCurrentUserFromToken(): Partial<User> | null {
-    const token = localStorage.getItem('token');
+  async refreshToken(): Promise<ApiResponse<{ token: string }>> {
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const response = await apiClient.post<{ token: string }>(`${this.authUrl}/refresh`, {
+      refreshToken,
+    });
+
+    if (response.success && response.data?.token) {
+      apiClient.setToken(response.data.token);
+    }
+
+    return response;
+  }
+
+  // Profile Management
+  async getCurrentUser(): Promise<ApiResponse<User>> {
+    return apiClient.get<User>(`${this.baseUrl}/profile/me`);
+  }
+
+  async updateProfile(profileData: Partial<User>): Promise<ApiResponse<User>> {
+    return apiClient.put<User>(`${this.baseUrl}/profile/me`, profileData);
+  }
+
+  async changePassword(passwordData: ChangePasswordRequest): Promise<ApiResponse<void>> {
+    return apiClient.post<void>(`${this.baseUrl}/change-password`, passwordData);
+  }
+
+  async uploadAvatar(avatarData: {
+    avatarUrl: string;
+  }): Promise<ApiResponse<{ avatarUrl: string }>> {
+    return apiClient.post<{ avatarUrl: string }>(`${this.baseUrl}/upload-avatar`, avatarData);
+  }
+
+  // Activity & Location Tracking
+  async getActivityStats(days: number = 30): Promise<
+    ApiResponse<{
+      totalLogins: number;
+      uniqueLocations: number;
+      averageSessionDuration: number;
+      lastLoginAt: string;
+    }>
+  > {
+    const queryString = apiClient.buildQueryString({ days });
+    return apiClient.get(`${this.authUrl}/activity/stats${queryString}`);
+  }
+
+  async getActivityLogs(
+    params: {
+      page?: number;
+      limit?: number;
+    } = {}
+  ): Promise<ApiResponse<ActivityLog[]>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get<ActivityLog[]>(`${this.authUrl}/activity${queryString}`);
+  }
+
+  async getLocationAnalytics(days: number = 7): Promise<ApiResponse<LocationAnalytics[]>> {
+    const queryString = apiClient.buildQueryString({ days });
+    return apiClient.get<LocationAnalytics[]>(
+      `${this.authUrl}/activity/location-analytics${queryString}`
+    );
+  }
+
+  async getLoginLocations(
+    params: {
+      limit?: number;
+      days?: number;
+    } = {}
+  ): Promise<
+    ApiResponse<
+      Array<{
+        country: string;
+        city: string;
+        region: string;
+        lastLoginAt: string;
+        loginCount: number;
+      }>
+    >
+  > {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.authUrl}/activity/locations${queryString}`);
+  }
+
+  // Password Reset (if implemented in backend)
+  async forgotPassword(email: string): Promise<ApiResponse<void>> {
+    return apiClient.post<void>(`${this.authUrl}/forgot-password`, { email });
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<ApiResponse<void>> {
+    return apiClient.post<void>(`${this.authUrl}/reset-password`, {
+      token,
+      newPassword,
+    });
+  }
+
+  // Email Verification (if implemented in backend)
+  async verifyEmail(token: string): Promise<ApiResponse<void>> {
+    return apiClient.post<void>(`${this.authUrl}/verify-email`, { token });
+  }
+
+  async resendVerificationEmail(): Promise<ApiResponse<void>> {
+    return apiClient.post<void>(`${this.authUrl}/resend-verification`);
+  }
+
+  // Utility Methods
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('auth_token');
+  }
+
+  getCurrentToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
+  getUserFromToken(): User | null {
+    const token = this.getCurrentToken();
     if (!token) return null;
 
     try {
+      // Decode JWT token to get user info (basic implementation)
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return {
-        _id: payload._id,
-        email: payload.email,
-        username: payload.username,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        role: payload.role,
-        isActive: payload.isActive,
-      };
+      return payload.user || null;
     } catch {
       return null;
     }
   }
 
-  /**
-   * Clear authentication data
-   */
-  clearAuth(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
+  // Session Management
+  async validateSession(): Promise<boolean> {
+    try {
+      const response = await this.getCurrentUser();
+      return response.success;
+    } catch {
+      return false;
+    }
+  }
+
+  async extendSession(): Promise<ApiResponse<void>> {
+    return apiClient.post<void>(`${this.authUrl}/extend-session`);
+  }
+
+  // Security Methods
+  async getActiveSessions(): Promise<
+    ApiResponse<
+      Array<{
+        id: string;
+        device: string;
+        location: string;
+        lastActive: string;
+        isCurrent: boolean;
+      }>
+    >
+  > {
+    return apiClient.get(`${this.authUrl}/sessions`);
+  }
+
+  async terminateSession(sessionId: string): Promise<ApiResponse<void>> {
+    return apiClient.delete(`${this.authUrl}/sessions/${sessionId}`);
+  }
+
+  async terminateAllSessions(): Promise<ApiResponse<void>> {
+    return apiClient.delete(`${this.authUrl}/sessions/all`);
   }
 }
 

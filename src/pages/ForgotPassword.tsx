@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import worldHeroImage from '@/assets/world-hero.jpg';
 import axios from 'axios';
 
 const ForgotPassword = () => {
@@ -40,15 +39,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={worldHeroImage}
-          alt="Social platform background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      </div>
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" />
 
       {/* Forgot Password Form */}
       <div className="relative z-10 w-full max-w-md">
@@ -60,7 +51,7 @@ const ForgotPassword = () => {
             <CardTitle className="text-2xl font-bold gradient-text">
               {isEmailSent ? 'Check Your Email' : 'Forgot Password?'}
             </CardTitle>
-            <CardDescription className="text-white/80">
+            <CardDescription className="text-muted-foreground">
               {isEmailSent
                 ? 'We have sent password reset instructions to your email'
                 : 'Enter your email address and we will send you reset instructions'}
@@ -70,11 +61,11 @@ const ForgotPassword = () => {
             {!isEmailSent ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white/90">
+                  <Label htmlFor="email" className="text-foreground">
                     Email
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                       id="email"
                       type="email"
@@ -82,7 +73,7 @@ const ForgotPassword = () => {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       required
-                      className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
+                      className="pl-10 bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:bg-background/80"
                     />
                   </div>
                 </div>
@@ -99,13 +90,13 @@ const ForgotPassword = () => {
             ) : (
               <div className="space-y-4">
                 <div className="text-center">
-                  <p className="text-white/80 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Didn't receive the email? Check your spam folder or try again.
                   </p>
                   <Button
                     onClick={() => setIsEmailSent(false)}
                     variant="outline"
-                    className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    className="w-full"
                   >
                     Try Again
                   </Button>
@@ -116,7 +107,7 @@ const ForgotPassword = () => {
             <div className="mt-6 text-center">
               <Link
                 to="/login"
-                className="inline-flex items-center text-white/60 hover:text-white/80 text-sm"
+                className="inline-flex items-center text-muted-foreground hover:text-foreground text-sm hover:underline"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Login

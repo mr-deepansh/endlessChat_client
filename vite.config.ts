@@ -1,20 +1,18 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
+import { defineConfig } from 'vite';
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: '::',
     port: 8080,
     hmr: { overlay: false },
     open: false,
   },
-  plugins: [
-    react({ fastRefresh: true }),
-  ],
+  plugins: [react({ fastRefresh: true })],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   build: {
@@ -28,15 +26,18 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1000, // Increase default warning threshold
     minify: mode === 'production' ? 'terser' : false,
-    terserOptions: mode === 'production' ? {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log'],
-      },
-    } : undefined,
+    terserOptions:
+      mode === 'production'
+        ? {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+              pure_funcs: ['console.log'],
+            },
+          }
+        : undefined,
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],

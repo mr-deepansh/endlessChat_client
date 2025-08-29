@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import StepForm from '@/components/auth/StepForm';
-import worldHeroImage from '@/assets/world-hero.jpg';
+import { Button } from '@/components/ui/button';
+import { X, Home } from 'lucide-react';
 
 interface RegisterData {
   username: string;
@@ -39,14 +40,29 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={worldHeroImage}
-          alt="Social platform background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" />
+
+      <div className="absolute top-4 left-4 right-4 z-20 flex justify-between">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white/80 hover:text-white hover:bg-white/10"
+          asChild
+        >
+          <Link to="/">
+            <Home className="w-5 h-5" />
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white/80 hover:text-white hover:bg-white/10"
+          asChild
+        >
+          <Link to="/">
+            <X className="w-5 h-5" />
+          </Link>
+        </Button>
       </div>
 
       {/* Registration Form */}

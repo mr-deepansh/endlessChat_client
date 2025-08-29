@@ -1,15 +1,15 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 import { TrendingUp, Users, Hash } from 'lucide-react';
 
 interface SidebarProps {
   className?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
+const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const trendingTopics = [
     { tag: 'React', posts: '12.5K' },
     { tag: 'TypeScript', posts: '8.2K' },
@@ -113,22 +113,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Quick Stats */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-primary">2.5M</p>
-              <p className="text-xs text-muted-foreground">Active Users</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-primary">15K</p>
-              <p className="text-xs text-muted-foreground">Posts Today</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
+
+export default Sidebar;

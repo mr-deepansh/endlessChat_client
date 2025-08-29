@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Footer from '@/components/layout/Footer';
-import { Button } from '@/components/ui/button';
-import Navbar from '@/components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import { Button } from '../components/ui/button';
+import Navbar from '../components/layout/Navbar';
 import { Users, Heart, Globe, Code, Coffee, Github } from 'lucide-react';
 
 const About = () => {

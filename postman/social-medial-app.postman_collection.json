@@ -4,8 +4,7 @@
 		"name": "social-medial-app",
 		"description": "StartFragmentSocial Media Blog App: Backend application enabling user-driven content creation and sharing. Built with MongoDB, Express, Node.js, Jwt, Rate limiting, Role based access featuring secure authentication and blog management functionalities.EndFragment",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "31311755",
-		"{{server}}": "http://localhost:5000/api/v2"
+		"_exporter_id": "31311755"
 	},
 	"item": [
 		{
@@ -27,8 +26,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/logout",
-							"host": ["{{server}}"],
-							"path": ["users", "logout"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
 						}
 					},
 					"response": []
@@ -52,8 +56,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/register",
-							"host": ["{{server}}"],
-							"path": ["users", "register"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
 						}
 					},
 					"response": []
@@ -77,8 +86,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/login",
-							"host": ["{{server}}"],
-							"path": ["users", "login"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
 						}
 					},
 					"response": []
@@ -107,8 +121,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/change-password",
-							"host": ["{{server}}"],
-							"path": ["users", "change-password"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"change-password"
+							]
 						}
 					},
 					"response": []
@@ -135,8 +154,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/profile/me",
-							"host": ["{{server}}"],
-							"path": ["users", "profile", "me"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"me"
+							]
 						}
 					},
 					"response": []
@@ -160,8 +185,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/upload-avatar",
-							"host": ["{{server}}"],
-							"path": ["users", "upload-avatar"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"upload-avatar"
+							]
 						}
 					},
 					"response": []
@@ -185,8 +215,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/profile/me",
-							"host": ["{{server}}"],
-							"path": ["users", "profile", "me"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"me"
+							]
 						}
 					},
 					"response": []
@@ -218,8 +254,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/search?username=admin",
-							"host": ["{{server}}"],
-							"path": ["users", "search"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"search"
+							],
 							"query": [
 								{
 									"key": "username",
@@ -252,8 +293,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/feed",
-							"host": ["{{server}}"],
-							"path": ["users", "feed"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"feed"
+							]
 						}
 					},
 					"response": []
@@ -282,8 +328,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/unfollow/USER_ID",
-							"host": ["{{server}}"],
-							"path": ["users", "unfollow", "USER_ID"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"unfollow",
+								"USER_ID"
+							]
 						}
 					},
 					"response": []
@@ -307,8 +359,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/follow/USER_ID",
-							"host": ["{{server}}"],
-							"path": ["users", "follow", "USER_ID"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"follow",
+								"USER_ID"
+							]
 						}
 					},
 					"response": []
@@ -323,8 +381,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/users/followers/USER_ID?limit=50&page=1",
-							"host": ["{{server}}"],
-							"path": ["users", "followers", "USER_ID"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"followers",
+								"USER_ID"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -349,8 +413,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/users/following/687bf16b2d53b53b0369ebc2?limit=50&page=1",
-							"host": ["{{server}}"],
-							"path": ["users", "following", "687bf16b2d53b53b0369ebc2"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"following",
+								"687bf16b2d53b53b0369ebc2"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -375,8 +445,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/users/feed?limit=20&page=1&sort=recent",
-							"host": ["{{server}}"],
-							"path": ["users", "feed"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"feed"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -417,8 +492,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/stats",
-							"host": ["{{server}}"],
-							"path": ["admin", "stats"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"stats"
+							]
 						}
 					},
 					"response": []
@@ -440,8 +520,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/stats/live",
-							"host": ["{{server}}"],
-							"path": ["admin", "stats", "live"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"stats",
+								"live"
+							]
 						}
 					},
 					"response": []
@@ -463,8 +549,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/users",
-							"host": ["{{server}}"],
-							"path": ["admin", "users"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
 						}
 					},
 					"response": []
@@ -488,8 +579,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/users/user-Id",
-							"host": ["{{server}}"],
-							"path": ["admin", "users", "user-Id"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"user-Id"
+							]
 						}
 					},
 					"response": []
@@ -508,8 +605,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/users/USER-ID",
-							"host": ["{{server}}"],
-							"path": ["admin", "users", "USER-ID"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID"
+							]
 						}
 					},
 					"response": []
@@ -531,8 +634,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/users/USER-ID",
-							"host": ["{{server}}"],
-							"path": ["admin", "users", "USER-ID"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID"
+							]
 						}
 					},
 					"response": []
@@ -551,8 +660,15 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/users/USER-ID/activate",
-							"host": ["{{server}}"],
-							"path": ["admin", "users", "USER-ID", "activate"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID",
+								"activate"
+							]
 						}
 					},
 					"response": []
@@ -576,8 +692,15 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/users/USER-ID/suspend",
-							"host": ["{{server}}"],
-							"path": ["admin", "users", "USER-ID", "suspend"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID",
+								"suspend"
+							]
 						}
 					},
 					"response": []
@@ -599,8 +722,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/admins",
-							"host": ["{{server}}"],
-							"path": ["admin", "admins"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"admins"
+							]
 						}
 					},
 					"response": []
@@ -622,8 +750,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/admins/:adminID",
-							"host": ["{{server}}"],
-							"path": ["admin", "admins", ":adminID"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"admins",
+								":adminID"
+							],
 							"variable": [
 								{
 									"key": "adminID",
@@ -644,8 +778,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/dashboard",
-							"host": ["{{server}}"],
-							"path": ["admin", "dashboard"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"dashboard"
+							]
 						}
 					},
 					"response": []
@@ -667,8 +806,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/sessions/analytics?timeRange=30d",
-							"host": ["{{server}}"],
-							"path": ["admin", "sessions", "analytics"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"sessions",
+								"analytics"
+							],
 							"query": [
 								{
 									"key": "timeRange",
@@ -696,8 +841,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/sessions/admin-Id",
-							"host": ["{{server}}"],
-							"path": ["admin", "sessions", "admin-Id"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"sessions",
+								"admin-Id"
+							]
 						}
 					},
 					"response": []
@@ -719,8 +870,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/analytics/overview?timeRange=30d",
-							"host": ["{{server}}"],
-							"path": ["admin", "analytics", "overview"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"overview"
+							],
 							"query": [
 								{
 									"key": "timeRange",
@@ -748,8 +905,15 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/analytics/users/growth?period=daily&days=30",
-							"host": ["{{server}}"],
-							"path": ["admin", "analytics", "users", "growth"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"users",
+								"growth"
+							],
 							"query": [
 								{
 									"key": "period",
@@ -781,8 +945,15 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/analytics/users/demographics",
-							"host": ["{{server}}"],
-							"path": ["admin", "analytics", "users", "demographics"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"users",
+								"demographics"
+							]
 						}
 					},
 					"response": []
@@ -802,8 +973,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/security/suspicious-accounts?page=1&limit=20&riskLevel=high",
-							"host": ["{{server}}"],
-							"path": ["admin", "security", "suspicious-accounts"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"suspicious-accounts"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -844,8 +1021,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/security/blocked-ips",
-							"host": ["{{server}}"],
-							"path": ["admin", "security", "blocked-ips"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"blocked-ips"
+							]
 						}
 					},
 					"response": []
@@ -860,8 +1043,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/security/login-attempts?status=failed&timeRange=24h",
-							"host": ["{{server}}"],
-							"path": ["admin", "security", "login-attempts"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"login-attempts"
+							],
 							"query": [
 								{
 									"key": "status",
@@ -893,8 +1082,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/security/blocked-ips?page=1&limit=20",
-							"host": ["{{server}}"],
-							"path": ["admin", "security", "blocked-ips"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"blocked-ips"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -928,8 +1123,15 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/security/blocked-ips/{{ipId}}",
-							"host": ["{{server}}"],
-							"path": ["admin", "security", "blocked-ips", "{{ipId}}"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"blocked-ips",
+								"{{ipId}}"
+							]
 						}
 					},
 					"response": []
@@ -956,8 +1158,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/security/threat-detection",
-							"host": ["{{server}}"],
-							"path": ["admin", "security", "threat-detection"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"threat-detection"
+							]
 						}
 					},
 					"response": []
@@ -986,7 +1194,9 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/content/posts/{{postId}}/toggle-visibility",
-							"host": ["{{server}}"],
+							"host": [
+								"{{server}}"
+							],
 							"path": [
 								"admin",
 								"content",
@@ -1008,8 +1218,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/content/posts?page=1&limit=20&status=published",
-							"host": ["{{server}}"],
-							"path": ["admin", "content", "posts"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"content",
+								"posts"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1043,8 +1259,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/config/app-settings",
-							"host": ["{{server}}"],
-							"path": ["admin", "config", "app-settings"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"config",
+								"app-settings"
+							]
 						}
 					},
 					"response": []
@@ -1068,8 +1290,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/config/app-settings",
-							"host": ["{{server}}"],
-							"path": ["admin", "config", "app-settings"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"config",
+								"app-settings"
+							]
 						}
 					},
 					"response": []
@@ -1089,8 +1317,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/notifications/templates?type=email",
-							"host": ["{{server}}"],
-							"path": ["admin", "notifications", "templates"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"notifications",
+								"templates"
+							],
 							"query": [
 								{
 									"key": "type",
@@ -1120,8 +1354,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/notifications/send-bulk",
-							"host": ["{{server}}"],
-							"path": ["admin", "notifications", "send-bulk"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"notifications",
+								"send-bulk"
+							]
 						}
 					},
 					"response": []
@@ -1141,8 +1381,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/monitoring/database-stats",
-							"host": ["{{server}}"],
-							"path": ["admin", "monitoring", "database-stats"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"monitoring",
+								"database-stats"
+							]
 						}
 					},
 					"response": []
@@ -1157,8 +1403,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/monitoring/database-stats",
-							"host": ["{{server}}"],
-							"path": ["admin", "monitoring", "database-stats"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"monitoring",
+								"database-stats"
+							]
 						}
 					},
 					"response": []
@@ -1170,8 +1422,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/analytics/users/retention?period=weekly&weeks=12",
-							"host": ["{{server}}"],
-							"path": ["admin", "analytics", "users", "retention"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"users",
+								"retention"
+							],
 							"query": [
 								{
 									"key": "period",
@@ -1198,8 +1457,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/automation/rules?status=active",
-							"host": ["{{server}}"],
-							"path": ["admin", "automation", "rules"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"automation",
+								"rules"
+							],
 							"query": [
 								{
 									"key": "status",
@@ -1229,8 +1494,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/automation/rules",
-							"host": ["{{server}}"],
-							"path": ["admin", "automation", "rules"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"automation",
+								"rules"
+							]
 						}
 					},
 					"response": []
@@ -1242,8 +1513,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/experiments?status=running",
-							"host": ["{{server}}"],
-							"path": ["admin", "experiments"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"experiments"
+							],
 							"query": [
 								{
 									"key": "status",
@@ -1270,8 +1546,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/experiments",
-							"host": ["{{server}}"],
-							"path": ["admin", "experiments"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"experiments"
+							]
 						}
 					},
 					"response": []
@@ -1291,8 +1572,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/bi/revenue-analytics?period=30d",
-							"host": ["{{server}}"],
-							"path": ["admin", "bi", "revenue-analytics"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"bi",
+								"revenue-analytics"
+							],
 							"query": [
 								{
 									"key": "period",
@@ -1313,8 +1600,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/bi/user-lifetime-value?segment=premium",
-							"host": ["{{server}}"],
-							"path": ["admin", "bi", "user-lifetime-value"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"bi",
+								"user-lifetime-value"
+							],
 							"query": [
 								{
 									"key": "segment",
@@ -1332,8 +1625,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/analytics/engagement/metrics?timeRange=30d&metric=all",
-							"host": ["{{server}}"],
-							"path": ["admin", "analytics", "engagement", "metrics"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"engagement",
+								"metrics"
+							],
 							"query": [
 								{
 									"key": "timeRange",
@@ -1369,8 +1669,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/super-admin/create-admin",
-							"host": ["{{server}}"],
-							"path": ["admin", "super-admin", "create-admin"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"create-admin"
+							]
 						}
 					},
 					"response": []
@@ -1391,8 +1697,15 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/super-admin/delete-admin/{{adminId}}",
-							"host": ["{{server}}"],
-							"path": ["admin", "super-admin", "delete-admin", "{{adminId}}"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"delete-admin",
+								"{{adminId}}"
+							]
 						}
 					},
 					"response": []
@@ -1413,8 +1726,15 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/super-admin/change-role/USER_ID",
-							"host": ["{{server}}"],
-							"path": ["admin", "super-admin", "change-role", "USER_ID"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"change-role",
+								"USER_ID"
+							]
 						}
 					},
 					"response": []
@@ -1426,8 +1746,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/super-admin/system-config",
-							"host": ["{{server}}"],
-							"path": ["admin", "super-admin", "system-config"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"system-config"
+							]
 						}
 					},
 					"response": []
@@ -1439,8 +1765,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/admin/super-admin/audit-logs?page=1&limit=50&action=CREATE_ADMIN&criticality=HIGH",
-							"host": ["{{server}}"],
-							"path": ["admin", "super-admin", "audit-logs"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"audit-logs"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1479,8 +1811,14 @@
 						},
 						"url": {
 							"raw": "{{server}}/admin/super-admin/emergency-lockdown",
-							"host": ["{{server}}"],
-							"path": ["admin", "super-admin", "emergency-lockdown"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"emergency-lockdown"
+							]
 						}
 					},
 					"response": []
@@ -1497,7 +1835,9 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}",
-							"host": ["{{server}}"]
+							"host": [
+								"{{server}}"
+							]
 						}
 					},
 					"response": []
@@ -1517,8 +1857,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/auth/activity/stats?days=30",
-							"host": ["{{server}}"],
-							"path": ["auth", "activity", "stats"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity",
+								"stats"
+							],
 							"query": [
 								{
 									"key": "days",
@@ -1539,8 +1885,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/auth/activity?page=1&limit=5",
-							"host": ["{{server}}"],
-							"path": ["auth", "activity"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1565,8 +1916,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/auth/activity/location-analytics?days=7",
-							"host": ["{{server}}"],
-							"path": ["auth", "activity", "location-analytics"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity",
+								"location-analytics"
+							],
 							"query": [
 								{
 									"key": "days",
@@ -1587,8 +1944,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{server}}/auth/activity/locations?limit=5&days=30",
-							"host": ["{{server}}"],
-							"path": ["auth", "activity", "locations"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity",
+								"locations"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -1630,8 +1993,12 @@
 						},
 						"url": {
 							"raw": "{{server}}/users",
-							"host": ["{{server}}"],
-							"path": ["users"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users"
+							]
 						}
 					},
 					"response": []
@@ -1658,8 +2025,13 @@
 						},
 						"url": {
 							"raw": "{{server}}/users/USER_ID",
-							"host": ["{{server}}"],
-							"path": ["users", "USER_ID"]
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"USER_ID"
+							]
 						}
 					},
 					"response": []
@@ -1686,8 +2058,12 @@
 						},
 						"url": {
 							"raw": "{{server}}/users?page=1&limit=10&search=code&role=user&isActive=true&sortBy=createdAt&sortOrder=desc",
-							"host": ["{{server}}"],
-							"path": ["users"],
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users"
+							],
 							"query": [
 								{
 									"key": "page",

@@ -2,17 +2,27 @@
 
 <div align="center">
 
-![React](https://img.shields.io/badge/React-18+-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)
-![Vite](https://img.shields.io/badge/Vite-5.0+-purple.svg)
-![Tailwind](https://img.shields.io/badge/Tailwind-3.0+-cyan.svg)
-![Shadcn](https://img.shields.io/badge/Shadcn-2.10+-blue.svg)
-![PWA](https://img.shields.io/badge/PWA-Ready-green.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+<!-- Badges -->
 
-**Enterprise-grade social media frontend with modern React architecture, real-time features, and professional UI/UX**
+![React](https://img.shields.io/badge/React-18+-61DAFB.svg?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF.svg?logo=vite&logoColor=FFD62E)
+![Tailwind](https://img.shields.io/badge/Tailwind-3.0+-38BDF8.svg?logo=tailwindcss&logoColor=white)
+![Shadcn](https://img.shields.io/badge/Shadcn-2.10+-0F172A.svg?logo=storybook&logoColor=white)  
+![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8.svg?logo=pwa&logoColor=white)
+![Security](https://img.shields.io/badge/Security-A+-0F9D58.svg?logo=shield&logoColor=white)
+![Version](https://img.shields.io/badge/Version-2.0.0-673AB7.svg?logo=semver&logoColor=white)  
+![Status](https://img.shields.io/badge/Status-Development-2E7D32.svg?logo=vercel&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-FFD43B.svg?logo=open-source-initiative&logoColor=black)
+![Build](https://img.shields.io/badge/Build-Passing-00C853.svg?logo=githubactions&logoColor=white)
+![Coverage](https://img.shields.io/badge/Coverage-95%25-4CAF50.svg?logo=jest&logoColor=white)
 
-[🚀 Quick Start](#-quick-start) • [✨ Features](#-enterprise-features) • [🏗️ Architecture](#️-architecture) • [🎨 UI Components](#-ui-components) • [📱 Responsive Design](#-responsive-design)
+---
+
+**Enterprise-grade social media frontend built with modern React ecosystem —  
+optimized for scalability, real-time interaction, and professional UI/UX.**
+
+[🚀 Quick Start](#-quick-start) • [✨ Enterprise Features](#-enterprise-features) • [🏗️ Architecture](#️-architecture) • [🎨 UI Components](#-ui-components) • [📱 Responsive Design](#-responsive-design)
 
 </div>
 
@@ -65,11 +75,11 @@
 
 ### 🔧 Prerequisites
 
-| Component | Version | Purpose |
-|-----------|---------|----------|
-| Node.js | 18+ | Runtime environment |
-| npm/yarn | Latest | Package manager |
-| Git | 2.30+ | Version control |
+| Component | Version | Purpose             |
+| --------- | ------- | ------------------- |
+| Node.js   | 18+     | Runtime environment |
+| npm/yarn  | Latest  | Package manager     |
+| Git       | 2.30+   | Version control     |
 
 ### ⚡ Installation
 
@@ -117,6 +127,7 @@ VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX-X
 ### 🎛️ Social Media Core
 
 #### Instagram-like Feed Experience
+
 - **Post Creation**: Text, images, polls, articles with scheduling
 - **Engagement System**: Likes, comments, reposts with quotes, shares
 - **View Tracking**: Real-time view counts and analytics
@@ -125,6 +136,7 @@ VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX-X
 - **Emoji Support**: Rich emoji picker integration
 
 #### Advanced Interactions
+
 - **Quote Reposts**: Twitter-like quote functionality
 - **Bookmark System**: Save posts for later viewing
 - **Share Options**: Multiple sharing channels
@@ -134,6 +146,7 @@ VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX-X
 ### 🔔 Notification System
 
 #### Instagram-style Notifications
+
 - **Tabbed Interface**: All, Following, You notifications
 - **Real-time Updates**: Live notification badges
 - **Interaction Types**: Likes, comments, follows, mentions
@@ -143,6 +156,7 @@ VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX-X
 ### 👑 Enterprise Admin Dashboard
 
 #### Comprehensive Management
+
 - **User Analytics**: Total users, active users, growth metrics
 - **Content Metrics**: Posts, comments, engagement rates
 - **Real-time Statistics**: Live dashboard updates
@@ -151,6 +165,7 @@ VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX-X
 - **Security Monitoring**: Admin access controls
 
 #### Advanced Features
+
 - **Role-based Access**: Admin and super admin roles
 - **Bulk Operations**: Mass user management
 - **Audit Logging**: Activity tracking
@@ -159,6 +174,7 @@ VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX-X
 ### 🎨 Professional UI/UX
 
 #### Design System
+
 - **Custom Components**: Reusable UI component library
 - **Gradient Themes**: Professional color schemes
 - **Smooth Animations**: Framer Motion integration
@@ -166,6 +182,7 @@ VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX-X
 - **Error Boundaries**: Graceful error handling
 
 #### Accessibility Features
+
 - **WCAG Compliance**: Proper form labeling and ARIA attributes
 - **Keyboard Navigation**: Full keyboard accessibility
 - **Screen Reader Support**: Semantic HTML structure
@@ -234,6 +251,7 @@ endlessChat_client/
 ### 🔄 Component Architecture
 
 #### Core Components
+
 - **Authentication**: Login, register, password reset
 - **Social Feed**: Post creation, display, interactions
 - **User Management**: Profiles, settings, admin controls
@@ -241,6 +259,7 @@ endlessChat_client/
 - **Notifications**: Real-time notification system
 
 #### Shared Components
+
 - **UI Library**: Reusable design system components
 - **Layout**: Consistent page layouts and structure
 - **Forms**: Accessible form components with validation
@@ -253,6 +272,7 @@ endlessChat_client/
 ### 🎯 Design System
 
 #### Component Library
+
 ```typescript
 // Button variants
 <Button variant="gradient">Primary Action</Button>
@@ -275,6 +295,7 @@ endlessChat_client/
 ```
 
 #### Theme System
+
 ```css
 /* Custom CSS variables */
 :root {
@@ -286,7 +307,7 @@ endlessChat_client/
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   --background: 222 84% 5%;
   --foreground: 210 40% 98%;
 }
@@ -295,17 +316,20 @@ endlessChat_client/
 ### 🎨 Visual Design
 
 #### Color Palette
+
 - **Primary**: Purple gradient (#667eea → #764ba2)
 - **Secondary**: Neutral grays for text and backgrounds
 - **Accent**: Bright colors for actions and highlights
 - **Status**: Success (green), warning (yellow), error (red)
 
 #### Typography
+
 - **Headings**: Inter font family, gradient text effects
 - **Body**: Readable font sizes with proper line height
 - **Code**: Monospace font for technical content
 
 #### Spacing & Layout
+
 - **Grid System**: CSS Grid and Flexbox layouts
 - **Responsive**: Mobile-first design approach
 - **Padding/Margins**: Consistent spacing scale (4px base)
@@ -328,16 +352,19 @@ xl: 1280px  /* Extra large devices */
 ### 📱 Mobile-First Approach
 
 #### Navigation
+
 - **Mobile**: Hamburger menu with slide-out drawer
 - **Desktop**: Full horizontal navigation bar
 - **Search**: Conditional visibility based on auth state
 
 #### Feed Layout
+
 - **Mobile**: Single column, full-width posts
 - **Tablet**: Two-column grid layout
 - **Desktop**: Three-column with sidebar
 
 #### Admin Dashboard
+
 - **Mobile**: Stacked cards, collapsible sections
 - **Desktop**: Multi-column dashboard layout
 
@@ -365,12 +392,14 @@ xl: 1280px  /* Extra large devices */
 ### 🛡️ Authentication & Authorization
 
 #### JWT Token Management
+
 - **Secure Storage**: HttpOnly cookies for tokens
 - **Auto Refresh**: Automatic token renewal
 - **Role-based Access**: Admin, user role permissions
 - **Session Management**: Proper logout and cleanup
 
 #### Protected Routes
+
 ```typescript
 // Route protection example
 <ProtectedRoute requireAuth={true}>
@@ -385,12 +414,14 @@ xl: 1280px  /* Extra large devices */
 ### 🔐 Input Security
 
 #### Form Validation
+
 - **Client-side**: Real-time validation with TypeScript
 - **Sanitization**: Input cleaning and validation
 - **CSRF Protection**: Token-based request validation
 - **XSS Prevention**: Proper output encoding
 
 #### API Security
+
 - **Request Headers**: Proper authentication headers
 - **Error Handling**: Secure error messages
 - **Rate Limiting**: Client-side request throttling
@@ -402,6 +433,7 @@ xl: 1280px  /* Extra large devices */
 ### 🚀 Optimization Strategies
 
 #### Code Splitting
+
 ```typescript
 // Lazy loading pages
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -417,6 +449,7 @@ const Feed = lazy(() => import('./pages/Feed'));
 ```
 
 #### Bundle Optimization
+
 - **Tree Shaking**: Unused code elimination
 - **Minification**: Production build optimization
 - **Compression**: Gzip/Brotli compression
@@ -425,11 +458,13 @@ const Feed = lazy(() => import('./pages/Feed'));
 ### 📊 Performance Metrics
 
 #### Core Web Vitals
+
 - **LCP**: < 2.5s (Largest Contentful Paint)
 - **FID**: < 100ms (First Input Delay)
 - **CLS**: < 0.1 (Cumulative Layout Shift)
 
 #### Bundle Analysis
+
 ```bash
 # Analyze bundle size
 npm run build
@@ -446,12 +481,14 @@ npm run lighthouse
 ### 🎯 Testing Strategy
 
 #### Test Types
+
 - **Unit Tests**: Component and utility testing
 - **Integration Tests**: API integration testing
 - **E2E Tests**: Full user workflow testing
 - **Accessibility Tests**: WCAG compliance testing
 
 #### Testing Tools
+
 ```json
 {
   "devDependencies": {
@@ -467,6 +504,7 @@ npm run lighthouse
 ### 🧪 Test Examples
 
 #### Component Testing
+
 ```typescript
 // PostCard component test
 import { render, screen } from '@testing-library/react';
@@ -478,24 +516,25 @@ test('renders post content correctly', () => {
     content: 'Test post content',
     author: { name: 'John Doe' }
   };
-  
+
   render(<PostCard post={mockPost} />);
-  
+
   expect(screen.getByText('Test post content')).toBeInTheDocument();
   expect(screen.getByText('John Doe')).toBeInTheDocument();
 });
 ```
 
 #### API Testing
+
 ```typescript
 // Auth service test
 import { authService } from '../services/authService';
 
 test('login returns user data on success', async () => {
   const mockUser = { id: '1', email: 'test@example.com' };
-  
+
   const result = await authService.login('test@example.com', 'password');
-  
+
   expect(result.success).toBe(true);
   expect(result.user).toEqual(mockUser);
 });
@@ -524,6 +563,7 @@ npm run test:a11y
 ### 🌐 Build Process
 
 #### Production Build
+
 ```bash
 # Create optimized build
 npm run build
@@ -536,6 +576,7 @@ npm run analyze
 ```
 
 #### Build Configuration
+
 ```typescript
 // vite.config.ts
 export default defineConfig({
@@ -547,17 +588,18 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
-        }
-      }
-    }
-  }
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+        },
+      },
+    },
+  },
 });
 ```
 
 ### 🚀 Deployment Options
 
 #### Vercel (Recommended)
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -570,6 +612,7 @@ vercel --prod
 ```
 
 #### Netlify
+
 ```bash
 # Build command: npm run build
 # Publish directory: dist
@@ -577,6 +620,7 @@ vercel --prod
 ```
 
 #### Docker
+
 ```dockerfile
 # Dockerfile
 FROM node:18-alpine as builder
@@ -596,6 +640,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ### 🔧 Environment Setup
 
 #### Production Environment
+
 ```env
 # Production API
 VITE_API_BASE_URL=https://api.endlesschat.com/api/v1
@@ -616,6 +661,7 @@ VITE_ENABLE_ANALYTICS=true
 ### 👥 Development Workflow
 
 #### Getting Started
+
 1. **Fork the repository**
 2. **Clone your fork**: `git clone https://github.com/mr-deepansh/endlessChat_client.git`
 3. **Install dependencies**: `npm install`
@@ -623,12 +669,14 @@ VITE_ENABLE_ANALYTICS=true
 5. **Start development**: `npm run dev`
 
 #### Code Standards
+
 - **TypeScript**: Strict type checking enabled
 - **ESLint**: Airbnb configuration with React hooks
 - **Prettier**: Consistent code formatting
 - **Conventional Commits**: Standardized commit messages
 
 #### Pull Request Process
+
 1. **Code Review**: Minimum 1 approval required
 2. **Tests**: All tests must pass
 3. **Build**: Production build must succeed
@@ -638,6 +686,7 @@ VITE_ENABLE_ANALYTICS=true
 ### 📋 Development Guidelines
 
 #### Component Development
+
 ```typescript
 // Component template
 interface ComponentProps {
@@ -656,6 +705,7 @@ export const Component: React.FC<ComponentProps> = ({ title, children }) => {
 ```
 
 #### Styling Guidelines
+
 - **Tailwind First**: Use Tailwind CSS classes
 - **Custom CSS**: Only when Tailwind is insufficient
 - **Responsive**: Mobile-first approach
@@ -670,16 +720,19 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ### MIT License Summary
 
 **Permissions:**
+
 - ✅ Commercial use
 - ✅ Modification
 - ✅ Distribution
 - ✅ Private use
 
 **Limitations:**
+
 - ❌ Liability
 - ❌ Warranty
 
 **Conditions:**
+
 - 📝 License and copyright notice must be included
 
 ### Copyright
@@ -716,7 +769,7 @@ Copyright (c) 2024 Deepansh Gangwar
 
 **⭐ Star this repository if it powers your social media experience! ⭐**
 
-*Last Updated: January 2024 | Version: 2.0.0 | Enterprise Frontend Edition*
+_Last Updated: January 2024 | Version: 2.0.0 | Enterprise Frontend Edition_
 
 ---
 
@@ -735,6 +788,7 @@ This frontend seamlessly integrates with the **Enterprise Social Media Blog Plat
 ### 📊 Enterprise Features Integration
 
 #### Backend Services Used
+
 - **User Service**: Authentication, profiles, role management
 - **Content Service**: Posts, comments, social interactions
 - **Analytics Service**: Real-time metrics and business intelligence
@@ -742,6 +796,7 @@ This frontend seamlessly integrates with the **Enterprise Social Media Blog Plat
 - **Notification Service**: Multi-channel communication
 
 #### API Endpoints Integration
+
 ```typescript
 // Example API integration
 const API_BASE = process.env.VITE_API_BASE_URL;
@@ -766,6 +821,7 @@ POST ${API_BASE}/admin/users/bulk-actions
 ### 🏗️ Architecture Alignment
 
 #### Frontend-Backend Sync
+
 - **Microservices**: Frontend components align with backend services
 - **Event-Driven**: Real-time updates through WebSocket connections
 - **API-First**: RESTful API consumption with proper error handling
@@ -773,6 +829,7 @@ POST ${API_BASE}/admin/users/bulk-actions
 - **Performance**: Caching strategies, optimistic updates, lazy loading
 
 #### Development Workflow
+
 1. **Backend Setup**: Deploy backend using the enterprise guide
 2. **Environment Config**: Set `VITE_API_BASE_URL` to backend URL
 3. **Authentication**: Configure JWT token handling
@@ -782,20 +839,21 @@ POST ${API_BASE}/admin/users/bulk-actions
 ### 📈 Enterprise Deployment
 
 #### Production Stack
+
 ```yaml
 # Full stack deployment
 services:
   frontend:
     image: endlesschat-frontend:latest
     ports:
-      - "3000:80"
+      - '3000:80'
     environment:
       - VITE_API_BASE_URL=https://api.company.com/api/v1
-  
+
   backend:
     image: social-media-blog:latest
     ports:
-      - "5000:5000"
+      - '5000:5000'
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://...
@@ -803,6 +861,7 @@ services:
 ```
 
 #### Monitoring & Analytics
+
 - **Frontend Metrics**: User engagement, page performance, error tracking
 - **Backend Metrics**: API response times, database performance, security events
 - **Business Intelligence**: Combined analytics from both systems

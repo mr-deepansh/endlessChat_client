@@ -19,16 +19,35 @@ export const useTheme = () => {
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('endlesschat-theme') as Theme;
-    return savedTheme || 'light';
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('endlesschat-theme') as Theme;
+      return savedTheme || 'light';
+    }
+    return 'light';
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
+
+    // Remove existing theme classes
     root.classList.remove('light', 'dark');
+
+    // Add new theme class
     root.classList.add(theme);
+
+    // Save to localStorage
     localStorage.setItem('endlesschat-theme', theme);
+
+    // Also set data attribute for additional CSS targeting
+    root.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.add(theme);
+    root.setAttribute('data-theme', theme);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { Card, CardContent } from '../ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '../ui/dropdown-menu';
 import { Heart, MessageCircle, Repeat2, Share, Bookmark, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -31,19 +31,10 @@ interface PostCardProps {
     createdAt: string;
     media?: string[];
   };
-  onLike?: (postId: string) => void;
-  onComment?: (postId: string) => void;
-  onRepost?: (postId: string) => void;
-  onBookmark?: (postId: string) => void;
+  onInteraction?: (postId: string, action: string, data?: any) => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({
-  post,
-  onLike,
-  onComment,
-  onRepost,
-  onBookmark,
-}) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
   const [isLiking, setIsLiking] = useState(false);
   const [isReposting, setIsReposting] = useState(false);
 
@@ -51,7 +42,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     if (isLiking) return;
     setIsLiking(true);
     try {
-      await onLike?.(post._id);
+      await onInteraction?.(post._id, post.isLiked ? 'unlike' : 'like');
     } finally {
       setIsLiking(false);
     }
@@ -61,7 +52,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     if (isReposting) return;
     setIsReposting(true);
     try {
-      await onRepost?.(post._id);
+      await onInteraction?.(post._id, post.isReposted ? 'unrepost' : 'repost');
     } finally {
       setIsReposting(false);
     }
@@ -101,7 +92,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onBookmark?.(post._id)}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      onInteraction?.(post._id, post.isBookmarked ? 'unbookmark' : 'bookmark')
+                    }
+                  >
                     <Bookmark className="w-4 h-4 mr-2" />
                     {post.isBookmarked ? 'Remove bookmark' : 'Bookmark'}
                   </DropdownMenuItem>
@@ -148,7 +143,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onComment?.(post._id)}
+                onClick={() => onInteraction?.(post._id, 'comment')}
                 className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center"
               >
                 <MessageCircle className="w-4 h-4" />
@@ -208,3 +203,5 @@ export const PostCard: React.FC<PostCardProps> = ({
     </Card>
   );
 };
+
+export default PostCard;

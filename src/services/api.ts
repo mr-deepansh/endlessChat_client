@@ -1,31 +1,20 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
-import { toast } from '@/hooks/use-toast';
-import ENV from '@/config/environment';
+// src/services/api.ts
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 
-// API Configuration
-const API_CONFIG = {
-  baseURL: ENV.API_BASE_URL,
-  timeout: 15000,
-  retryAttempts: 3,
-  retryDelay: 1000,
-};
-
-// Environment validation
-if (!ENV.API_BASE_URL && ENV.IS_DEVELOPMENT) {
-  console.warn('⚠️ VITE_API_BASE_URL not set, using default:', API_CONFIG.baseURL);
-}
+// Base API configuration
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
 // Create axios instance
-const apiClient = axios.create({
-  baseURL: API_CONFIG.baseURL,
-  timeout: API_CONFIG.timeout,
+export const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 // Request interceptor for auth token
-apiClient.interceptors.request.use(
+api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -37,135 +26,344 @@ apiClient.interceptors.request.use(
 );
 
 // Response interceptor for error handling
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    if (ENV.ENABLE_DEBUG) {
-      console.log('API Response:', {
-        url: response.config.url,
-        status: response.status,
-        data: response.data,
-      });
+api.interceptors.response.use(
+  response => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
-    return response;
-  },
-  async (error: AxiosError) => {
-    const originalRequest = error.config as any;
-
-    if (ENV.ENABLE_DEBUG) {
-      console.error('API Error:', {
-        url: error.config?.url,
-        status: error.response?.status,
-        message: error.response?.data || error.message,
-      });
-    }
-
-    // Handle 401 errors (unauthorized) - but don't redirect during login attempts
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      // Don't redirect if this is a login request
-      if (!originalRequest.url?.includes('/login') && !originalRequest.url?.includes('/register')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        // Use history API instead of window.location to prevent page refresh
-        if (window.location.pathname !== '/login') {
-          window.history.pushState({}, '', '/login');
-          window.dispatchEvent(new PopStateEvent('popstate'));
-        }
-      }
-      return Promise.reject(error);
-    }
-
-    // Handle network errors with retry logic
-    if (!error.response && originalRequest._retryCount < API_CONFIG.retryAttempts) {
-      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
-
-      await new Promise(resolve =>
-        setTimeout(resolve, API_CONFIG.retryDelay * originalRequest._retryCount)
-      );
-
-      return apiClient(originalRequest);
-    }
-
     return Promise.reject(error);
   }
 );
 
-// Generic API methods
-export const api = {
-  // GET request
-  get: async <T>(url: string, config?: any): Promise<T> => {
-    if (ENV.ENABLE_DEBUG) {
-      console.log('API GET:', url, config);
-    }
-    const response = await apiClient.get<T>(url, config);
-    return response.data;
-  },
-
-  // POST request
-  post: async <T>(url: string, data?: any, config?: any): Promise<T> => {
-    const response = await apiClient.post<T>(url, data, config);
-    return response.data;
-  },
-
-  // PUT request
-  put: async <T>(url: string, data?: any, config?: any): Promise<T> => {
-    const response = await apiClient.put<T>(url, data, config);
-    return response.data;
-  },
-
-  // PATCH request
-  patch: async <T>(url: string, data?: any, config?: any): Promise<T> => {
-    const response = await apiClient.patch<T>(url, data, config);
-    return response.data;
-  },
-
-  // DELETE request
-  delete: async <T>(url: string, config?: any): Promise<T> => {
-    const response = await apiClient.delete<T>(url, config);
-    return response.data;
-  },
-
-  // Upload file
-  upload: async <T>(url: string, formData: FormData, config?: any): Promise<T> => {
-    const response = await apiClient.post<T>(url, formData, {
-      ...config,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        ...config?.headers,
-      },
-    });
-    return response.data;
-  },
-};
-
-// Helper functions
-export const handleApiError = (error: any, defaultMessage: string = 'An error occurred') => {
-  const message =
-    (error as any)?.response?.data?.message || (error as any)?.message || defaultMessage;
-  console.error('API Error:', message);
-  throw error;
-};
-
+// Error handler utility
 export const withErrorHandling = async <T>(
-  apiCall: () => Promise<T>,
-  errorMessage?: string
-): Promise<T> => {
+  apiCall: () => Promise<AxiosResponse<T>>,
+  errorMessage: string = 'An error occurred'
+): Promise<AxiosResponse<T>> => {
   try {
-    const result = await apiCall();
-    if (ENV.ENABLE_DEBUG) {
-      console.log('API call successful:', errorMessage || 'API call', result);
-    }
-    return result;
+    return await apiCall();
   } catch (error: any) {
-    console.error('API call failed:', errorMessage || 'Unknown error', {
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message,
-      url: error.config?.url,
-      method: error.config?.method,
-    });
-    throw error;
+    console.error(errorMessage, error);
+    throw new Error(error.response?.data?.message || errorMessage);
   }
 };
 
-export default apiClient;
+// Types
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role: 'user' | 'admin' | 'super_admin';
+  bio?: string;
+  avatar?: string;
+  isActive: boolean;
+  followers?: string[];
+  following?: string[];
+  followerCount?: number;
+  followingCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Post {
+  _id: string;
+  title: string;
+  content: string;
+  author: User;
+  likes: string[];
+  likeCount: number;
+  comments: Comment[];
+  commentCount: number;
+  isVisible: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Comment {
+  _id: string;
+  content: string;
+  author: User;
+  post: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Authentication Services
+export const authService = {
+  register: (userData: {
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    firstName: string;
+    lastName: string;
+    role?: string;
+  }) =>
+    withErrorHandling(() =>
+      api.post<ApiResponse<{ user: User; token: string }>>('/users/register', userData)
+    ),
+
+  login: (credentials: { identifier: string; password: string; rememberMe?: boolean }) =>
+    withErrorHandling(() =>
+      api.post<ApiResponse<{ user: User; token: string }>>('/users/login', credentials)
+    ),
+
+  logout: () => withErrorHandling(() => api.post('/users/logout')),
+
+  changePassword: (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+    confirmNewPassword: string;
+  }) => withErrorHandling(() => api.post('/users/change-password', passwordData)),
+
+  getProfile: () => withErrorHandling(() => api.get<ApiResponse<User>>('/users/profile/me')),
+
+  updateProfile: (profileData: {
+    firstName?: string;
+    lastName?: string;
+    bio?: string;
+    avatar?: string;
+  }) => withErrorHandling(() => api.put<ApiResponse<User>>('/users/profile/me', profileData)),
+
+  uploadAvatar: (avatarData: { avatarUrl: string }) =>
+    withErrorHandling(() => api.post('/users/upload-avatar', avatarData)),
+};
+
+// User Services
+export const userService = {
+  getAllUsers: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+    isActive?: boolean;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => withErrorHandling(() => api.get<ApiResponse<User[]>>('/users', { params })),
+
+  getUserById: (userId: string) =>
+    withErrorHandling(() => api.get<ApiResponse<User>>(`/users/${userId}`)),
+
+  searchUsers: (params: { username?: string; email?: string; firstName?: string }) =>
+    withErrorHandling(() => api.get<ApiResponse<User[]>>('/users/search', { params })),
+
+  followUser: (userId: string) => withErrorHandling(() => api.post(`/users/follow/${userId}`)),
+
+  unfollowUser: (userId: string) => withErrorHandling(() => api.post(`/users/unfollow/${userId}`)),
+
+  getFollowers: (
+    userId: string,
+    params?: {
+      limit?: number;
+      page?: number;
+    }
+  ) =>
+    withErrorHandling(() => api.get<ApiResponse<User[]>>(`/users/followers/${userId}`, { params })),
+
+  getFollowing: (
+    userId: string,
+    params?: {
+      limit?: number;
+      page?: number;
+    }
+  ) =>
+    withErrorHandling(() => api.get<ApiResponse<User[]>>(`/users/following/${userId}`, { params })),
+
+  getFeed: (params?: { limit?: number; page?: number; sort?: 'recent' | 'popular' }) =>
+    withErrorHandling(() => api.get<ApiResponse<Post[]>>('/users/feed', { params })),
+};
+
+// Admin Services
+export const adminService = {
+  // Stats & Analytics
+  getStats: () => withErrorHandling(() => api.get<ApiResponse>('/admin/stats')),
+  getLiveStats: () => withErrorHandling(() => api.get<ApiResponse>('/admin/stats/live')),
+  getDashboard: () => withErrorHandling(() => api.get<ApiResponse>('/admin/dashboard')),
+
+  // User Management
+  getAllUsers: () => withErrorHandling(() => api.get<ApiResponse<User[]>>('/admin/users')),
+  getUserById: (userId: string) =>
+    withErrorHandling(() => api.get<ApiResponse<User>>(`/admin/users/${userId}`)),
+  updateUser: (userId: string, userData: Partial<User>) =>
+    withErrorHandling(() => api.put(`/admin/users/${userId}`, userData)),
+  deleteUser: (userId: string, reason: string) =>
+    withErrorHandling(() => api.delete(`/admin/users/${userId}`, { data: { reason } })),
+  suspendUser: (userId: string, reason: string) =>
+    withErrorHandling(() => api.patch(`/admin/users/${userId}/suspend`, { reason })),
+  activateUser: (userId: string) =>
+    withErrorHandling(() => api.patch(`/admin/users/${userId}/activate`)),
+
+  // Content Management
+  getAllPosts: (params?: { page?: number; limit?: number; status?: string }) =>
+    withErrorHandling(() => api.get<ApiResponse<Post[]>>('/admin/content/posts', { params })),
+
+  togglePostVisibility: (postId: string, action: 'hide' | 'show', reason?: string) =>
+    withErrorHandling(() =>
+      api.patch(`/admin/content/posts/${postId}/toggle-visibility`, { action, reason })
+    ),
+
+  // Security & Moderation
+  getSuspiciousAccounts: (params?: { page?: number; limit?: number; riskLevel?: string }) =>
+    withErrorHandling(() => api.get('/admin/security/suspicious-accounts', { params })),
+
+  getBlockedIPs: (params?: { page?: number; limit?: number }) =>
+    withErrorHandling(() => api.get('/admin/security/blocked-ips', { params })),
+
+  unblockIP: (ipId: string, reason: string) =>
+    withErrorHandling(() =>
+      api.delete(`/admin/security/blocked-ips/${ipId}`, { data: { reason } })
+    ),
+
+  getLoginAttempts: (params?: { status?: string; timeRange?: string }) =>
+    withErrorHandling(() => api.get('/admin/security/login-attempts', { params })),
+
+  getThreatDetection: () => withErrorHandling(() => api.get('/admin/security/threat-detection')),
+
+  // Analytics
+  getOverviewAnalytics: (params?: { timeRange?: string }) =>
+    withErrorHandling(() => api.get('/admin/analytics/overview', { params })),
+
+  getUserGrowthAnalytics: (params?: { period?: string; days?: number }) =>
+    withErrorHandling(() => api.get('/admin/analytics/users/growth', { params })),
+
+  getUserDemographics: () =>
+    withErrorHandling(() => api.get('/admin/analytics/users/demographics')),
+
+  getUserRetention: (params?: { period?: string; weeks?: number }) =>
+    withErrorHandling(() => api.get('/admin/analytics/users/retention', { params })),
+
+  getEngagementMetrics: (params?: { timeRange?: string; metric?: string }) =>
+    withErrorHandling(() => api.get('/admin/analytics/engagement/metrics', { params })),
+
+  // Configuration
+  getAppSettings: () => withErrorHandling(() => api.get('/admin/config/app-settings')),
+  updateAppSettings: (settings: { category: string; settings: Record<string, any> }) =>
+    withErrorHandling(() => api.put('/admin/config/app-settings', settings)),
+
+  // Notifications
+  getNotificationTemplates: (params?: { type?: string }) =>
+    withErrorHandling(() => api.get('/admin/notifications/templates', { params })),
+
+  sendBulkNotification: (notificationData: {
+    recipients: string;
+    template: string;
+    channels: string[];
+    priority: string;
+    customMessage?: {
+      title: string;
+      content: string;
+    };
+  }) => withErrorHandling(() => api.post('/admin/notifications/send-bulk', notificationData)),
+};
+
+// Super Admin Services
+export const superAdminService = {
+  createAdmin: (adminData: {
+    username: string;
+    email: string;
+    password: string;
+    role: string;
+    permissions: string[];
+  }) => withErrorHandling(() => api.post('/admin/super-admin/create-admin', adminData)),
+
+  deleteAdmin: (
+    adminId: string,
+    data: {
+      confirmPassword: string;
+      reason: string;
+    }
+  ) => withErrorHandling(() => api.delete(`/admin/super-admin/delete-admin/${adminId}`, { data })),
+
+  changeUserRole: (
+    userId: string,
+    roleData: {
+      newRole: string;
+      reason: string;
+    }
+  ) => withErrorHandling(() => api.put(`/admin/super-admin/change-role/${userId}`, roleData)),
+
+  getSystemConfig: () => withErrorHandling(() => api.get('/admin/super-admin/system-config')),
+
+  getAuditLogs: (params?: {
+    page?: number;
+    limit?: number;
+    action?: string;
+    criticality?: string;
+  }) => withErrorHandling(() => api.get('/admin/super-admin/audit-logs', { params })),
+
+  emergencyLockdown: (lockdownData: {
+    reason: string;
+    duration: string;
+    confirmPassword: string;
+  }) => withErrorHandling(() => api.post('/admin/super-admin/emergency-lockdown', lockdownData)),
+};
+
+// Activity & Location Services
+export const activityService = {
+  getActivityStats: (params?: { days?: number }) =>
+    withErrorHandling(() => api.get('/auth/activity/stats', { params })),
+
+  getActivityLogs: (params?: { page?: number; limit?: number }) =>
+    withErrorHandling(() => api.get('/auth/activity', { params })),
+
+  getLocationAnalytics: (params?: { days?: number }) =>
+    withErrorHandling(() => api.get('/auth/activity/location-analytics', { params })),
+
+  getLoginLocations: (params?: { limit?: number; days?: number }) =>
+    withErrorHandling(() => api.get('/auth/activity/locations', { params })),
+};
+
+// Business Intelligence Services
+export const biService = {
+  getRevenueAnalytics: (params?: { period?: string }) =>
+    withErrorHandling(() => api.get('/admin/bi/revenue-analytics', { params })),
+
+  getUserLifetimeValue: (params?: { segment?: string }) =>
+    withErrorHandling(() => api.get('/admin/bi/user-lifetime-value', { params })),
+};
+
+// Monitoring Services
+export const monitoringService = {
+  getDatabaseStats: () => withErrorHandling(() => api.get('/admin/monitoring/database-stats')),
+};
+
+// Automation Services
+export const automationService = {
+  getRules: (params?: { status?: string }) =>
+    withErrorHandling(() => api.get('/admin/automation/rules', { params })),
+
+  getExperiments: (params?: { status?: string }) =>
+    withErrorHandling(() => api.get('/admin/experiments', { params })),
+
+  createExperiment: (experimentData: {
+    name: string;
+    description: string;
+    variants: Array<{ name: string; description: string }>;
+    trafficSplit: number[];
+    duration: number;
+  }) => withErrorHandling(() => api.post('/admin/experiments', experimentData)),
+};
+
+// Health Check
+export const healthService = {
+  checkVersion: () => withErrorHandling(() => api.get('/')),
+};
+
+export default api;

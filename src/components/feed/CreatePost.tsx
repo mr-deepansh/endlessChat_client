@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { Card, CardContent } from '../ui/card';
+import { Textarea } from '../ui/textarea';
+import { useAuth } from '../../contexts/AuthContext';
+import { feedService } from '../../services';
+import { toast } from '../../hooks/use-toast';
 import { Image, Smile, MapPin, Calendar } from 'lucide-react';
+import { Post } from '../../types/api';
+
+const MAX_POST_LENGTH = 280;
 
 interface CreatePostProps {
-  onPostCreated?: () => void;
+  onClose?: () => void;
+  onPostCreated?: (post: Post) => void;
+  onCancel?: () => void;
 }
 
-export const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
+const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPostCreated, onCancel }) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
@@ -21,12 +28,28 @@ export const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
 
     setIsPosting(true);
     try {
-      // TODO: Implement post creation API call
-      console.log('Creating post:', content);
-      setContent('');
-      onPostCreated?.();
-    } catch (error) {
+      const response = await feedService.createPost({
+        content: content.trim(),
+        visibility: 'public',
+      });
+
+      if (response.success && response.data) {
+        setContent('');
+        onPostCreated?.(response.data);
+        toast({
+          title: 'Success',
+          description: 'Your post has been created successfully!',
+        });
+      } else {
+        throw new Error(response.message || 'Failed to create post');
+      }
+    } catch (error: any) {
       console.error('Failed to create post:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create post. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsPosting(false);
     }
@@ -35,66 +58,77 @@ export const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
   if (!user) return null;
 
   return (
-    <Card className="mb-6">
-      <CardContent className="p-4">
-        <form onSubmit={handleSubmit}>
-          <div className="flex space-x-3">
-            <Avatar className="h-10 w-10">
+    <Card className="mb-4 sm:mb-6 shadow-sm border-border/50">
+      <CardContent className="p-3 sm:p-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="flex gap-3">
+            <Avatar className="h-10 w-10 ring-2 ring-primary/10">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback className="bg-gradient-primary text-white">
                 {user.firstName?.[0] || user.username?.[0] || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <Textarea
-                placeholder="What's happening?"
+                placeholder="What's on your mind?"
                 value={content}
                 onChange={e => setContent(e.target.value)}
-                className="min-h-[100px] resize-none border-none focus:ring-0 text-lg placeholder:text-muted-foreground"
-                maxLength={280}
+                className="min-h-[100px] resize-none border-0 bg-transparent focus-visible:ring-0 text-base placeholder:text-muted-foreground/70 p-0"
+                maxLength={MAX_POST_LENGTH}
               />
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center space-x-4">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary hover:bg-primary/10"
-                  >
-                    <Image className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary hover:bg-primary/10"
-                  >
-                    <Smile className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary hover:bg-primary/10"
-                  >
-                    <MapPin className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary hover:bg-primary/10"
-                  >
-                    <Calendar className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-muted-foreground">{280 - content.length}</span>
-                  <Button type="submit" disabled={!content.trim() || isPosting} className="px-6">
-                    {isPosting ? 'Posting...' : 'Post'}
-                  </Button>
-                </div>
-              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-border/30">
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-primary hover:bg-primary/10 rounded-full"
+              >
+                <Image className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-primary hover:bg-primary/10 rounded-full"
+              >
+                <Smile className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-primary hover:bg-primary/10 rounded-full hidden sm:inline-flex"
+              >
+                <MapPin className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {content.length > 0 && (
+                <span
+                  className={`text-xs font-medium ${
+                    content.length > MAX_POST_LENGTH * 0.9
+                      ? content.length > MAX_POST_LENGTH
+                        ? 'text-destructive'
+                        : 'text-orange-500'
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {MAX_POST_LENGTH - content.length}
+                </span>
+              )}
+              <Button
+                type="submit"
+                disabled={!content.trim() || isPosting || content.length > MAX_POST_LENGTH}
+                className="px-6 h-9 font-medium"
+                size="sm"
+              >
+                {isPosting ? 'Posting...' : 'Post'}
+              </Button>
             </div>
           </div>
         </form>
@@ -102,3 +136,5 @@ export const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
     </Card>
   );
 };
+
+export default CreatePost;

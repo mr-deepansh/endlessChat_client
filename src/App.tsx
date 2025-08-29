@@ -1,132 +1,192 @@
-import { Toaster } from '@/components/ui/toaster';
-import { Toaster as Sonner } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
+// src/App.tsx
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import PageTransition from './components/layout/PageTransition';
+import { Toaster as Sonner } from './components/ui/sonner';
+import { Toaster } from './components/ui/toaster';
+import { TooltipProvider } from './components/ui/tooltip';
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import PageTransition from '@/components/layout/PageTransition';
-import Index from './pages/Index';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+
+// Import pages
 import About from './pages/About';
-import Features from './pages/Features';
-import Contact from './pages/Contact';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Feed from './pages/Feed';
-import Profile from './pages/Profile';
-import CurrentUserProfile from './pages/CurrentUserProfile';
-import Settings from './pages/Settings';
 import AdminDashboard from './pages/AdminDashboard';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import Contact from './pages/Contact';
+import CurrentUserProfile from './pages/CurrentUserProfile';
+import Features from './pages/Features';
+import Feed from './pages/Feed';
 import ForgotPassword from './pages/ForgotPassword';
+import Index from './pages/Index';
+import Login from './pages/Login';
+import Messages from './pages/Messages';
 import NotFound from './pages/NotFound';
+import Privacy from './pages/Privacy';
+import Profile from './pages/Profile';
+import Register from './pages/Register';
+import Settings from './pages/Settings';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import Support from './pages/Support';
+import Terms from './pages/Terms';
 
-const queryClient = new QueryClient();
+// Configure React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
+const App = () => {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
           <BrowserRouter>
-            <PageTransition>
-              <Routes>
-                {/* Public routes - accessible to everyone */}
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/features" element={<Features />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route
-                  path="/login"
-                  element={
-                    <ProtectedRoute requireAuth={false}>
-                      <Login />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/register"
-                  element={
-                    <ProtectedRoute requireAuth={false}>
-                      <Register />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/forgot-password"
-                  element={
-                    <ProtectedRoute requireAuth={false}>
-                      <ForgotPassword />
-                    </ProtectedRoute>
-                  }
-                />
+            <ThemeProvider>
+              <AuthProvider>
+                <Toaster />
+                <Sonner />
+                <PageTransition>
+                  <Routes>
+                    {/* Public routes - accessible to everyone */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/features" element={<Features />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/support" element={<Support />} />
 
-                {/* Protected routes - require authentication */}
-                <Route
-                  path="/feed"
-                  element={
-                    <ProtectedRoute>
-                      <Feed />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile/me"
-                  element={
-                    <ProtectedRoute>
-                      <CurrentUserProfile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/:username"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute>
-                      <Settings />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* Authentication routes - only for non-authenticated users */}
+                    <Route
+                      path="/login"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute requireAuth={false}>
+                            <Login />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/register"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute requireAuth={false}>
+                            <Register />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/forgot-password"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute requireAuth={false}>
+                            <ForgotPassword />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
 
-                {/* Admin only routes */}
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute adminOnly={true}>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                
-                {/* Super Admin only routes */}
-                <Route
-                  path="/super-admin"
-                  element={
-                    <ProtectedRoute superAdminOnly={true}>
-                      <SuperAdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* Protected routes - require authentication */}
+                    <Route
+                      path="/feed"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute>
+                            <Feed />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/profile/me"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute>
+                            <CurrentUserProfile />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/:username"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute>
+                            <Settings />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/messages"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute>
+                            <Messages />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
 
-                {/* Catch-all route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </PageTransition>
+                    {/* Admin only routes */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute adminOnly={true}>
+                            <AdminDashboard />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+
+                    {/* Super Admin only routes */}
+                    <Route
+                      path="/super-admin"
+                      element={
+                        <ErrorBoundary>
+                          <ProtectedRoute superAdminOnly={true}>
+                            <SuperAdminDashboard />
+                          </ProtectedRoute>
+                        </ErrorBoundary>
+                      }
+                    />
+
+                    {/* Catch-all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </PageTransition>
+              </AuthProvider>
+            </ThemeProvider>
           </BrowserRouter>
-        </AuthProvider>
-      </ThemeProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

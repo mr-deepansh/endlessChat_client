@@ -1,317 +1,322 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { toast } from '@/hooks/use-toast';
-import { userService, type User, type LoginData, type RegisterData } from '@/services/userService';
-import { cacheService } from '@/services/core/cache';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '../hooks/use-toast';
+import { authService } from '../services/modules/auth.service';
+import { userService } from '../services/modules/user.service';
+import LoadingScreen from '../components/ui/loading-screen';
+import {
+  User,
+  LoginRequest,
+  RegisterRequest,
+  ChangePasswordRequest,
+  UpdateProfileRequest,
+} from '../types/api';
 
 interface AuthContextType {
   user: User | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
-  registrationError: string | null;
-  login: (identifier: string, password: string, rememberMe?: boolean) => Promise<boolean>;
-  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
+  login: (credentials: LoginRequest) => Promise<void>;
+  register: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (data: Partial<User>) => Promise<void>;
-  updateUser: (userData: User) => void;
+  updateProfile: (userData: UpdateProfileRequest) => Promise<void>;
+  changePassword: (passwordData: ChangePasswordRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
-  clearRegistrationError: () => void;
+  checkPermission: (permission: string) => boolean;
+  hasRole: (role: string | string[]) => boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const useAuth = () => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
-export { useAuth };
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const cachedUser = localStorage.getItem('user');
-    try {
-      const parsed = cachedUser ? JSON.parse(cachedUser) : null;
-      // Validate that cached user has required fields
-      if (parsed && parsed._id && parsed.username && parsed.email) {
-        return parsed;
-      }
-      // Clear invalid cached data
-      if (cachedUser) localStorage.removeItem('user');
-      return null;
-    } catch {
-      localStorage.removeItem('user');
-      return null;
-    }
-  });
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [registrationError, setRegistrationError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
+  const isAuthenticated = !!user;
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isSuperAdmin = user?.role === 'super_admin';
+
+  // Check for existing session on mount
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        if (authService.isAuthenticated()) {
+          const response = await authService.getCurrentUser();
+          if (response.success && response.data) {
+            setUser(response.data);
+          }
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        authService.logout();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
+  // Auto-refresh user data periodically
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(
+      async () => {
+        try {
+          const response = await authService.getCurrentUser();
+          if (response.success && response.data) {
+            setUser(response.data);
+          }
+        } catch (error) {
+          console.error('Failed to refresh user data:', error);
+        }
+      },
+      5 * 60 * 1000
+    ); // Refresh every 5 minutes
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  const refreshUser = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        setIsLoading(false);
-        return;
+      const response = await authService.getCurrentUser();
+      if (response.success && response.data) {
+        setUser(response.data);
+      } else {
+        throw new Error('Failed to get user data');
       }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      throw error;
+    }
+  }, []);
 
-      const userData = await userService.getProfile();
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+  const login = async (credentials: LoginRequest) => {
+    try {
+      setIsLoading(true);
+
+      const response = await authService.login(credentials);
+
+      if (response.success && response.data) {
+        setUser(response.data.user);
+
+        toast({
+          title: 'Welcome back!',
+          description: `Hello ${response.data.user.firstName}, you're successfully logged in.`,
+        });
+
+        // Always redirect to feed after login
+        navigate('/feed');
+      } else {
+        throw new Error(response.message || 'Login failed');
+      }
     } catch (error: any) {
-      // Silent error handling - only clear auth on 401
-      if (error.response?.status === 401 || error.response?.status === 404) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
-      }
+      toast({
+        title: 'Login Failed',
+        description: error.message || 'Invalid credentials. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (
-    identifier: string,
-    password: string,
-    rememberMe: boolean = false
-  ): Promise<boolean> => {
+  const register = async (userData: RegisterRequest) => {
     try {
-      // Remove mailto: prefix if present
-      const cleanIdentifier = identifier.startsWith('mailto:')
-        ? identifier.replace('mailto:', '')
-        : identifier;
+      setIsLoading(true);
 
-      // Try different data formats that backend might expect
-      const loginData = {
-        identifier: cleanIdentifier,
-        password: password,
-        rememberMe: rememberMe,
-      };
+      const response = await authService.register(userData);
 
-      console.log('🔄 AuthContext: Calling login with:', loginData);
-
-      const response = await userService.login(loginData);
-      console.log('📊 AuthContext: Login response received:', response);
-      console.log('📊 Full response structure:', JSON.stringify(response, null, 2));
-
-      const token = response.data?.accessToken || response.accessToken;
-      const userData = response.data?.user || response.user;
-
-      console.log('🔑 Token:', token ? 'exists' : 'missing');
-      console.log('👤 User data:', userData);
-
-      if (!token) {
-        throw new Error('No access token received from server');
-      }
-
-      if (!userData) {
-        throw new Error('No user data received from server');
-      }
-
-      console.log('👤 Final user data being set:', userData);
-      console.log('🔐 User role:', userData.role);
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-
-      const welcomeMessage =
-        userData.role === 'admin' || userData.role === 'superadmin'
-          ? `Welcome back, ${userData.role}!`
-          : 'Welcome back!';
-
-      toast({
-        title: welcomeMessage,
-        description:
-          userData.role === 'admin' || userData.role === 'superadmin'
-            ? 'Redirecting to admin dashboard...'
-            : "You've been successfully logged in.",
-      });
-
-      return true;
-    } catch (error: any) {
-      console.error('❌ AuthContext: Login error:', error);
-      console.error('❌ Error response:', error.response);
-      console.error('❌ Error data:', error.response?.data);
-
-      // Fallback authentication for development/demo
-      if (
-        import.meta.env.VITE_ENABLE_DEBUG === 'true' &&
-        (identifier === 'admin@admin.com' || identifier === 'test@test.com')
-      ) {
-        const mockUser = {
-          _id: identifier === 'admin@admin.com' ? 'admin-123' : 'user-123',
-          username: identifier === 'admin@admin.com' ? 'admin' : 'testuser',
-          email: identifier,
-          firstName: identifier === 'admin@admin.com' ? 'Admin' : 'Test',
-          lastName: 'User',
-          role: (identifier === 'admin@admin.com' ? 'admin' : 'user') as const,
-          isActive: true,
-          followersCount: 0,
-          followingCount: 0,
-          postsCount: 0,
-          createdAt: new Date().toISOString(),
-          lastActive: new Date().toISOString(),
-          avatar:
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-        };
-
-        localStorage.setItem('token', `mock-${mockUser.role}-token`);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        setUser(mockUser);
+      if (response.success && response.data) {
+        setUser(response.data.user);
 
         toast({
-          title: 'Demo Login Successful!',
-          description: 'Using fallback authentication for development.',
+          title: 'Welcome to EndlessChat!',
+          description: 'Your account has been created successfully.',
         });
 
-        return true;
-      }
-
-      toast({
-        title: 'Login failed',
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          'Please check your credentials and ensure the backend is running.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-  };
-
-  const register = async (
-    userData: RegisterData
-  ): Promise<{ success: boolean; error?: string }> => {
-    setRegistrationError(null);
-
-    try {
-      await userService.register(userData);
-
-      // Auto-login after successful registration
-      const loginSuccess = await login(userData.email, userData.password);
-
-      // If email login fails, try with username
-      if (!loginSuccess) {
-        console.log('Email login failed, trying with username...');
-        await login(userData.username, userData.password);
-      }
-
-      if (loginSuccess) {
-        // Toast message will be handled by login function based on role
+        navigate('/feed');
       } else {
-        toast({
-          title: 'Registration successful!',
-          description: 'Please login with your new account.',
-        });
+        throw new Error(response.message || 'Registration failed');
       }
-
-      return { success: true };
     } catch (error: any) {
-      console.error('Registration failed:', error);
-
-      // Handle specific error messages securely
-      let errorMessage = 'Registration failed. Please try again.';
-
-      if (error.response?.data?.error) {
-        const serverError = error.response.data.error;
-        if (serverError.includes('Email address is already registered')) {
-          errorMessage =
-            'This email address is already registered. Please use a different email or try logging in.';
-        } else if (serverError.includes('Username already exists')) {
-          errorMessage = 'This username is already taken. Please choose a different username.';
-        } else if (serverError.includes('Password')) {
-          errorMessage = 'Password does not meet security requirements.';
-        }
-      }
-
-      setRegistrationError(errorMessage);
-
       toast({
         title: 'Registration Failed',
-        description: errorMessage,
+        description: error.message || 'Unable to create account. Please try again.',
         variant: 'destructive',
       });
-
-      return { success: false, error: errorMessage };
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const logout = async () => {
     try {
-      await userService.logout();
+      await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      cacheService.clear();
       setUser(null);
+
       toast({
         title: 'Logged out',
-        description: "You've been successfully logged out.",
+        description: 'You have been successfully logged out.',
       });
+
+      navigate('/login');
     }
   };
 
-  const updateProfile = async (data: Partial<User>): Promise<void> => {
+  const updateProfile = async (userData: UpdateProfileRequest) => {
     try {
-      const updatedUser = await userService.updateProfile(data);
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      const response = await authService.updateProfile(userData);
 
-      toast({
-        title: 'Profile updated',
-        description: 'Your profile has been successfully updated.',
-      });
+      if (response.success && response.data) {
+        setUser(response.data);
+
+        toast({
+          title: 'Profile Updated',
+          description: 'Your profile has been updated successfully.',
+        });
+      } else {
+        throw new Error(response.message || 'Failed to update profile');
+      }
     } catch (error: any) {
-      console.error('Profile update failed:', error);
       toast({
-        title: 'Update failed',
-        description: 'Failed to update profile. Please try again.',
+        title: 'Update Failed',
+        description: error.message || 'Failed to update profile. Please try again.',
         variant: 'destructive',
       });
       throw error;
     }
   };
 
-  const updateUser = (userData: User): void => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const refreshUser = async (): Promise<void> => {
+  const changePassword = async (passwordData: ChangePasswordRequest) => {
     try {
-      const userData = await userService.getProfile();
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-    } catch (error) {
-      console.error('Failed to refresh user data:', error);
+      const response = await authService.changePassword(passwordData);
+
+      if (response.success) {
+        toast({
+          title: 'Password Changed',
+          description: 'Your password has been changed successfully.',
+        });
+      } else {
+        throw new Error(response.message || 'Failed to change password');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Password Change Failed',
+        description: error.message || 'Failed to change password. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
     }
   };
 
-  const clearRegistrationError = (): void => {
-    setRegistrationError(null);
+  const checkPermission = (permission: string): boolean => {
+    if (!user) return false;
+
+    // Super admin has all permissions
+    if (user.role === 'super_admin') return true;
+
+    // Admin permissions
+    if (user.role === 'admin') {
+      const adminPermissions = [
+        'view_dashboard',
+        'manage_users',
+        'manage_content',
+        'view_analytics',
+        'manage_notifications',
+      ];
+      return adminPermissions.includes(permission);
+    }
+
+    // User permissions
+    const userPermissions = [
+      'create_post',
+      'edit_own_post',
+      'delete_own_post',
+      'follow_users',
+      'update_profile',
+    ];
+
+    return userPermissions.includes(permission);
   };
 
-  const value = {
+  const hasRole = (role: string | string[]): boolean => {
+    if (!user) return false;
+
+    if (Array.isArray(role)) {
+      return role.includes(user.role);
+    }
+
+    return user.role === role;
+  };
+
+  const value: AuthContextType = {
     user,
+    isAuthenticated,
     isLoading,
-    registrationError,
     login,
     register,
     logout,
     updateProfile,
-    updateUser,
+    changePassword,
     refreshUser,
-    clearRegistrationError,
+    checkPermission,
+    hasRole,
+    isAdmin,
+    isSuperAdmin,
   };
 
+  // Show loading screen during initial auth check
+  if (isLoading && !user) {
+    return <LoadingScreen />;
+  }
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export default AuthProvider;
+
+// Hook for role-based access control
+export const useRoleAccess = () => {
+  const { hasRole, checkPermission, isAdmin, isSuperAdmin } = useAuth();
+
+  return {
+    hasRole,
+    checkPermission,
+    isAdmin,
+    isSuperAdmin,
+    canAccessAdmin: () => hasRole(['admin', 'super_admin']),
+    canAccessSuperAdmin: () => hasRole('super_admin'),
+    canManageUsers: () => checkPermission('manage_users'),
+    canManageContent: () => checkPermission('manage_content'),
+    canViewAnalytics: () => checkPermission('view_analytics'),
+  };
 };

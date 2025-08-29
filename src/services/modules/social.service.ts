@@ -1,6 +1,6 @@
-import { api } from './api';
-import { User } from './userService';
-import { debounce } from '@/utils/debounce';
+import { apiClient } from '../core/apiClient';
+import { User } from '../../types/api';
+import { debounce } from '../../utils/debounce';
 
 export interface FollowResponse {
   message: string;
@@ -31,11 +31,11 @@ export interface FeedPost {
 export const socialService = {
   // Follow/Unfollow
   followUser: async (userId: string): Promise<FollowResponse> => {
-    return api.post<FollowResponse>(`/users/follow/${userId}`);
+    return apiClient.post<FollowResponse>(`/users/follow/${userId}`);
   },
 
   unfollowUser: async (userId: string): Promise<FollowResponse> => {
-    return api.post<FollowResponse>(`/users/unfollow/${userId}`);
+    return apiClient.post<FollowResponse>(`/users/unfollow/${userId}`);
   },
 
   // Followers/Following
@@ -48,7 +48,7 @@ export const socialService = {
     if (params?.page) queryParams.append('page', params.page.toString());
 
     const query = queryParams.toString();
-    return api.get<User[]>(`/users/followers/${userId}${query ? `?${query}` : ''}`);
+    return apiClient.get<User[]>(`/users/followers/${userId}${query ? `?${query}` : ''}`);
   },
 
   getFollowing: async (
@@ -60,7 +60,7 @@ export const socialService = {
     if (params?.page) queryParams.append('page', params.page.toString());
 
     const query = queryParams.toString();
-    return api.get<User[]>(`/users/following/${userId}${query ? `?${query}` : ''}`);
+    return apiClient.get<User[]>(`/users/following/${userId}${query ? `?${query}` : ''}`);
   },
 
   // Feed Management
@@ -71,12 +71,12 @@ export const socialService = {
     if (params?.sort) queryParams.append('sort', params.sort);
 
     const query = queryParams.toString();
-    return api.get<FeedPost[]>(`/users/feed${query ? `?${query}` : ''}`);
+    return apiClient.get<FeedPost[]>(`/users/feed${query ? `?${query}` : ''}`);
   },
 
   // Debounced search for better performance
   searchUsersDebounced: debounce(async (query: string): Promise<User[]> => {
     if (!query.trim()) return [];
-    return api.get<User[]>(`/users/search?username=${encodeURIComponent(query)}`);
+    return apiClient.get<User[]>(`/users/search?username=${encodeURIComponent(query)}`);
   }, 300),
 };

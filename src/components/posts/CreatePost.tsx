@@ -16,6 +16,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Image,
@@ -28,6 +29,8 @@ import {
   Plus,
   Clock,
   Globe,
+  Video,
+  Camera,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -51,6 +54,8 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
   const [location, setLocation] = useState('');
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   // Poll state
   const [pollQuestion, setPollQuestion] = useState('');
@@ -142,6 +147,88 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
   const updatePollOption = (index: number, text: string) => {
     setPollOptions(prev => prev.map((opt, i) => (i === index ? { text } : opt)));
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setContent(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const handleGetLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: 'Location not supported',
+        description: 'Your browser does not support location services.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async position => {
+        try {
+          // Mock location name - in real app, use reverse geocoding API
+          const mockLocations = [
+            'New York, NY',
+            'San Francisco, CA',
+            'Los Angeles, CA',
+            'Chicago, IL',
+            'Miami, FL',
+          ];
+          const randomLocation = mockLocations[Math.floor(Math.random() * mockLocations.length)];
+          setLocation(randomLocation);
+          toast({
+            title: 'Location added',
+            description: `Added ${randomLocation} to your post.`,
+          });
+        } catch (error) {
+          toast({
+            title: 'Location error',
+            description: 'Could not get location name.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsGettingLocation(false);
+        }
+      },
+      error => {
+        setIsGettingLocation(false);
+        toast({
+          title: 'Location denied',
+          description: 'Please allow location access to add your location.',
+          variant: 'destructive',
+        });
+      }
+    );
+  };
+
+  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        if (file.size > 50 * 1024 * 1024) {
+          // 50MB limit
+          toast({
+            title: 'File too large',
+            description: 'Video files must be under 50MB.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = e => {
+          if (e.target?.result) {
+            setImages(prev => [...prev, e.target!.result as string]);
+            toast({
+              title: 'Video added',
+              description: 'Video has been added to your post.',
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
   };
 
   const characterLimit = postType === 'article' ? 2000 : 280;
@@ -362,37 +449,186 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-1">
-                {/* Media Upload */}
+                {/* Poll */}
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="text-primary hover:bg-primary/10"
+                  className={`transition-colors hover:scale-105 ${
+                    postType === 'poll'
+                      ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                      : 'text-primary hover:bg-primary/10'
+                  }`}
+                  onClick={() => setPostType(postType === 'poll' ? 'text' : 'poll')}
+                  title="Create a poll"
+                >
+                  <BarChart3 className="w-5 h-5" />
+                </Button>
+
+                {/* Image Upload */}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105"
                   onClick={() => fileInputRef.current?.click()}
+                  title="Add photos"
                 >
                   <Image className="w-5 h-5" />
                 </Button>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   multiple
                   onChange={handleImageUpload}
                   className="hidden"
                 />
 
-                {/* Emoji */}
-                <Button variant="ghost" size="icon-sm" className="text-primary hover:bg-primary/10">
-                  <Smile className="w-5 h-5" />
+                {/* Video Upload */}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'video/*';
+                    input.onchange = handleVideoUpload;
+                    input.click();
+                  }}
+                  title="Add video"
+                >
+                  <Video className="w-5 h-5" />
                 </Button>
+
+                {/* Emoji */}
+                <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-primary hover:bg-primary/10 transition-colors hover:scale-105"
+                      title="Add emoji"
+                    >
+                      <Smile className="w-5 h-5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2">
+                    <div className="grid grid-cols-8 gap-1">
+                      {[
+                        '😀',
+                        '😃',
+                        '😄',
+                        '😁',
+                        '😆',
+                        '😅',
+                        '😂',
+                        '🤣',
+                        '😊',
+                        '😇',
+                        '🙂',
+                        '🙃',
+                        '😉',
+                        '😌',
+                        '😍',
+                        '🥰',
+                        '😘',
+                        '😗',
+                        '😙',
+                        '😚',
+                        '😋',
+                        '😛',
+                        '😝',
+                        '😜',
+                        '🤪',
+                        '🤨',
+                        '🧐',
+                        '🤓',
+                        '😎',
+                        '🤩',
+                        '🥳',
+                        '😏',
+                        '😒',
+                        '😞',
+                        '😔',
+                        '😟',
+                        '😕',
+                        '🙁',
+                        '☹️',
+                        '😣',
+                        '😖',
+                        '😫',
+                        '😩',
+                        '🥺',
+                        '😢',
+                        '😭',
+                        '😤',
+                        '😠',
+                        '😡',
+                        '🤬',
+                        '🤯',
+                        '😳',
+                        '🥵',
+                        '🥶',
+                        '😱',
+                        '😨',
+                        '😰',
+                        '😥',
+                        '😓',
+                        '🤗',
+                        '🤔',
+                        '🤭',
+                        '🤫',
+                        '🤥',
+                        '😶',
+                        '😐',
+                        '😑',
+                        '😬',
+                        '🙄',
+                        '😯',
+                        '😦',
+                        '😧',
+                        '😮',
+                        '😲',
+                        '🥱',
+                        '😴',
+                        '🤤',
+                        '😪',
+                        '😵',
+                        '🤐',
+                        '🥴',
+                        '🤢',
+                        '🤮',
+                        '🤧',
+                        '😷',
+                        '🤒',
+                        '🤕',
+                      ].map(emoji => (
+                        <button
+                          key={emoji}
+                          onClick={() => handleEmojiSelect(emoji)}
+                          className="p-1 hover:bg-muted rounded text-lg transition-colors"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
 
                 {/* Location */}
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="text-primary hover:bg-primary/10"
-                  onClick={() => setLocation(location === '' ? 'Current location' : '')}
+                  className={`transition-colors hover:scale-105 ${
+                    location
+                      ? 'text-green-600 bg-green-50 hover:bg-green-100'
+                      : 'text-primary hover:bg-primary/10'
+                  }`}
+                  onClick={handleGetLocation}
+                  disabled={isGettingLocation}
+                  title={location ? 'Change location' : 'Add location'}
                 >
-                  <MapPin className="w-5 h-5" />
+                  <MapPin className={`w-5 h-5 ${isGettingLocation ? 'animate-pulse' : ''}`} />
                 </Button>
 
                 {/* Schedule */}
@@ -401,7 +637,8 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      className="text-primary hover:bg-primary/10"
+                      className="text-primary hover:bg-primary/10 transition-colors"
+                      title="Schedule post"
                     >
                       <CalendarIcon className="w-5 h-5" />
                     </Button>

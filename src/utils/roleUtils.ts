@@ -1,46 +1,64 @@
-import { User } from '@/services/userService';
-import { ROLES } from './constants';
-
-export const isAdmin = (user: User | null): boolean => {
-  if (!user) return false;
-  return [ROLES.ADMIN, ROLES.SUPERADMIN, ROLES.SUPER_ADMIN].includes(user.role as any);
-};
+import { User } from '../types/api';
 
 export const isSuperAdmin = (user: User | null): boolean => {
+  return user?.role === 'super_admin';
+};
+
+export const isAdmin = (user: User | null): boolean => {
+  return user?.role === 'admin' || user?.role === 'super_admin';
+};
+
+export const isUser = (user: User | null): boolean => {
+  return user?.role === 'user';
+};
+
+export const hasPermission = (user: User | null, permission: string): boolean => {
   if (!user) return false;
-  return [ROLES.SUPERADMIN, ROLES.SUPER_ADMIN].includes(user.role as any);
-};
 
-export const hasAdminRights = (user: User | null): boolean => {
-  return isAdmin(user);
-};
+  // Super admin has all permissions
+  if (user.role === 'super_admin') return true;
 
-export const isRegularAdmin = (user: User | null): boolean => {
-  if (!user) return false;
-  return user.role === ROLES.ADMIN;
-};
-
-export const canManageUsers = (user: User | null): boolean => {
-  return isAdmin(user);
-};
-
-export const canManageAdmins = (user: User | null): boolean => {
-  return isSuperAdmin(user);
-};
-
-export const canAccessSystemSettings = (user: User | null): boolean => {
-  return isSuperAdmin(user);
-};
-
-export const getUserDisplayName = (user: User): string => {
-  return user.firstName && user.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user.username || 'User';
-};
-
-export const getUserInitials = (user: User): string => {
-  if (user.firstName && user.lastName) {
-    return `${user.firstName[0]}${user.lastName[0]}`;
+  // Admin permissions
+  if (user.role === 'admin') {
+    const adminPermissions = [
+      'view_dashboard',
+      'manage_users',
+      'manage_content',
+      'view_analytics',
+      'manage_notifications',
+    ];
+    return adminPermissions.includes(permission);
   }
-  return user.username?.[0]?.toUpperCase() || 'U';
+
+  // User permissions
+  const userPermissions = [
+    'create_post',
+    'edit_own_post',
+    'delete_own_post',
+    'follow_users',
+    'update_profile',
+  ];
+
+  return userPermissions.includes(permission);
+};
+
+export const getRoleDisplayName = (role: string): string => {
+  switch (role) {
+    case 'super_admin':
+      return 'Super Admin';
+    case 'admin':
+      return 'Admin';
+    case 'user':
+      return 'User';
+    default:
+      return 'Unknown';
+  }
+};
+
+export const canAccessAdminDashboard = (user: User | null): boolean => {
+  return isAdmin(user);
+};
+
+export const canAccessSuperAdminDashboard = (user: User | null): boolean => {
+  return isSuperAdmin(user);
 };
