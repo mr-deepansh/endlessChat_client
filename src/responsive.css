@@ -1,0 +1,164 @@
+/* Large Screen Responsive Utilities for EndlessChat */
+
+/* Container utilities for large screens */
+@layer utilities {
+  .container-responsive {
+    @apply max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto;
+  }
+
+  .padding-responsive {
+    @apply px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16;
+  }
+
+  .padding-y-responsive {
+    @apply py-6 xl:py-8 2xl:py-10;
+  }
+
+  .gap-responsive {
+    @apply gap-6 xl:gap-8 2xl:gap-10;
+  }
+
+  .space-y-responsive > * + * {
+    @apply mt-6 xl:mt-8 2xl:mt-10;
+  }
+
+  /* Grid utilities for large screens */
+  .grid-responsive-2 {
+    @apply grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4;
+  }
+
+  .grid-responsive-3 {
+    @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5;
+  }
+
+  .grid-responsive-4 {
+    @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6;
+  }
+
+  /* Text sizing for large screens */
+  .text-responsive-sm {
+    @apply text-sm xl:text-base 2xl:text-lg;
+  }
+
+  .text-responsive-base {
+    @apply text-base xl:text-lg 2xl:text-xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg xl:text-xl 2xl:text-2xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl xl:text-2xl 2xl:text-3xl;
+  }
+
+  .text-responsive-2xl {
+    @apply text-2xl xl:text-3xl 2xl:text-4xl;
+  }
+
+  .text-responsive-3xl {
+    @apply text-3xl xl:text-4xl 2xl:text-5xl;
+  }
+
+  /* Avatar sizing for large screens */
+  .avatar-responsive-sm {
+    @apply h-8 w-8 xl:h-10 xl:w-10 2xl:h-12 2xl:w-12;
+  }
+
+  .avatar-responsive-md {
+    @apply h-10 w-10 xl:h-12 xl:w-12 2xl:h-14 2xl:w-14;
+  }
+
+  .avatar-responsive-lg {
+    @apply h-12 w-12 xl:h-16 xl:w-16 2xl:h-20 2xl:w-20;
+  }
+
+  .avatar-responsive-xl {
+    @apply h-16 w-16 xl:h-20 xl:w-20 2xl:h-24 2xl:w-24;
+  }
+
+  /* Card padding for large screens */
+  .card-padding-responsive {
+    @apply p-4 xl:p-6 2xl:p-8;
+  }
+
+  .card-padding-lg-responsive {
+    @apply p-6 xl:p-8 2xl:p-10;
+  }
+
+  /* Margin utilities for large screens */
+  .mb-responsive {
+    @apply mb-4 xl:mb-6 2xl:mb-8;
+  }
+
+  .mt-responsive {
+    @apply mt-4 xl:mt-6 2xl:mt-8;
+  }
+
+  .my-responsive {
+    @apply my-4 xl:my-6 2xl:my-8;
+  }
+
+  /* Icon sizing for large screens */
+  .icon-responsive-sm {
+    @apply w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6;
+  }
+
+  .icon-responsive-md {
+    @apply w-5 h-5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7;
+  }
+
+  .icon-responsive-lg {
+    @apply w-6 h-6 xl:w-7 xl:h-7 2xl:w-8 2xl:h-8;
+  }
+}
+
+/* Media queries for fine-tuned control */
+@media (min-width: 1024px) {
+  .lg-enhanced {
+    font-size: 1.1em;
+  }
+}
+
+@media (min-width: 1280px) {
+  .xl-enhanced {
+    font-size: 1.2em;
+    line-height: 1.4;
+  }
+}
+
+@media (min-width: 1536px) {
+  .xxl-enhanced {
+    font-size: 1.3em;
+    line-height: 1.5;
+  }
+}
+
+/* Smooth transitions for responsive changes */
+* {
+  transition:
+    font-size 0.2s ease,
+    padding 0.2s ease,
+    margin 0.2s ease;
+}
+
+/* Large screen specific improvements */
+@media (min-width: 1280px) {
+  .hover-scale-xl:hover {
+    transform: scale(1.02);
+  }
+
+  .shadow-xl-enhanced {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+@media (min-width: 1536px) {
+  .hover-scale-2xl:hover {
+    transform: scale(1.03);
+  }
+
+  .shadow-2xl-enhanced {
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
+  }
+}

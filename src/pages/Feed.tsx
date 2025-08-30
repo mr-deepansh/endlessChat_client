@@ -1,230 +1,326 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { throttle } from '../utils/throttle';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../contexts/AuthContext';
-import { feedService } from '../services';
-import { Post, FeedParams } from '../types/api';
-import { Card, CardContent, CardHeader } from '../components/ui/card';
+import { realTimePostService } from '../services/realTimePostService';
+import { toast } from '../hooks/use-toast';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Skeleton } from '../components/ui/skeleton';
+import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { toast } from '../hooks/use-toast';
-import { Search, RefreshCw, Plus, MessageCircle, Loader2 } from 'lucide-react';
-import CreatePost from '../components/feed/CreatePost';
-import PostCard from '../components/feed/PostCard';
-import Sidebar from '../components/feed/Sidebar';
+import { Badge } from '../components/ui/badge';
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  Share,
+  Bookmark,
+  MoreHorizontal,
+  Image as ImageIcon,
+  Video,
+  Calendar,
+  MapPin,
+  Smile,
+  Send,
+  ThumbsUp,
+  Quote,
+  ExternalLink,
+  UserMinus,
+  Flag,
+  Copy,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
+  X,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../components/ui/dialog';
 
-interface FeedState {
-  posts: Post[];
-  loading: boolean;
-  error: string | null;
-  hasMore: boolean;
-  page: number;
+interface Post {
+  _id: string;
+  author: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+    avatar?: string;
+    title?: string;
+  };
+  content: string;
+  images?: string[];
+  createdAt: string;
+  likesCount: number;
+  commentsCount: number;
+  repostsCount: number;
+  sharesCount: number;
+  isLiked: boolean;
+  isBookmarked: boolean;
+  isReposted: boolean;
+  comments?: Comment[];
+}
+
+interface Comment {
+  _id: string;
+  author: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+    avatar?: string;
+  };
+  content: string;
+  createdAt: string;
+  likesCount: number;
+  isLiked: boolean;
+  replies?: Comment[];
 }
 
 const Feed: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const [feedState, setFeedState] = useState<FeedState>({
-    posts: [],
-    loading: true,
-    error: null,
-    hasMore: true,
-    page: 1,
-  });
-
-  const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'trending'>('home');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'trending'>('recent');
+  usePageTitle('Feed');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [newPost, setNewPost] = useState('');
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [commentText, setCommentText] = useState('');
+  const [repostText, setRepostText] = useState('');
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [sharePostId, setSharePostId] = useState<string | null>(null);
 
-  const feedParams = useMemo(
-    (): FeedParams => ({
-      page: feedState.page,
-      limit: 20,
-      sort: sortBy,
-    }),
-    [feedState.page, sortBy]
-  );
-
-  const loadFeed = useCallback(
-    async (reset = false) => {
-      if (!isAuthenticated) return;
-
-      try {
-        setFeedState(prev => ({
-          ...prev,
-          loading: reset ? true : prev.loading,
-          error: null,
-        }));
-
-        const params = reset ? { ...feedParams, page: 1 } : feedParams;
-        const response = await feedService.getFeed(params);
-
-        if (response.success && response.data) {
-          const newPosts = Array.isArray(response.data) ? response.data : [];
-          setFeedState(prev => ({
-            ...prev,
-            posts: reset ? newPosts : [...prev.posts, ...newPosts],
-            loading: false,
-            hasMore: newPosts.length === params.limit,
-            page: reset ? 2 : prev.page + 1,
-          }));
-        } else {
-          throw new Error(response.message || 'Failed to load feed');
-        }
-      } catch (error: any) {
-        setFeedState(prev => ({
-          ...prev,
-          loading: false,
-          error: error.message || 'Failed to load feed',
-        }));
-
-        toast({
-          title: 'Error',
-          description: error.message || 'Failed to load feed',
-          variant: 'destructive',
-        });
-      }
-    },
-    [isAuthenticated, feedParams]
-  );
-
-  const refreshFeed = useCallback(async () => {
-    setRefreshing(true);
-    await loadFeed(true);
-    setRefreshing(false);
-
-    toast({
-      title: 'Feed Refreshed',
-      description: 'Your feed has been updated with the latest posts.',
-    });
-  }, [loadFeed]);
-
-  const loadMore = useCallback(() => {
-    if (!feedState.loading && feedState.hasMore) {
-      loadFeed();
-    }
-  }, [feedState.loading, feedState.hasMore, loadFeed]);
-
-  const handlePostInteraction = useCallback(
-    async (
-      postId: string,
-      action: 'like' | 'unlike' | 'bookmark' | 'unbookmark' | 'repost' | 'unrepost',
-      data?: any
-    ) => {
-      try {
-        let response;
-
-        switch (action) {
-          case 'like':
-            response = await feedService.likePost(postId);
-            break;
-          case 'unlike':
-            response = await feedService.unlikePost(postId);
-            break;
-          case 'bookmark':
-            response = await feedService.bookmarkPost(postId);
-            break;
-          case 'unbookmark':
-            response = await feedService.unbookmarkPost(postId);
-            break;
-          case 'repost':
-            response = await feedService.repostPost(postId, data);
-            break;
-          case 'unrepost':
-            response = await feedService.unrepostPost(postId);
-            break;
-        }
-
-        if (response?.success) {
-          const updatePost = (post: any) => {
-            if (post._id !== postId) return post;
-
-            const updates = { ...post, ...response.data };
-
-            if (action === 'like') updates.isLiked = true;
-            else if (action === 'unlike') updates.isLiked = false;
-            else if (action === 'bookmark') updates.isBookmarked = true;
-            else if (action === 'unbookmark') updates.isBookmarked = false;
-            else if (action === 'repost') updates.isReposted = true;
-            else if (action === 'unrepost') updates.isReposted = false;
-
-            return updates;
-          };
-
-          setFeedState(prev => ({
-            ...prev,
-            posts: prev.posts.map(updatePost),
-          }));
-        }
-      } catch (error: any) {
-        toast({
-          title: 'Error',
-          description: error.message || 'Action failed',
-          variant: 'destructive',
-        });
-      }
-    },
-    []
-  );
-
-  const handlePostCreated = useCallback((newPost: Post) => {
-    setFeedState(prev => ({
-      ...prev,
-      posts: [newPost, ...prev.posts],
-    }));
-    setShowCreatePost(false);
-
-    toast({
-      title: 'Post Created',
-      description: 'Your post has been published successfully.',
-    });
+  // Mock data for demonstration
+  useEffect(() => {
+    const mockPosts: Post[] = [
+      {
+        _id: '1',
+        author: {
+          _id: '1',
+          firstName: 'John',
+          lastName: 'Doe',
+          username: 'johndoe',
+          avatar: '',
+          title: 'Software Engineer at Tech Corp',
+        },
+        content:
+          'Just shipped a new feature that improves user experience by 40%! Excited to see how our users respond to these changes. Building great products is all about listening to feedback and iterating quickly. 🚀',
+        images: [],
+        createdAt: '2024-01-15T10:30:00Z',
+        likesCount: 24,
+        commentsCount: 8,
+        repostsCount: 3,
+        sharesCount: 2,
+        isLiked: false,
+        isBookmarked: false,
+        isReposted: false,
+        comments: [],
+      },
+      {
+        _id: '2',
+        author: {
+          _id: '2',
+          firstName: 'Sarah',
+          lastName: 'Wilson',
+          username: 'sarahw',
+          avatar: '',
+          title: 'Product Manager at StartupXYZ',
+        },
+        content:
+          'Attending an amazing tech conference today! The insights on AI and machine learning are mind-blowing. Networking with brilliant minds and learning about the future of technology. #TechConf2024',
+        images: [],
+        createdAt: '2024-01-15T08:15:00Z',
+        likesCount: 45,
+        commentsCount: 12,
+        repostsCount: 7,
+        sharesCount: 5,
+        isLiked: true,
+        isBookmarked: true,
+        isReposted: false,
+        comments: [],
+      },
+    ];
+    setPosts(mockPosts);
   }, []);
 
-  const handleTabChange = useCallback((tab: string) => {
-    setActiveTab(tab as 'home' | 'explore' | 'trending');
-    setFeedState(prev => ({
-      ...prev,
-      posts: [],
-      page: 1,
-      hasMore: true,
-    }));
-  }, []);
+  const handleCreatePost = async () => {
+    if (!newPost.trim()) return;
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadFeed(true);
-    }
-  }, [isAuthenticated, activeTab, sortBy, loadFeed]);
+    try {
+      const response = await realTimePostService.createPost({
+        content: newPost,
+        visibility: 'public',
+      });
 
-  useEffect(() => {
-    const throttledHandleScroll = throttle(() => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-          document.documentElement.offsetHeight - 1000 &&
-        feedState.hasMore &&
-        !feedState.loading
-      ) {
-        loadMore();
+      if (response.success) {
+        const newPostData: Post = {
+          _id: response.data._id || Date.now().toString(),
+          author: {
+            _id: user?._id || '',
+            firstName: user?.firstName || 'User',
+            lastName: user?.lastName || '',
+            username: user?.username || 'user',
+            avatar: user?.avatar,
+            title: 'EndlessChatt User',
+          },
+          content: newPost,
+          images: [],
+          createdAt: new Date().toISOString(),
+          likesCount: 0,
+          commentsCount: 0,
+          repostsCount: 0,
+          sharesCount: 0,
+          isLiked: false,
+          isBookmarked: false,
+          isReposted: false,
+          comments: [],
+        };
+
+        setPosts([newPostData, ...posts]);
+        setNewPost('');
+        setShowCreatePost(false);
+
+        toast({
+          title: 'Post Created',
+          description: 'Your post has been published successfully.',
+        });
       }
-    }, 200);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create post',
+        variant: 'destructive',
+      });
+    }
+  };
 
-    window.addEventListener('scroll', throttledHandleScroll);
-    return () => window.removeEventListener('scroll', throttledHandleScroll);
-  }, [loadMore, feedState.hasMore, feedState.loading]);
+  const handleLike = async (postId: string) => {
+    const post = posts.find(p => p._id === postId);
+    if (!post) return;
+
+    try {
+      const response = post.isLiked
+        ? await realTimePostService.unlikePost(postId)
+        : await realTimePostService.likePost(postId);
+
+      if (response.success) {
+        setPosts(
+          posts.map(p =>
+            p._id === postId
+              ? {
+                  ...p,
+                  isLiked: !p.isLiked,
+                  likesCount: p.isLiked ? p.likesCount - 1 : p.likesCount + 1,
+                }
+              : p
+          )
+        );
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update like',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBookmark = async (postId: string) => {
+    const post = posts.find(p => p._id === postId);
+    if (!post) return;
+
+    try {
+      const response = post.isBookmarked
+        ? await realTimePostService.unbookmarkPost(postId)
+        : await realTimePostService.bookmarkPost(postId);
+
+      if (response.success) {
+        setPosts(posts.map(p => (p._id === postId ? { ...p, isBookmarked: !p.isBookmarked } : p)));
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update bookmark',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRepost = async (postId: string, withQuote = false) => {
+    const post = posts.find(p => p._id === postId);
+    if (!post) return;
+
+    try {
+      const response = post.isReposted
+        ? await realTimePostService.unrepost(postId)
+        : await realTimePostService.repost(postId, withQuote ? repostText : undefined);
+
+      if (response.success) {
+        setPosts(
+          posts.map(p =>
+            p._id === postId
+              ? {
+                  ...p,
+                  isReposted: !p.isReposted,
+                  repostsCount: p.isReposted ? p.repostsCount - 1 : p.repostsCount + 1,
+                }
+              : p
+          )
+        );
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to repost',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleShare = (postId: string, platform?: string) => {
+    if (platform) {
+      // Handle sharing to specific platform
+      console.log('Share to:', platform, postId);
+    } else {
+      // Handle generic share
+      setPosts(
+        posts.map(post =>
+          post._id === postId ? { ...post, sharesCount: post.sharesCount + 1 } : post
+        )
+      );
+    }
+    setShowShareDialog(false);
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h`;
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d`;
+    return `${Math.floor(diffInHours / 168)}w`;
+  };
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
-          <CardHeader>
-            <h2 className="text-2xl font-bold text-center">Welcome to EndlessChat</h2>
-          </CardHeader>
-          <CardContent className="text-center">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-2xl font-bold mb-4">Welcome to EndlessChatt</h2>
             <p className="text-muted-foreground mb-4">Please sign in to access your feed</p>
             <Button asChild className="w-full">
               <Link to="/login">Sign In</Link>
@@ -236,143 +332,376 @@ const Feed: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
-      <div className="pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3 space-y-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <h1 className="text-2xl font-bold gradient-text">Home</h1>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant={sortBy === 'recent' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSortBy('recent')}
-                    >
-                      Recent
-                    </Button>
-                    <Button
-                      variant={sortBy === 'trending' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSortBy('trending')}
-                    >
-                      Trending
-                    </Button>
+      <div>
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          {/* Create Post Card */}
+          <Card className="mb-6 bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
+            <CardContent className="p-4">
+              {!showCreatePost ? (
+                <div
+                  className="flex items-center space-x-3 cursor-pointer"
+                  onClick={() => setShowCreatePost(true)}
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={user?.avatar} />
+                    <AvatarFallback className="bg-gradient-primary text-white">
+                      {user?.firstName?.[0]}
+                      {user?.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                    Start a post...
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={refreshFeed} disabled={refreshing}>
-                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                </Button>
-              </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={user?.avatar} />
+                      <AvatarFallback className="bg-gradient-primary text-white">
+                        {user?.firstName?.[0]}
+                        {user?.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-medium">
+                        {user?.firstName} {user?.lastName}
+                      </div>
+                      <div className="text-sm text-slate-500">Post to anyone</div>
+                    </div>
+                  </div>
 
-              {showCreatePost && (
-                <CreatePost
-                  onPostCreated={handlePostCreated}
-                  onCancel={() => setShowCreatePost(false)}
-                />
+                  <Textarea
+                    placeholder="What do you want to talk about?"
+                    value={newPost}
+                    onChange={e => setNewPost(e.target.value)}
+                    className="min-h-[120px] border-none resize-none text-lg placeholder:text-slate-400 focus-visible:ring-0"
+                  />
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-600 hover:text-slate-800"
+                      >
+                        <ImageIcon className="w-5 h-5 mr-2" />
+                        Photo
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-600 hover:text-slate-800"
+                      >
+                        <Video className="w-5 h-5 mr-2" />
+                        Video
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-600 hover:text-slate-800"
+                      >
+                        <Calendar className="w-5 h-5 mr-2" />
+                        Event
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-600 hover:text-slate-800"
+                      >
+                        <Smile className="w-5 h-5 mr-2" />
+                        Feeling
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowCreatePost(false);
+                          setNewPost('');
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleCreatePost}
+                        disabled={!newPost.trim()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Post
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {!showCreatePost && (
-                <Card
-                  className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => setShowCreatePost(true)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={user?.avatar} />
-                      <AvatarFallback className="bg-gradient-primary text-white">
-                        {user?.firstName?.[0] || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 text-muted-foreground">What's on your mind?</div>
-                    <Plus className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </Card>
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-slate-600 hover:text-slate-800"
+                  >
+                    <ImageIcon className="w-5 h-5 mr-2" />
+                    Photo
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-slate-600 hover:text-slate-800"
+                  >
+                    <Video className="w-5 h-5 mr-2" />
+                    Video
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-slate-600 hover:text-slate-800"
+                  >
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Event
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-slate-600 hover:text-slate-800"
+                  >
+                    <Smile className="w-5 h-5 mr-2" />
+                    Feeling
+                  </Button>
+                </div>
               )}
+            </CardContent>
+          </Card>
 
-              <div className="space-y-4">
-                {feedState.loading && feedState.posts.length === 0 ? (
-                  <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                      <Card key={i} className="p-4 sm:p-6">
-                        <div className="flex items-start space-x-4">
-                          <Skeleton className="h-10 w-10 rounded-full" />
-                          <div className="space-y-2 flex-1">
-                            <Skeleton className="h-4 w-1/4" />
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-3/4" />
-                          </div>
+          {/* Posts Feed */}
+          <div className="space-y-6">
+            {posts.map(post => (
+              <Card
+                key={post._id}
+                className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700"
+              >
+                <CardContent className="p-0">
+                  {/* Post Header */}
+                  <div className="p-4 flex items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={post.author.avatar} />
+                        <AvatarFallback className="bg-gradient-primary text-white">
+                          {post.author.firstName[0]}
+                          {post.author.lastName[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-semibold text-slate-900 dark:text-slate-100">
+                          {post.author.firstName} {post.author.lastName}
                         </div>
-                      </Card>
-                    ))}
-                  </div>
-                ) : feedState.error ? (
-                  <Card className="p-6 text-center">
-                    <p className="text-destructive mb-4">{feedState.error}</p>
-                    <Button onClick={() => loadFeed(true)} variant="outline">
-                      Try Again
-                    </Button>
-                  </Card>
-                ) : feedState.posts.length === 0 ? (
-                  <Card className="p-6 text-center">
-                    <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
-                    <p className="text-muted-foreground mb-4">
-                      {activeTab === 'home'
-                        ? 'Follow some users to see their posts in your feed'
-                        : 'No posts found. Try a different filter or search term.'}
-                    </p>
-                    <Button onClick={() => setShowCreatePost(true)}>Create Your First Post</Button>
-                  </Card>
-                ) : (
-                  <>
-                    {feedState.posts.map(post => (
-                      <PostCard
-                        key={post._id}
-                        post={post}
-                        onLike={() =>
-                          handlePostInteraction(post._id, post.isLiked ? 'unlike' : 'like')
-                        }
-                        onRepost={() =>
-                          handlePostInteraction(post._id, post.isReposted ? 'unrepost' : 'repost')
-                        }
-                        onBookmark={() =>
-                          handlePostInteraction(
-                            post._id,
-                            post.isBookmarked ? 'unbookmark' : 'bookmark'
-                          )
-                        }
-                        className="hover:shadow-md transition-shadow"
-                      />
-                    ))}
-
-                    {feedState.hasMore && (
-                      <div className="text-center py-6">
-                        {feedState.loading ? (
-                          <div className="flex items-center justify-center space-x-2">
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>Loading more posts...</span>
-                          </div>
-                        ) : (
-                          <Button onClick={loadMore} variant="outline">
-                            Load More Posts
-                          </Button>
-                        )}
+                        <div className="text-sm text-slate-500 dark:text-slate-400">
+                          {post.author.title}
+                        </div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">
+                          {formatTimeAgo(post.createdAt)} • 🌍
+                        </div>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
+                    </div>
 
-            <div className="hidden min-[1024px]:block lg:col-span-1">
-              <div className="sticky top-20 space-y-6">
-                <Sidebar />
-              </div>
-            </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={() => handleBookmark(post._id)}>
+                          <Bookmark className="w-4 h-4 mr-2" />
+                          {post.isBookmarked ? 'Remove bookmark' : 'Save post'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy link to post
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <UserMinus className="w-4 h-4 mr-2" />
+                          Unfollow {post.author.firstName}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600">
+                          <Flag className="w-4 h-4 mr-2" />
+                          Report post
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {/* Post Content */}
+                  <div className="px-4 pb-4">
+                    <p className="text-slate-800 dark:text-slate-200 leading-relaxed">
+                      {post.content}
+                    </p>
+                  </div>
+
+                  {/* Post Images */}
+                  {post.images && post.images.length > 0 && (
+                    <div className="px-4 pb-4">
+                      <div className="grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
+                        {post.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt=""
+                            className="w-full h-48 object-cover"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Engagement Stats */}
+                  <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                      <div className="flex items-center space-x-4">
+                        {post.likesCount > 0 && (
+                          <span className="flex items-center">
+                            <Heart className="w-4 h-4 mr-1 text-pink-600" />
+                            {post.likesCount}
+                          </span>
+                        )}
+                        {post.commentsCount > 0 && <span>{post.commentsCount} comments</span>}
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        {post.repostsCount > 0 && <span>{post.repostsCount} reposts</span>}
+                        {post.sharesCount > 0 && <span>{post.sharesCount} shares</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleLike(post._id)}
+                        className={`flex-1 ${post.isLiked ? 'text-pink-500' : 'text-slate-600'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}
+                      >
+                        <Heart
+                          className={`w-5 h-5 mr-2 ${post.isLiked ? 'fill-current' : ''}`}
+                        />
+                        Like
+                      </Button>
+
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                          >
+                            <MessageCircle className="w-5 h-5 mr-2" />
+                            Comment
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Comments</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="flex items-start space-x-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={user?.avatar} />
+                                <AvatarFallback className="bg-gradient-primary text-white text-sm">
+                                  {user?.firstName?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <Input
+                                  placeholder="Write a comment..."
+                                  value={commentText}
+                                  onChange={e => setCommentText(e.target.value)}
+                                  className="mb-2"
+                                />
+                                <Button size="sm" disabled={!commentText.trim()}>
+                                  <Send className="w-4 h-4 mr-2" />
+                                  Comment
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 text-slate-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                          >
+                            <Repeat2 className="w-5 h-5 mr-2" />
+                            Repost
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleRepost(post._id)}>
+                            <Repeat2 className="w-4 h-4 mr-2" />
+                            Repost
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Quote className="w-4 h-4 mr-2" />
+                            Quote repost
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 text-slate-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                          >
+                            <Share className="w-5 h-5 mr-2" />
+                            Share
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleShare(post._id)}>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Share via EndlessChatt
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleShare(post._id, 'linkedin')}>
+                            <Linkedin className="w-4 h-4 mr-2" />
+                            Share on LinkedIn
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShare(post._id, 'twitter')}>
+                            <Twitter className="w-4 h-4 mr-2" />
+                            Share on Twitter
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShare(post._id, 'facebook')}>
+                            <Facebook className="w-4 h-4 mr-2" />
+                            Share on Facebook
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShare(post._id, 'instagram')}>
+                            <Instagram className="w-4 h-4 mr-2" />
+                            Share on Instagram
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy link
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>

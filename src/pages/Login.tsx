@@ -6,8 +6,10 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock, X, Home } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const Login = memo(() => {
+  usePageTitle('Login');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);

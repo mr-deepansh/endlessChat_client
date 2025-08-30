@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/layout/Navbar';
+import { usePageTitle } from '../hooks/usePageTitle';
 import {
   Bell,
   Check,
@@ -109,12 +110,12 @@ const NotificationItem: React.FC<{
 
   return (
     <div
-      className={`flex items-center space-x-3 p-4 border-b border-border/50 hover:bg-muted/30 transition-colors ${
+      className={`flex items-center space-x-3 xl:space-x-4 2xl:space-x-6 p-4 xl:p-6 2xl:p-8 border-b border-border/50 hover:bg-muted/30 transition-colors ${
         !notification.isRead ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
       }`}
     >
       <div className="relative">
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-10 w-10 xl:h-12 xl:w-12 2xl:h-14 2xl:w-14">
           <AvatarImage src={notification.from.avatar} />
           <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm">
             {notification.from.firstName?.[0]}
@@ -152,6 +153,7 @@ const NotificationItem: React.FC<{
 };
 
 function Notifications() {
+  usePageTitle('Notifications');
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -359,7 +361,7 @@ function Notifications() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-2xl xl:max-w-3xl 2xl:max-w-4xl mx-auto px-4 lg:px-8 xl:px-12 2xl:px-16 py-6 xl:py-8 2xl:py-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
@@ -371,7 +373,9 @@ function Notifications() {
                 </Badge>
               )}
             </div>
-            <h1 className="text-2xl font-bold gradient-text">Notifications</h1>
+            <h1 className="text-2xl xl:text-3xl 2xl:text-4xl font-bold gradient-text">
+              Notifications
+            </h1>
           </div>
 
           <div className="flex items-center space-x-2">

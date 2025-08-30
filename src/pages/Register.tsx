@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import StepForm from '@/components/auth/StepForm';
 import { Button } from '@/components/ui/button';
 import { X, Home } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface RegisterData {
   username: string;
@@ -16,6 +17,7 @@ interface RegisterData {
 }
 
 const Register = () => {
+  usePageTitle('Register');
   const [isLoading, setIsLoading] = useState(false);
   const { register, user } = useAuth();
   const navigate = useNavigate();

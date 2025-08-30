@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -11,18 +12,17 @@ import {
   Phone,
   Mail,
   Clock,
-  CheckCircle,
   Search,
   Book,
   Users,
   Zap,
-  Shield,
   Globe,
 } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
 const Support: React.FC = () => {
+  usePageTitle('Support');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -335,7 +335,7 @@ const Support: React.FC = () => {
             </p>
             <div className="grid md:grid-cols-3 gap-4 text-sm">
               <div>
-                <strong>Email:</strong> support@endlesschat.com
+                <strong>Email:</strong> support@endlesschatt.com
               </div>
               <div>
                 <strong>Phone:</strong> +1 (555) 123-4567

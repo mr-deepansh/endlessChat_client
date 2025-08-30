@@ -59,10 +59,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
   };
 
   return (
-    <Card className="mb-4 hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex space-x-3">
-          <Avatar className="h-10 w-10">
+    <Card className="mb-4 xl:mb-6 2xl:mb-8 hover:shadow-md transition-shadow">
+      <CardContent className="p-4 xl:p-6 2xl:p-8">
+        <div className="flex space-x-3 xl:space-x-4 2xl:space-x-6">
+          <Avatar className="h-10 w-10 xl:h-12 xl:w-12 2xl:h-14 2xl:w-14">
             <AvatarImage src={post.author.avatar} alt={post.author.username} />
             <AvatarFallback className="bg-gradient-primary text-white">
               {post.author.firstName?.[0] || post.author.username?.[0] || 'U'}

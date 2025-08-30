@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Navbar from '../components/layout/Navbar';
 import { useAuth, useRoleAccess } from '../contexts/AuthContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { adminService } from '../services';
 import {
   AdminStats,
@@ -73,6 +74,7 @@ interface DashboardState {
 }
 
 const AdminDashboard: React.FC = () => {
+  usePageTitle('Admin Dashboard');
   const { user } = useAuth();
   const { canAccessAdmin, canManageUsers, canViewAnalytics } = useRoleAccess();
 
@@ -362,7 +364,7 @@ const AdminDashboard: React.FC = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-background pt-16">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 lg:px-8 xl:px-12 2xl:px-16 py-6 xl:py-8 2xl:py-10 max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px]">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -384,7 +386,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-6 xl:gap-8 2xl:gap-10 mb-6 xl:mb-8 2xl:mb-10">
             {dashboardState.loading.stats || !dashboardState.stats
               ? Array.from({ length: 4 }).map((_, i) => (
                   <Card key={i}>
@@ -423,7 +425,7 @@ const AdminDashboard: React.FC = () => {
 
           {/* Main Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-5 xl:max-w-2xl 2xl:max-w-3xl mx-auto">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -432,8 +434,8 @@ const AdminDashboard: React.FC = () => {
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TabsContent value="overview" className="space-y-6 xl:space-y-8 2xl:space-y-10">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 xl:gap-8 2xl:gap-10">
                 {/* Recent Activity */}
                 <Card>
                   <CardHeader>
@@ -642,8 +644,8 @@ const AdminDashboard: React.FC = () => {
             </TabsContent>
 
             {/* Analytics Tab */}
-            <TabsContent value="analytics" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TabsContent value="analytics" className="space-y-6 xl:space-y-8 2xl:space-y-10">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 xl:gap-8 2xl:gap-10">
                 <Card>
                   <CardHeader>
                     <CardTitle>User Growth</CardTitle>
@@ -669,8 +671,8 @@ const AdminDashboard: React.FC = () => {
             </TabsContent>
 
             {/* Security Tab */}
-            <TabsContent value="security" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TabsContent value="security" className="space-y-6 xl:space-y-8 2xl:space-y-10">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 xl:gap-8 2xl:gap-10">
                 {/* Suspicious Accounts */}
                 <Card>
                   <CardHeader>
@@ -774,7 +776,7 @@ const AdminDashboard: React.FC = () => {
                   <CardTitle>System Information</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6 xl:gap-8 2xl:gap-10">
                     <div className="text-center">
                       <Server className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                       <h3 className="font-semibold">Server Status</h3>

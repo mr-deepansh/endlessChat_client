@@ -13,7 +13,7 @@ const Footer = () => {
                 <span className="text-white font-bold text-lg">E</span>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                EndlessChat
+                EndlessChatt
               </span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -67,7 +67,7 @@ const Footer = () => {
         {/* Bottom */}
         <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            © 2025 EndlessChat. All rights reserved.
+            © 2025 EndlessChatt. All rights reserved.
           </p>
           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
             <span>Made with</span>

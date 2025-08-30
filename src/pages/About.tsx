@@ -4,16 +4,18 @@ import Footer from '../components/layout/Footer';
 import { Button } from '../components/ui/button';
 import Navbar from '../components/layout/Navbar';
 import { Users, Heart, Globe, Code, Coffee, Github } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const About = () => {
+  usePageTitle('About');
   return (
     <div className="min-h-screen">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+      <section className="py-20 bg-gradient-to-br from-primary/10 via-slate-50/60 dark:via-background to-secondary/10">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">About EndlessChat</h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">About EndlessChatt</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             A social platform built with passion, designed to foster authentic connections and
             meaningful conversations.
@@ -22,13 +24,13 @@ const About = () => {
       </section>
 
       {/* Story Section */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-slate-50/40 dark:bg-background">
         <div className="max-w-4xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold mb-6">Our Story</h2>
               <p className="text-muted-foreground mb-4">
-                EndlessChat was born from a simple idea: social media should bring people together,
+                EndlessChatt was born from a simple idea: social media should bring people together,
                 not divide them. Created by{' '}
                 <span className="font-semibold text-primary">Deepansh Gangwar</span>, this platform
                 focuses on quality interactions over quantity metrics.
@@ -67,7 +69,7 @@ const About = () => {
       </section>
 
       {/* Values Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-16 bg-slate-100/50 dark:bg-muted/30">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Our Values</h2>
           <div className="grid md:grid-cols-3 gap-8">
@@ -99,7 +101,7 @@ const About = () => {
       </section>
 
       {/* Developer Section */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-slate-50/40 dark:bg-background">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center mb-6">
             <Coffee className="w-8 h-8 text-primary mr-2" />
@@ -108,8 +110,8 @@ const About = () => {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Hi! I'm <span className="font-semibold text-primary">Deepansh Gangwar</span>, a
             passionate full-stack developer who believes in the power of technology to bring people
-            together. EndlessChat is my vision of what social media can be when it's built with care
-            and purpose.
+            together. EndlessChatt is my vision of what social media can be when it's built with
+            care and purpose.
           </p>
           <Button variant="gradient" asChild>
             <a href="https://github.com/mr-deepansh" target="_blank" rel="noopener noreferrer">

@@ -7,7 +7,9 @@ import Footer from '@/components/layout/Footer';
 import { Users, MessageCircle, Heart, Zap, Shield, Globe, ArrowRight, Star } from 'lucide-react';
 import { isAdmin } from '@/utils/roleUtils';
 import worldHeroImage from '@/assets/world-hero.jpg';
+import { usePageTitle } from '../hooks/usePageTitle';
 const Index = () => {
+  usePageTitle('Home');
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -97,22 +99,22 @@ const Index = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
+        <div className="relative z-10 max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto px-4 lg:px-8 xl:px-12 2xl:px-16 text-center text-white">
           <div className="mb-8">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="text-5xl md:text-7xl xl:text-8xl 2xl:text-9xl font-bold mb-6 xl:mb-8 2xl:mb-10 leading-tight">
               <span className="gradient-text">Endless</span>
               <br />
               Conversations.
               <br />
               <span className="text-white/90">Infinite</span> Ideas.
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Welcome to <span className="font-semibold text-primary-glow">EndlessChat</span> -
+            <p className="text-xl md:text-2xl xl:text-3xl 2xl:text-4xl text-white/90 mb-8 xl:mb-10 2xl:mb-12 max-w-2xl xl:max-w-3xl 2xl:max-w-4xl mx-auto leading-relaxed">
+              Welcome to <span className="font-semibold text-primary-glow">EndlessChatt</span> -
               where meaningful conversations never end and authentic connections begin.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 xl:gap-6 2xl:gap-8 justify-center mb-12 xl:mb-16 2xl:mb-20">
             {user ? (
               <>
                 {isAdmin(user) ? (
@@ -180,7 +182,7 @@ const Index = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-8 xl:gap-12 2xl:gap-16 max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-3xl md:text-4xl font-bold mb-2">{stat.value}</div>
@@ -199,11 +201,11 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-20 bg-slate-50/60 dark:bg-background">
+        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-              Why Choose EndlessChat?
+              Why Choose EndlessChatt?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Built by <span className="font-semibold text-primary">Deepansh Gangwar</span> -
@@ -212,7 +214,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 cursor-pointer">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-8 xl:gap-10 2xl:gap-12 cursor-pointer">
             {features.map((feature, index) => (
               <div key={index} className="group">
                 <div className="p-8 rounded-2xl bg-gradient-card border-none shadow-soft hover:shadow-primary/20 transition-all duration-300 hover:-translate-y-2">
@@ -231,7 +233,7 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-20 bg-gradient-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20" />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
+        <div className="relative z-10 max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto px-4 lg:px-8 xl:px-12 2xl:px-16 text-center text-white">
           <div className="flex items-center justify-center mb-6">
             <Star className="w-8 h-8 text-yellow-400 mr-2" />
             <Star className="w-10 h-10 text-yellow-400 mr-2" />

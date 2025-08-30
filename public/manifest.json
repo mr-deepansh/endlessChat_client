@@ -1,6 +1,6 @@
 {
-  "name": "EndlessChat",
-  "short_name": "EndlessChat",
+  "name": "EndlessChatt",
+  "short_name": "EndlessChatt",
   "description": "Enterprise Social Media Platform",
   "start_url": "/",
   "display": "standalone",

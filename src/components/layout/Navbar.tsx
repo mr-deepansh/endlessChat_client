@@ -121,23 +121,23 @@ const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="flex items-center justify-between h-16 xl:h-18 2xl:h-20">
           {/* Logo */}
           <Link to={user ? '/feed' : '/'} className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
               <span className="text-white font-bold text-sm">E</span>
             </div>
-            <span className="font-bold text-xl gradient-text hidden sm:block">EndlessChat</span>
+            <span className="font-bold text-xl gradient-text hidden sm:block">EndlessChatt</span>
           </Link>
 
           {/* Search Bar - Only show when user is logged in */}
           {user && !isLoading && (
-            <div className="hidden min-[375px]:flex flex-1 max-w-xs mx-4 relative">
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <div className="flex-1 max-w-xs lg:max-w-sm xl:max-w-md 2xl:max-w-lg mx-4 lg:mx-6 xl:mx-8 relative">
+              <form onSubmit={handleSearch} className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
                 {isSearching && (
-                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 animate-spin" />
+                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 animate-spin z-10" />
                 )}
                 <Input
                   type="text"
@@ -146,31 +146,31 @@ const Navbar = () => {
                   onChange={e => handleSearchInput(e.target.value)}
                   onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
                   onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-                  className="pl-10 pr-10 bg-muted/50 border-none focus:bg-background transition-all w-full"
+                  className="pl-10 pr-10 bg-background/80 backdrop-blur-sm border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all w-full h-10 rounded-full shadow-sm hover:shadow-md"
                 />
               </form>
 
               {/* Search Results Dropdown */}
               {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
                   {searchResults.map((result: User) => (
                     <div
                       key={result._id}
-                      className="flex items-center p-3 hover:bg-muted cursor-pointer transition-colors"
+                      className="flex items-center p-3 hover:bg-primary/5 cursor-pointer transition-all duration-200 first:rounded-t-xl last:rounded-b-xl border-b border-border/30 last:border-b-0"
                       onClick={() => {
                         navigate(`/@${result.username}`);
                         setShowSearchResults(false);
                         setSearchQuery('');
                       }}
                     >
-                      <Avatar className="h-8 w-8 mr-3">
+                      <Avatar className="h-9 w-9 mr-3 ring-2 ring-primary/10">
                         <AvatarImage src={result.avatar} alt={result.username} />
                         <AvatarFallback className="bg-gradient-primary text-white text-xs">
                           {result.firstName?.[0] || result.username?.[0] || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <p className="text-sm font-medium">
+                        <p className="text-sm font-medium text-foreground">
                           {result.firstName} {result.lastName}
                         </p>
                         <p className="text-xs text-muted-foreground">@{result.username}</p>
@@ -229,7 +229,7 @@ const Navbar = () => {
             ) : user ? (
               <>
                 {/* Main Navigation */}
-                <div className="hidden min-[631px]:flex items-center space-x-1 lg:space-x-2">
+                <div className="hidden min-[631px]:flex items-center space-x-1 lg:space-x-2 xl:space-x-3 2xl:space-x-4">
                   <Button variant="ghost" size="icon" asChild>
                     <Link to="/feed">
                       <Home className="w-5 h-5" />
@@ -280,10 +280,24 @@ const Navbar = () => {
                       <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
                         <span className="text-white font-bold text-lg">E</span>
                       </div>
-                      <span className="font-bold text-2xl gradient-text">EndlessChat</span>
+                      <span className="font-bold text-2xl gradient-text">EndlessChatt</span>
                     </div>
 
                     <div className="flex flex-col space-y-4 mt-6">
+                      {/* Mobile Search */}
+                      <div className="mb-4">
+                        <form onSubmit={handleSearch} className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
+                          <Input
+                            type="text"
+                            placeholder="Search users, posts..."
+                            value={searchQuery}
+                            onChange={e => handleSearchInput(e.target.value)}
+                            className="pl-10 bg-background/80 backdrop-blur-sm border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all w-full h-10 rounded-full"
+                          />
+                        </form>
+                      </div>
+
                       <div className="flex flex-col space-y-2">
                         <Button variant="ghost" asChild className="justify-start">
                           <Link to="/feed" onClick={() => setMobileMenuOpen(false)}>
@@ -461,7 +475,7 @@ const Navbar = () => {
                       <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
                         <span className="text-white font-bold text-lg">E</span>
                       </div>
-                      <span className="font-bold text-2xl gradient-text">EndlessChat</span>
+                      <span className="font-bold text-2xl gradient-text">EndlessChatt</span>
                     </div>
 
                     <div className="flex flex-col space-y-4 mt-6">

@@ -6,7 +6,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Badge } from '../components/ui/badge';
 import Navbar from '../components/layout/Navbar';
-import { userService, socialService, User, Post } from '../services';
+import { userService, User, Post } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { useApi } from '../hooks/useApi';
 import {
@@ -23,6 +23,7 @@ import {
   UserMinus,
   Settings,
 } from 'lucide-react';
+import { FollowButton } from '../components/common/FollowButton';
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
@@ -95,22 +96,26 @@ const Profile = () => {
   const handleFollow = async () => {
     if (!user) return;
 
-    const result = await executeFollow(async () => {
-      return isFollowing
-        ? await socialService.unfollowUser(user._id)
-        : await socialService.followUser(user._id);
-    });
+    try {
+      const response = isFollowing
+        ? await followService.unfollowUser(user._id)
+        : await followService.followUser(user._id);
 
-    if (result) {
-      setIsFollowing(!isFollowing);
-      setUser(prev =>
-        prev
-          ? {
-              ...prev,
-              followersCount: isFollowing ? prev.followersCount - 1 : prev.followersCount + 1,
-            }
-          : null
-      );
+      if (response.success) {
+        setIsFollowing(!isFollowing);
+        setUser(prev =>
+          prev
+            ? {
+                ...prev,
+                followersCount:
+                  response.data?.followersCount ||
+                  (isFollowing ? prev.followersCount - 1 : prev.followersCount + 1),
+              }
+            : null
+        );
+      }
+    } catch (error: any) {
+      console.error('Follow action failed:', error);
     }
   };
 
@@ -146,12 +151,12 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto p-3 sm:p-4">
+      <div className="max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto p-3 sm:p-4 lg:p-6 xl:p-8 2xl:p-10">
         {/* Profile Header */}
-        <Card className="mb-4 sm:mb-6">
-          <CardContent className="p-4 sm:p-6">
+        <Card className="mb-4 sm:mb-6 xl:mb-8 2xl:mb-10">
+          <CardContent className="p-4 sm:p-6 xl:p-8 2xl:p-10">
             <div className="flex flex-col items-center sm:items-start sm:flex-row gap-4 sm:gap-6">
-              <Avatar className="h-24 w-24 sm:h-32 sm:w-32 ring-4 ring-primary/20">
+              <Avatar className="h-24 w-24 sm:h-32 sm:w-32 xl:h-40 xl:w-40 2xl:h-48 2xl:w-48 ring-4 ring-primary/20">
                 <AvatarImage src={user.avatar} alt={user.username} />
                 <AvatarFallback className="bg-gradient-primary text-white text-lg sm:text-2xl">
                   {user.firstName?.[0] || user.username?.[0] || 'U'}
@@ -162,7 +167,7 @@ const Profile = () => {
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between mb-3 sm:mb-4">
                   <div>
-                    <h1 className="text-xl sm:text-2xl font-bold">
+                    <h1 className="text-xl sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">
                       {user.firstName} {user.lastName}
                     </h1>
                     <p className="text-muted-foreground text-sm sm:text-base">@{user.username}</p>
@@ -177,23 +182,19 @@ const Profile = () => {
                         </Link>
                       </Button>
                     ) : (
-                      <Button
-                        variant={isFollowing ? 'outline' : 'default'}
+                      <FollowButton
+                        userId={user._id}
+                        isFollowing={isFollowing}
+                        onFollowChange={(newIsFollowing, newFollowersCount) => {
+                          setIsFollowing(newIsFollowing);
+                          if (newFollowersCount !== undefined) {
+                            setUser(prev =>
+                              prev ? { ...prev, followersCount: newFollowersCount } : null
+                            );
+                          }
+                        }}
                         size="sm"
-                        onClick={handleFollow}
-                      >
-                        {isFollowing ? (
-                          <>
-                            <UserMinus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                            <span className="text-xs sm:text-sm">Unfollow</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                            <span className="text-xs sm:text-sm">Follow</span>
-                          </>
-                        )}
-                      </Button>
+                      />
                     )}
                   </div>
                 </div>
@@ -238,21 +239,27 @@ const Profile = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+            <div className="grid grid-cols-4 gap-2 sm:gap-4 xl:gap-6 2xl:gap-8 mt-4 sm:mt-6 xl:mt-8 2xl:mt-10 pt-4 sm:pt-6 xl:pt-8 2xl:pt-10 border-t">
               <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold">{user.postsCount || 0}</div>
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">
+                  {user.postsCount || 0}
+                </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Posts</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold">{user.followersCount || 0}</div>
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">
+                  {user.followersCount || 0}
+                </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Followers</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold">{user.followingCount || 0}</div>
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">
+                  {user.followingCount || 0}
+                </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Following</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold">0</div>
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">0</div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Mutual</div>
               </div>
             </div>

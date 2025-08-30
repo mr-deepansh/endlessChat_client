@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Navbar from '../components/layout/Navbar';
 import { useAuth, useRoleAccess } from '../contexts/AuthContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { isSuperAdmin } from '../utils/roleUtils';
 import { adminService, superAdminService } from '../services';
 import {
@@ -82,6 +83,7 @@ interface SuperAdminState {
 }
 
 const SuperAdminDashboard: React.FC = () => {
+  usePageTitle('Super Admin Dashboard');
   const { user } = useAuth();
   const { canAccessSuperAdmin } = useRoleAccess();
 
@@ -388,7 +390,7 @@ const SuperAdminDashboard: React.FC = () => {
       loadSystemConfig();
       loadAuditLogs();
     }
-  }, [canAccessSuperAdmin, loadDashboardData, loadSystemConfig, loadAuditLogs]);
+  }, []);
 
   // Load users/admins when filters change
   useEffect(() => {
@@ -397,7 +399,7 @@ const SuperAdminDashboard: React.FC = () => {
     } else if (activeTab === 'admins') {
       loadAdmins();
     }
-  }, [activeTab, loadUsers, loadAdmins]);
+  }, [activeTab]);
 
   // Access control
   if (!canAccessSuperAdmin()) {
@@ -501,7 +503,7 @@ const SuperAdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {dashboardState.stats?.totalUsers.toLocaleString() || '0'}
+                  {dashboardState.stats?.totalUsers?.toLocaleString() || '0'}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   +{dashboardState.stats?.userGrowth || 0}% from last month
@@ -516,7 +518,7 @@ const SuperAdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {dashboardState.stats?.activeUsers.toLocaleString() || '0'}
+                  {dashboardState.stats?.activeUsers?.toLocaleString() || '0'}
                 </div>
                 <p className="text-xs text-muted-foreground">Currently online</p>
               </CardContent>
@@ -625,62 +627,74 @@ const SuperAdminDashboard: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {dashboardState.users.map(user => (
-                          <TableRow key={user._id}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={user.avatar} />
-                                  <AvatarFallback>
-                                    {user.firstName?.[0]}
-                                    {user.lastName?.[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium">
-                                    {user.firstName} {user.lastName}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">@{user.username}</p>
+                        {Array.isArray(dashboardState.users) ? (
+                          dashboardState.users.map(user => (
+                            <TableRow key={user._id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={user.avatar} />
+                                    <AvatarFallback>
+                                      {user.firstName?.[0]}
+                                      {user.lastName?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">
+                                      {user.firstName} {user.lastName}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      @{user.username}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              <Badge variant="secondary">{user.role}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                                {user.isActive ? 'Active' : 'Suspended'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>
-                              {user.lastLoginAt
-                                ? new Date(user.lastLoginAt).toLocaleDateString()
-                                : 'Never'}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleRoleChange(user._id, 'admin', 'Promoted by super admin')
-                                  }
-                                >
-                                  <Crown className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => window.open(`/admin/users/${user._id}`, '_blank')}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
+                              </TableCell>
+                              <TableCell>{user.email}</TableCell>
+                              <TableCell>
+                                <Badge variant="secondary">{user.role}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                                  {user.isActive ? 'Active' : 'Suspended'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                {user.lastLoginAt
+                                  ? new Date(user.lastLoginAt).toLocaleDateString()
+                                  : 'Never'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleRoleChange(user._id, 'admin', 'Promoted by super admin')
+                                    }
+                                  >
+                                    <Crown className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      window.open(`/admin/users/${user._id}`, '_blank')
+                                    }
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center text-muted-foreground">
+                              No users available
                             </TableCell>
                           </TableRow>
-                        ))}
+                        )}
                       </TableBody>
                     </Table>
                   </div>
@@ -780,91 +794,105 @@ const SuperAdminDashboard: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {dashboardState.admins.map(admin => (
-                          <TableRow key={admin._id}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={admin.avatar} />
-                                  <AvatarFallback>
-                                    {admin.firstName?.[0]}
-                                    {admin.lastName?.[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium">
-                                    {admin.firstName} {admin.lastName}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">@{admin.username}</p>
+                        {Array.isArray(dashboardState.admins) ? (
+                          dashboardState.admins.map(admin => (
+                            <TableRow key={admin._id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={admin.avatar} />
+                                    <AvatarFallback>
+                                      {admin.firstName?.[0]}
+                                      {admin.lastName?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">
+                                      {admin.firstName} {admin.lastName}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      @{admin.username}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{admin.email}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={admin.role === 'super_admin' ? 'default' : 'secondary'}
-                              >
-                                {admin.role === 'super_admin' ? 'Super Admin' : 'Admin'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={admin.isActive ? 'default' : 'destructive'}>
-                                {admin.isActive ? 'Active' : 'Suspended'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{new Date(admin.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>
-                              {admin.lastLoginAt
-                                ? new Date(admin.lastLoginAt).toLocaleDateString()
-                                : 'Never'}
-                            </TableCell>
-                            <TableCell>{admin.loginCount || 0}</TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                {admin.role !== 'super_admin' && (
-                                  <>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleAdminAction(
-                                          admin._id,
-                                          admin.isActive ? 'suspend' : 'activate'
-                                        )
-                                      }
-                                    >
-                                      {admin.isActive ? (
-                                        <Ban className="h-4 w-4" />
-                                      ) : (
-                                        <CheckCircle className="h-4 w-4" />
-                                      )}
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleAdminAction(
-                                          admin._id,
-                                          'delete',
-                                          'Removed by super admin'
-                                        )
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </>
-                                )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => window.open(`/admin/users/${admin._id}`, '_blank')}
+                              </TableCell>
+                              <TableCell>{admin.email}</TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={admin.role === 'super_admin' ? 'default' : 'secondary'}
                                 >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
+                                  {admin.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={admin.isActive ? 'default' : 'destructive'}>
+                                  {admin.isActive ? 'Active' : 'Suspended'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {new Date(admin.createdAt).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>
+                                {admin.lastLoginAt
+                                  ? new Date(admin.lastLoginAt).toLocaleDateString()
+                                  : 'Never'}
+                              </TableCell>
+                              <TableCell>{admin.loginCount || 0}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  {admin.role !== 'super_admin' && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleAdminAction(
+                                            admin._id,
+                                            admin.isActive ? 'suspend' : 'activate'
+                                          )
+                                        }
+                                      >
+                                        {admin.isActive ? (
+                                          <Ban className="h-4 w-4" />
+                                        ) : (
+                                          <CheckCircle className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleAdminAction(
+                                            admin._id,
+                                            'delete',
+                                            'Removed by super admin'
+                                          )
+                                        }
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      window.open(`/admin/users/${admin._id}`, '_blank')
+                                    }
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center text-muted-foreground">
+                              No admins available
                             </TableCell>
                           </TableRow>
-                        ))}
+                        )}
                       </TableBody>
                     </Table>
                   </div>
@@ -898,54 +926,62 @@ const SuperAdminDashboard: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {dashboardState.auditLogs.map(log => (
-                          <TableRow key={log._id}>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-muted-foreground" />
-                                {new Date(log.timestamp).toLocaleString()}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-6 w-6">
-                                  <AvatarImage src={log.admin.avatar} />
-                                  <AvatarFallback>
-                                    {log.admin.firstName?.[0]}
-                                    {log.admin.lastName?.[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                {log.admin.username}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{log.action}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              {log.targetType}: {log.targetId}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  log.criticality === 'CRITICAL'
-                                    ? 'destructive'
-                                    : log.criticality === 'HIGH'
+                        {Array.isArray(dashboardState.auditLogs) ? (
+                          dashboardState.auditLogs.map(log => (
+                            <TableRow key={log._id}>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-muted-foreground" />
+                                  {new Date(log.timestamp).toLocaleString()}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarImage src={log.admin.avatar} />
+                                    <AvatarFallback>
+                                      {log.admin.firstName?.[0]}
+                                      {log.admin.lastName?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {log.admin.username}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{log.action}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                {log.targetType}: {log.targetId}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    log.criticality === 'CRITICAL'
                                       ? 'destructive'
-                                      : log.criticality === 'MEDIUM'
-                                        ? 'default'
-                                        : 'secondary'
-                                }
-                              >
-                                {log.criticality}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="sm">
-                                <FileText className="h-4 w-4" />
-                              </Button>
+                                      : log.criticality === 'HIGH'
+                                        ? 'destructive'
+                                        : log.criticality === 'MEDIUM'
+                                          ? 'default'
+                                          : 'secondary'
+                                  }
+                                >
+                                  {log.criticality}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="sm">
+                                  <FileText className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center text-muted-foreground">
+                              No audit logs available
                             </TableCell>
                           </TableRow>
-                        ))}
+                        )}
                       </TableBody>
                     </Table>
                   </div>
