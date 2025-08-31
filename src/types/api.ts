@@ -35,8 +35,11 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  token?: string;
+  accessToken?: string;
   refreshToken?: string;
+  message?: string;
+  meta?: any;
 }
 
 // User Types

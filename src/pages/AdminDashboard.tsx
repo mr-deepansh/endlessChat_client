@@ -363,7 +363,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-background pt-16">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 lg:px-8 xl:px-12 2xl:px-16 py-6 xl:py-8 2xl:py-10 max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px]">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -425,7 +425,7 @@ const AdminDashboard: React.FC = () => {
 
           {/* Main Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5 xl:max-w-2xl 2xl:max-w-3xl mx-auto">
+            <TabsList className="grid w-full grid-cols-5 max-w-auto mx-auto">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>

@@ -588,9 +588,7 @@ const Feed: React.FC = () => {
                         onClick={() => handleLike(post._id)}
                         className={`flex-1 ${post.isLiked ? 'text-pink-500' : 'text-slate-600'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}
                       >
-                        <Heart
-                          className={`w-5 h-5 mr-2 ${post.isLiked ? 'fill-current' : ''}`}
-                        />
+                        <Heart className={`w-5 h-5 mr-2 ${post.isLiked ? 'fill-current' : ''}`} />
                         Like
                       </Button>
 

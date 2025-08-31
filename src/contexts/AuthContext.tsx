@@ -23,12 +23,14 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  registrationError: string | null;
   login: (credentials: LoginRequest) => Promise<void>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (userData: UpdateProfileRequest) => Promise<void>;
   changePassword: (passwordData: ChangePasswordRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
+  clearRegistrationError: () => void;
   checkPermission: (permission: string) => boolean;
   hasRole: (role: string | string[]) => boolean;
   isAdmin: boolean;
@@ -52,6 +54,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
@@ -148,6 +151,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: RegisterRequest) => {
     try {
       setIsLoading(true);
+      setRegistrationError(null);
 
       const response = await authService.register(userData);
 
@@ -161,18 +165,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         navigate('/feed');
       } else {
-        throw new Error(response.message || 'Registration failed');
+        const errorMessage = response.message || 'Registration failed';
+        setRegistrationError(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
+      const errorMessage = error.message || 'Unable to create account. Please try again.';
+      setRegistrationError(errorMessage);
+
       toast({
         title: 'Registration Failed',
-        description: error.message || 'Unable to create account. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       throw error;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const clearRegistrationError = () => {
+    setRegistrationError(null);
   };
 
   const logout = async () => {
@@ -282,12 +295,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     isAuthenticated,
     isLoading,
+    registrationError,
     login,
     register,
     logout,
     updateProfile,
     changePassword,
     refreshUser,
+    clearRegistrationError,
     checkPermission,
     hasRole,
     isAdmin,

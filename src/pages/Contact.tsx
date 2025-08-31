@@ -53,7 +53,8 @@ const Contact = () => {
             </span>
           </h1>
           <p className="text-lg text-slate-700 dark:text-slate-300 max-w-3xl mx-auto mb-8">
-            Have questions, feedback, or need support? We're here to help you succeed with EndlessChatt.
+            Have questions, feedback, or need support? We're here to help you succeed with
+            EndlessChatt.
           </p>
         </div>
 
@@ -64,7 +65,9 @@ const Contact = () => {
               <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <Mail className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">Email Support</h3>
+              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">
+                Email Support
+              </h3>
               <p className="text-slate-700 dark:text-slate-300 text-sm mb-3">
                 Direct email assistance
               </p>
@@ -72,7 +75,7 @@ const Contact = () => {
                 href="mailto:deepanshgangwar7037@gmail.com"
                 className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm"
               >
-                upport@endlesschatt.com
+                support@endlesschatt.com
               </a>
             </CardContent>
           </Card>
@@ -82,11 +85,15 @@ const Contact = () => {
               <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <MessageCircle className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">Live Chat</h3>
+              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">
+                Live Chat
+              </h3>
               <p className="text-slate-700 dark:text-slate-300 text-sm mb-3">
                 Instant community help
               </p>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700">Start Chat</Button>
+              <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                Start Chat
+              </Button>
             </CardContent>
           </Card>
 
@@ -126,7 +133,10 @@ const Contact = () => {
             <CardContent className="px-6 pb-6">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="name" className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200">
+                  <label
+                    htmlFor="name"
+                    className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200"
+                  >
                     Full Name *
                   </label>
                   <Input
@@ -140,7 +150,10 @@ const Contact = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200"
+                  >
                     Email Address *
                   </label>
                   <Input
@@ -155,7 +168,10 @@ const Contact = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="subject" className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200">
+                  <label
+                    htmlFor="subject"
+                    className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200"
+                  >
                     Subject *
                   </label>
                   <Input
@@ -169,7 +185,10 @@ const Contact = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200">
+                  <label
+                    htmlFor="message"
+                    className="text-sm font-medium mb-2 block text-slate-800 dark:text-slate-200"
+                  >
                     Message *
                   </label>
                   <Textarea
@@ -211,7 +230,8 @@ const Contact = () => {
                 Let's Connect
               </h2>
               <p className="text-slate-700 dark:text-slate-300 mb-6">
-                Whether you have questions about features, need technical support, or want to share feedback, we're here to help you succeed.
+                Whether you have questions about features, need technical support, or want to share
+                feedback, we're here to help you succeed.
               </p>
             </div>
             <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-border/30 hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-1">

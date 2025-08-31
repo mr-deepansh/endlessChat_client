@@ -406,7 +406,7 @@ const SuperAdminDashboard: React.FC = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center pt-16">
+        <div className="min-h-screen flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-center flex items-center gap-2">

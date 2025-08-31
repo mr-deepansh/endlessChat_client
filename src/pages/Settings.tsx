@@ -121,7 +121,7 @@ const Settings: React.FC = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="pt-16">
+      <div className="">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Settings</h1>

@@ -31,10 +31,12 @@ const Register = () => {
   const handleSubmit = async (data: RegisterData) => {
     setIsLoading(true);
     try {
-      const result = await register(data);
-      if (result.success) {
-        navigate('/feed');
-      }
+      await register(data);
+      // If register() completes without throwing, registration was successful
+      // The AuthContext register function already handles navigation to /feed
+    } catch (error) {
+      console.error('Registration failed:', error);
+      // Error handling is done in AuthContext, so we just need to catch here
     } finally {
       setIsLoading(false);
     }

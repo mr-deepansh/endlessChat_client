@@ -1,5 +1,5 @@
 export const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v2',
   appName: import.meta.env.VITE_APP_NAME || 'EndlessChat',
   appVersion: import.meta.env.VITE_APP_VERSION || '1.0.0',
   isDevelopment: import.meta.env.DEV,

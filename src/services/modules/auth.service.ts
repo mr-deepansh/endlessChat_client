@@ -40,11 +40,19 @@ class AuthService {
   async register(userData: RegisterRequest): Promise<ApiResponse<AuthResponse>> {
     const response = await apiClient.post<AuthResponse>(`${this.baseUrl}/register`, userData);
 
-    if (response.success && response.data?.token) {
-      apiClient.setToken(response.data.token);
+    if (response.success && response.data) {
+      // Handle both token and accessToken from backend response
+      const token = response.data.token || response.data.accessToken;
 
-      if (response.data.refreshToken) {
-        localStorage.setItem('refresh_token', response.data.refreshToken);
+      if (token) {
+        apiClient.setToken(token);
+        console.log('Registration token stored successfully:', token.substring(0, 20) + '...');
+      }
+
+      // Handle refresh token
+      const refreshToken = response.data.refreshToken || response.data.refresh_token;
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
       }
     }
 
