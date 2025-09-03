@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
@@ -13,8 +13,11 @@ import {
 } from '../ui/dropdown-menu';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { userService } from '../../services';
-import { User } from '../../types/api';
+import { useDebounce } from '../../hooks/useDebounce';
+import NotificationBell from '../notifications/NotificationBell';
+import type { User } from '../../types/api';
 import {
   Search,
   Home,
@@ -40,7 +43,7 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [notifications, setNotifications] = useState(0);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -51,55 +54,41 @@ const Navbar = () => {
     }
   };
 
-  const debouncedSearch = React.useCallback(
-    debounceFunction(async (query: string) => {
-      if (query.trim().length > 2) {
-        setIsSearching(true);
-        try {
-          const response = await userService.searchUsers({ username: query.trim(), limit: 5 });
-          if (response.success && response.data) {
-            let users: any[] = [];
+  const debouncedSearch = useDebounce(async (query: string) => {
+    if (query.trim().length > 2) {
+      setIsSearching(true);
+      try {
+        const response = await userService.searchUsers({ username: query.trim(), limit: 5 });
+        if (response.success && response.data) {
+          let users: User[] = [];
 
-            // Handle different response formats
-            if (Array.isArray(response.data)) {
-              users = response.data;
-            } else if (response.data.users && Array.isArray(response.data.users)) {
-              users = response.data.users;
-            } else if (response.data.data && Array.isArray(response.data.data)) {
-              users = response.data.data;
-            } else {
-              // If it's an object, try to extract user-like properties
-              users = [response.data].filter(item => item && item._id);
-            }
-
-            setSearchResults(users.slice(0, 5));
-            setShowSearchResults(users.length > 0);
+          // Handle different response formats
+          if (Array.isArray(response.data)) {
+            users = response.data;
+          } else if (response.data.users && Array.isArray(response.data.users)) {
+            users = response.data.users;
+          } else if (response.data.data && Array.isArray(response.data.data)) {
+            users = response.data.data;
+          } else {
+            // If it's an object, try to extract user-like properties
+            users = [response.data].filter(item => item && item._id);
           }
-        } catch (error) {
-          console.error('Search failed:', error);
-          setSearchResults([]);
-          setShowSearchResults(false);
-        } finally {
-          setIsSearching(false);
+
+          setSearchResults(users.slice(0, 5));
+          setShowSearchResults(users.length > 0);
         }
-      } else {
+      } catch (error) {
+        console.error('Search failed:', error);
         setSearchResults([]);
         setShowSearchResults(false);
+      } finally {
+        setIsSearching(false);
       }
-    }, 500),
-    []
-  );
-
-  function debounceFunction<T extends (...args: any[]) => any>(
-    func: T,
-    delay: number
-  ): (...args: Parameters<T>) => void {
-    let timeoutId: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => func(...args), delay);
-    };
-  }
+    } else {
+      setSearchResults([]);
+      setShowSearchResults(false);
+    }
+  }, 500);
 
   const handleSearchInput = (query: string) => {
     setSearchQuery(query);
@@ -110,14 +99,6 @@ const Navbar = () => {
     await logout();
     navigate('/');
   };
-
-  // Simulate fetching notifications count
-  useEffect(() => {
-    if (user) {
-      // This would be replaced with actual API call
-      setNotifications(3); // Mock notification count
-    }
-  }, [user]);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl shadow-sm">
@@ -229,40 +210,34 @@ const Navbar = () => {
             ) : user ? (
               <>
                 {/* Main Navigation */}
-                <div className="hidden min-[631px]:flex items-center space-x-1 lg:space-x-2 xl:space-x-3 2xl:space-x-4">
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link to="/feed">
-                      <Home className="w-5 h-5" />
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="icon" asChild className="relative">
-                    <Link to="/notifications">
-                      <Bell className="w-5 h-5" />
-                      {notifications > 0 && (
-                        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white flex items-center justify-center">
-                          {notifications > 99 ? '99+' : notifications}
-                        </Badge>
-                      )}
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link to="/messages">
-                      <MessageCircle className="w-5 h-5" />
-                    </Link>
-                  </Button>
+                <nav className="hidden min-[631px]:flex items-center space-x-1 lg:space-x-2 xl:space-x-3 2xl:space-x-4">
+                  <NavLink
+                    to="/feed"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                  >
+                    <Home className="w-5 h-5" />
+                  </NavLink>
+                  <NotificationBell />
+                  <NavLink
+                    to="/messages"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </NavLink>
                   {(user.role === 'admin' || user.role === 'super_admin') && (
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link to={user.role === 'super_admin' ? '/super-admin' : '/admin'}>
-                        <Shield className="w-5 h-5" />
-                      </Link>
-                    </Button>
+                    <NavLink
+                      to={user.role === 'super_admin' ? '/super-admin' : '/admin'}
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    >
+                      <Shield className="w-5 h-5" />
+                    </NavLink>
                   )}
 
                   {/* Theme Toggle */}
                   <Button variant="ghost" size="icon" onClick={toggleTheme}>
                     {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                   </Button>
-                </div>
+                </nav>
 
                 {/* Mobile Menu */}
                 <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -309,11 +284,6 @@ const Navbar = () => {
                           <Link to="/notifications" onClick={() => setMobileMenuOpen(false)}>
                             <Bell className="w-5 h-5 mr-3" />
                             Notifications
-                            {notifications > 0 && (
-                              <Badge className="ml-auto h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white flex items-center justify-center">
-                                {notifications > 99 ? '99+' : notifications}
-                              </Badge>
-                            )}
                           </Link>
                         </Button>
                         <Button variant="ghost" asChild className="justify-start">

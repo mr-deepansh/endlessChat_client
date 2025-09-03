@@ -12,7 +12,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from '../hooks/use-toast';
 import { authService } from '../services/authService';
-import { User, Settings as SettingsIcon, Lock, Bell, Shield, Eye } from 'lucide-react';
+import {
+  User,
+  Settings as SettingsIcon,
+  Lock,
+  Bell,
+  Shield,
+  Eye,
+  Camera,
+  Upload,
+} from 'lucide-react';
 
 const Settings: React.FC = () => {
   usePageTitle('Settings');
@@ -38,7 +47,10 @@ const Settings: React.FC = () => {
   const [loading, setLoading] = useState({
     profile: false,
     password: false,
+    avatar: false,
   });
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +76,67 @@ const Settings: React.FC = () => {
       });
     } finally {
       setLoading({ ...loading, profile: false });
+    }
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: 'File Too Large',
+        description: 'Please select an image under 2MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid File Type',
+        description: 'Please select a valid image file.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading({ ...loading, avatar: true });
+
+    try {
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = e => {
+        setAvatarPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to server (you'll need to implement this API)
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await authService.updateAvatar(formData);
+
+      if (response.success) {
+        updateUser({ ...user, avatar: response.data.avatar });
+        toast({
+          title: 'Profile Picture Updated',
+          description: 'Your profile picture has been updated successfully.',
+        });
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Upload Failed',
+        description: error.message || 'Failed to update profile picture',
+        variant: 'destructive',
+      });
+      setAvatarPreview(null);
+    } finally {
+      setLoading({ ...loading, avatar: false });
     }
   };
 
@@ -148,16 +221,38 @@ const Settings: React.FC = () => {
                 <CardContent>
                   <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div className="flex items-center gap-6">
-                      <Avatar className="w-20 h-20">
-                        <AvatarImage src={user?.avatar} />
-                        <AvatarFallback className="bg-gradient-primary text-white text-xl">
-                          {user?.firstName?.[0]}
-                          {user?.lastName?.[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="w-20 h-20">
+                          <AvatarImage src={avatarPreview || user?.avatar} />
+                          <AvatarFallback className="bg-gradient-primary text-white text-xl">
+                            {user?.firstName?.[0]}
+                            {user?.lastName?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        {loading.avatar && (
+                          <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                          </div>
+                        )}
+                      </div>
                       <div>
-                        <Button type="button" variant="outline">
-                          Change Photo
+                        <input
+                          type="file"
+                          id="avatar-upload"
+                          accept="image/*"
+                          onChange={handleAvatarChange}
+                          className="hidden"
+                          disabled={loading.avatar}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('avatar-upload')?.click()}
+                          disabled={loading.avatar}
+                          className="flex items-center gap-2"
+                        >
+                          <Camera className="w-4 h-4" />
+                          {loading.avatar ? 'Uploading...' : 'Change Photo'}
                         </Button>
                         <p className="text-sm text-muted-foreground mt-1">
                           JPG, PNG or GIF. Max size 2MB.

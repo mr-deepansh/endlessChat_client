@@ -1,234 +1,195 @@
-import { apiClient } from '../core/apiClient';
-import {
-  ApiResponse,
-  AdminStats,
-  AdminUser,
-  UserManagementParams,
-  SuspiciousAccount,
-  BlockedIP,
-  LoginAttempt,
-  AnalyticsOverview,
-  UserGrowthData,
-  EngagementMetrics,
-  NotificationTemplate,
-  BulkNotificationRequest,
-  AppSettings,
-  AutomationRule,
-  Experiment,
-  RevenueAnalytics,
-  UserLifetimeValue,
-  CreateAdminRequest,
-  RoleChangeRequest,
-  AuditLog,
-  EmergencyLockdownRequest,
-  TimeRangeParams,
-  BaseQueryParams,
-} from '../../types/api';
+import { adminApi as apiClient } from '../core/serviceClients';
+import type { ApiResponse, User, PaginatedResponse, SearchParams } from '../../types/api';
+
+export interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersToday: number;
+  totalPosts: number;
+  totalComments: number;
+  totalLikes: number;
+  serverHealth: 'healthy' | 'degraded' | 'unhealthy';
+  systemLoad: number;
+  memoryUsage: number;
+  diskUsage: number;
+}
+
+export interface LiveStats {
+  onlineUsers: number;
+  activeConnections: number;
+  requestsPerMinute: number;
+  errorRate: number;
+  responseTime: number;
+  timestamp: string;
+}
+
+export interface UserManagementParams extends SearchParams {
+  role?: 'user' | 'admin' | 'super_admin';
+  status?: 'active' | 'suspended' | 'banned';
+  sortBy?: 'createdAt' | 'lastLoginAt' | 'username';
+  sortOrder?: 'asc' | 'desc';
+  search?: string;
+}
+
+export interface AnalyticsParams {
+  timeRange?: '7d' | '30d' | '90d' | '1y';
+  period?: 'daily' | 'weekly' | 'monthly';
+  days?: number;
+  weeks?: number;
+}
+
+export interface SessionAnalytics {
+  totalSessions: number;
+  averageSessionDuration: number;
+  bounceRate: number;
+  peakHours: Array<{ hour: number; sessions: number }>;
+  deviceBreakdown: Record<string, number>;
+  locationBreakdown: Record<string, number>;
+}
 
 class AdminService {
   private readonly baseUrl = '/admin';
 
   // Dashboard & Statistics
+  async getAdminStats(): Promise<ApiResponse<AdminStats>> {
+    return apiClient.get<AdminStats>(`${this.baseUrl}/stats`);
+  }
+
+  async getLiveStats(): Promise<ApiResponse<LiveStats>> {
+    return apiClient.get<LiveStats>(`${this.baseUrl}/stats/live`);
+  }
+
   async getDashboard(): Promise<
     ApiResponse<{
       stats: AdminStats;
-      recentActivity: Array<{
-        type: string;
-        description: string;
-        timestamp: string;
-        user?: string;
-      }>;
-      alerts: Array<{
-        type: 'info' | 'warning' | 'error';
-        message: string;
-        timestamp: string;
-      }>;
+      recentActivity: any[];
+      systemAlerts: any[];
+      topUsers: User[];
+      contentMetrics: any;
     }>
   > {
     return apiClient.get(`${this.baseUrl}/dashboard`);
   }
 
-  async getStats(): Promise<ApiResponse<AdminStats>> {
-    return apiClient.get<AdminStats>(`${this.baseUrl}/stats`);
-  }
-
-  async getLiveStats(): Promise<
-    ApiResponse<{
-      activeUsers: number;
-      onlineUsers: number;
-      requestsPerMinute: number;
-      errorRate: number;
-      responseTime: number;
-    }>
-  > {
-    return apiClient.get(`${this.baseUrl}/stats/live`);
-  }
-
   // User Management
-  async getAllUsers(params: UserManagementParams = {}): Promise<ApiResponse<AdminUser[]>> {
+  async getAllUsers(
+    params: UserManagementParams = {}
+  ): Promise<ApiResponse<PaginatedResponse<User>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<AdminUser[]>(`${this.baseUrl}/users${queryString}`);
+    return apiClient.get<PaginatedResponse<User>>(`${this.baseUrl}/users${queryString}`);
   }
 
-  async getUserById(userId: string): Promise<ApiResponse<AdminUser>> {
-    return apiClient.get<AdminUser>(`${this.baseUrl}/users/${userId}`);
+  async getUserById(userId: string): Promise<ApiResponse<User>> {
+    return apiClient.get<User>(`${this.baseUrl}/users/${userId}`);
   }
 
-  async updateUser(userId: string, data: Partial<AdminUser>): Promise<ApiResponse<AdminUser>> {
-    return apiClient.put<AdminUser>(`${this.baseUrl}/users/${userId}`, data);
+  async updateUser(userId: string, userData: Partial<User>): Promise<ApiResponse<User>> {
+    return apiClient.put<User>(`${this.baseUrl}/users/${userId}`, userData);
   }
 
-  async deleteUser(userId: string, data: { reason: string }): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`${this.baseUrl}/users/${userId}`, { data });
+  async deleteUser(userId: string, reason: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/users/${userId}`, {
+      data: { reason },
+    });
   }
 
   async suspendUser(
     userId: string,
-    data: { reason: string; duration?: string }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.patch<void>(`${this.baseUrl}/users/${userId}/suspend`, data);
+    reason: string,
+    duration?: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/users/${userId}/suspend`, {
+      reason,
+      duration,
+    });
   }
 
-  async activateUser(userId: string): Promise<ApiResponse<void>> {
-    return apiClient.patch<void>(`${this.baseUrl}/users/${userId}/activate`);
+  async activateUser(userId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/users/${userId}/activate`);
   }
 
   // Admin Management
-  async getAllAdmins(): Promise<ApiResponse<AdminUser[]>> {
-    return apiClient.get<AdminUser[]>(`${this.baseUrl}/admins`);
-  }
-
-  // Add missing getUsers method
-  async getUsers(params: UserManagementParams = {}): Promise<ApiResponse<AdminUser[]>> {
+  async getAllAdmins(params: SearchParams = {}): Promise<ApiResponse<PaginatedResponse<User>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<AdminUser[]>(`${this.baseUrl}/users${queryString}`);
+    return apiClient.get<PaginatedResponse<User>>(`${this.baseUrl}/admins${queryString}`);
   }
 
-  async getAdminById(adminId: string): Promise<ApiResponse<AdminUser>> {
-    return apiClient.get<AdminUser>(`${this.baseUrl}/admins/${adminId}`);
+  async getAdminById(adminId: string): Promise<ApiResponse<User>> {
+    return apiClient.get<User>(`${this.baseUrl}/admins/${adminId}`);
   }
 
-  // Analytics
-  async getAnalyticsOverview(
-    params: TimeRangeParams = {}
-  ): Promise<ApiResponse<AnalyticsOverview>> {
+  // Session Analytics
+  async getSessionAnalytics(params: AnalyticsParams = {}): Promise<ApiResponse<SessionAnalytics>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<AnalyticsOverview>(`${this.baseUrl}/analytics/overview${queryString}`);
+    return apiClient.get<SessionAnalytics>(`${this.baseUrl}/sessions/analytics${queryString}`);
   }
 
-  async getUserGrowthAnalytics(
-    params: {
-      period?: 'daily' | 'weekly' | 'monthly';
-      days?: number;
-    } = {}
-  ): Promise<ApiResponse<UserGrowthData[]>> {
+  async getAdminSessions(adminId: string): Promise<ApiResponse<any[]>> {
+    return apiClient.get(`${this.baseUrl}/sessions/${adminId}`);
+  }
+
+  // Analytics & Reporting
+  async getAnalyticsOverview(params: AnalyticsParams = {}): Promise<
+    ApiResponse<{
+      userGrowth: any[];
+      engagementMetrics: any;
+      contentMetrics: any;
+      revenueMetrics?: any;
+    }>
+  > {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<UserGrowthData[]>(`${this.baseUrl}/analytics/users/growth${queryString}`);
+    return apiClient.get(`${this.baseUrl}/analytics/overview${queryString}`);
+  }
+
+  async getUserGrowthAnalytics(params: AnalyticsParams = {}): Promise<
+    ApiResponse<
+      Array<{
+        date: string;
+        newUsers: number;
+        totalUsers: number;
+        activeUsers: number;
+      }>
+    >
+  > {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.baseUrl}/analytics/users/growth${queryString}`);
   }
 
   async getUserDemographics(): Promise<
     ApiResponse<{
       ageGroups: Record<string, number>;
-      countries: Record<string, number>;
-      devices: Record<string, number>;
-      registrationSources: Record<string, number>;
+      genderDistribution: Record<string, number>;
+      locationDistribution: Record<string, number>;
+      deviceTypes: Record<string, number>;
     }>
   > {
     return apiClient.get(`${this.baseUrl}/analytics/users/demographics`);
   }
 
-  async getUserRetentionAnalytics(
-    params: {
-      period?: 'weekly' | 'monthly';
-      weeks?: number;
-    } = {}
-  ): Promise<
-    ApiResponse<
-      Array<{
-        cohort: string;
-        week0: number;
-        week1: number;
-        week2: number;
-        week3: number;
-        week4: number;
-      }>
-    >
+  async getUserRetentionAnalytics(params: AnalyticsParams = {}): Promise<
+    ApiResponse<{
+      cohortData: any[];
+      retentionRates: Record<string, number>;
+      churnRate: number;
+    }>
   > {
     const queryString = apiClient.buildQueryString(params);
     return apiClient.get(`${this.baseUrl}/analytics/users/retention${queryString}`);
   }
 
-  async getEngagementMetrics(
-    params: TimeRangeParams & {
-      metric?: 'all' | 'likes' | 'comments' | 'shares' | 'views';
-    } = {}
-  ): Promise<ApiResponse<EngagementMetrics>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<EngagementMetrics>(
-      `${this.baseUrl}/analytics/engagement/metrics${queryString}`
-    );
-  }
-
-  // Security & Moderation
-  async getSuspiciousAccounts(
-    params: {
-      page?: number;
-      limit?: number;
-      riskLevel?: 'low' | 'medium' | 'high' | 'critical';
-    } = {}
-  ): Promise<ApiResponse<SuspiciousAccount[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<SuspiciousAccount[]>(
-      `${this.baseUrl}/security/suspicious-accounts${queryString}`
-    );
-  }
-
-  async getBlockedIPs(params: BaseQueryParams = {}): Promise<ApiResponse<BlockedIP[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<BlockedIP[]>(`${this.baseUrl}/security/blocked-ips${queryString}`);
-  }
-
-  async blockIP(data: {
-    ipAddress: string;
-    reason: string;
-    duration?: string;
-  }): Promise<ApiResponse<void>> {
-    return apiClient.post<void>(`${this.baseUrl}/security/blocked-ips`, data);
-  }
-
-  async unblockIP(ipId: string, data: { reason: string }): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`${this.baseUrl}/security/blocked-ips/${ipId}`, { data });
-  }
-
-  async getLoginAttempts(
-    params: {
-      status?: 'success' | 'failed';
-      timeRange?: string;
-      page?: number;
-      limit?: number;
-    } = {}
-  ): Promise<ApiResponse<LoginAttempt[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<LoginAttempt[]>(`${this.baseUrl}/security/login-attempts${queryString}`);
-  }
-
-  async getThreatDetection(): Promise<
+  async getEngagementMetrics(params: AnalyticsParams = {}): Promise<
     ApiResponse<{
-      threats: Array<{
-        type: string;
-        severity: 'low' | 'medium' | 'high' | 'critical';
-        description: string;
-        detectedAt: string;
-        status: 'active' | 'resolved';
-      }>;
-      summary: {
-        total: number;
-        active: number;
-        resolved: number;
-      };
+      dailyActiveUsers: number;
+      weeklyActiveUsers: number;
+      monthlyActiveUsers: number;
+      averageSessionDuration: number;
+      postsPerUser: number;
+      likesPerPost: number;
+      commentsPerPost: number;
     }>
   > {
-    return apiClient.get(`${this.baseUrl}/security/threat-detection`);
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.baseUrl}/analytics/engagement/metrics${queryString}`);
   }
 
   // Content Management
@@ -236,61 +197,122 @@ class AdminService {
     params: {
       page?: number;
       limit?: number;
-      status?: 'published' | 'hidden' | 'reported';
-      sortBy?: string;
+      status?: 'published' | 'hidden' | 'flagged';
+      sortBy?: 'createdAt' | 'likes' | 'comments';
       sortOrder?: 'asc' | 'desc';
     } = {}
-  ): Promise<
-    ApiResponse<
-      Array<{
-        _id: string;
-        content: string;
-        author: AdminUser;
-        status: string;
-        reportsCount: number;
-        createdAt: string;
-      }>
-    >
-  > {
+  ): Promise<ApiResponse<PaginatedResponse<any>>> {
     const queryString = apiClient.buildQueryString(params);
     return apiClient.get(`${this.baseUrl}/content/posts${queryString}`);
   }
 
   async togglePostVisibility(
     postId: string,
-    data: {
-      action: 'hide' | 'show';
-      reason?: string;
-    }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.patch<void>(`${this.baseUrl}/content/posts/${postId}/toggle-visibility`, data);
+    action: 'hide' | 'show',
+    reason?: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/content/posts/${postId}/toggle-visibility`, {
+      action,
+      reason,
+    });
+  }
+
+  async deletePost(postId: string, reason: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/content/posts/${postId}`, {
+      data: { reason },
+    });
+  }
+
+  // Security & Moderation
+  async getSuspiciousAccounts(
+    params: {
+      page?: number;
+      limit?: number;
+      riskLevel?: 'low' | 'medium' | 'high';
+    } = {}
+  ): Promise<ApiResponse<PaginatedResponse<any>>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.baseUrl}/security/suspicious-accounts${queryString}`);
+  }
+
+  async getBlockedIPs(params: SearchParams = {}): Promise<ApiResponse<PaginatedResponse<any>>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.baseUrl}/security/blocked-ips${queryString}`);
+  }
+
+  async blockIP(
+    ipAddress: string,
+    reason: string,
+    duration: string = '24h'
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/security/blocked-ips`, {
+      ipAddress,
+      reason,
+      duration,
+    });
+  }
+
+  async unblockIP(ipId: string, reason?: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/security/blocked-ips/${ipId}`, {
+      data: { reason },
+    });
+  }
+
+  async getLoginAttempts(
+    params: {
+      status?: 'success' | 'failed';
+      timeRange?: '1h' | '24h' | '7d';
+      page?: number;
+      limit?: number;
+    } = {}
+  ): Promise<ApiResponse<PaginatedResponse<any>>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.baseUrl}/security/login-attempts${queryString}`);
+  }
+
+  async getThreatDetection(): Promise<
+    ApiResponse<{
+      activeThreat: number;
+      blockedAttempts: number;
+      suspiciousActivity: any[];
+      securityScore: number;
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/security/threat-detection`);
   }
 
   // System Configuration
-  async getAppSettings(): Promise<ApiResponse<AppSettings>> {
-    return apiClient.get<AppSettings>(`${this.baseUrl}/config/app-settings`);
+  async getAppSettings(): Promise<ApiResponse<Record<string, any>>> {
+    return apiClient.get(`${this.baseUrl}/config/app-settings`);
   }
 
-  async updateAppSettings(data: {
-    category: string;
-    settings: Record<string, any>;
-  }): Promise<ApiResponse<AppSettings>> {
-    return apiClient.put<AppSettings>(`${this.baseUrl}/config/app-settings`, data);
+  async updateAppSettings(
+    category: string,
+    settings: Record<string, any>
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.put(`${this.baseUrl}/config/app-settings`, {
+      category,
+      settings,
+    });
   }
 
-  // Notifications
-  async getNotificationTemplates(
-    params: {
-      type?: 'email' | 'in-app' | 'push';
-    } = {}
-  ): Promise<ApiResponse<NotificationTemplate[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<NotificationTemplate[]>(
-      `${this.baseUrl}/notifications/templates${queryString}`
-    );
+  // Notifications Management
+  async getNotificationTemplates(type?: 'email' | 'push' | 'sms'): Promise<ApiResponse<any[]>> {
+    const queryString = type ? apiClient.buildQueryString({ type }) : '';
+    return apiClient.get(`${this.baseUrl}/notifications/templates${queryString}`);
   }
 
-  async sendBulkNotification(data: BulkNotificationRequest): Promise<
+  async sendBulkNotification(data: {
+    recipients: 'all' | 'active' | 'inactive' | string[];
+    template?: string;
+    channels: Array<'email' | 'push' | 'sms' | 'in-app'>;
+    priority: 'low' | 'normal' | 'high' | 'urgent';
+    customMessage?: {
+      title: string;
+      content: string;
+    };
+    scheduledAt?: string;
+  }): Promise<
     ApiResponse<{
       jobId: string;
       estimatedDelivery: string;
@@ -300,128 +322,185 @@ class AdminService {
     return apiClient.post(`${this.baseUrl}/notifications/send-bulk`, data);
   }
 
-  // Monitoring
-  async getDatabaseStats(): Promise<
-    ApiResponse<{
-      collections: Record<
-        string,
-        {
-          documents: number;
-          size: string;
-          indexes: number;
-        }
-      >;
-      performance: {
-        readLatency: number;
-        writeLatency: number;
-        connections: number;
-      };
-    }>
-  > {
-    return apiClient.get(`${this.baseUrl}/monitoring/database-stats`);
-  }
-
+  // Monitoring & Health
   async getServerHealth(): Promise<
     ApiResponse<{
-      status: 'healthy' | 'warning' | 'critical';
+      status: 'healthy' | 'degraded' | 'unhealthy';
       uptime: number;
-      memory: {
-        used: number;
-        total: number;
-        percentage: number;
-      };
-      cpu: {
-        usage: number;
-        load: number[];
-      };
-      disk: {
-        used: number;
-        total: number;
-        percentage: number;
-      };
+      memory: { used: number; total: number; percentage: number };
+      cpu: { usage: number; cores: number };
+      disk: { used: number; total: number; percentage: number };
+      database: { status: string; connections: number; responseTime: number };
     }>
   > {
     return apiClient.get(`${this.baseUrl}/monitoring/server-health`);
   }
 
-  // Session Analytics
-  async getSessionAnalytics(params: TimeRangeParams = {}): Promise<
+  async getDatabaseStats(): Promise<
     ApiResponse<{
-      totalSessions: number;
-      activeSessions: number;
-      averageSessionDuration: number;
-      sessionsByDevice: Record<string, number>;
-      sessionsByLocation: Record<string, number>;
+      collections: Record<string, { documents: number; size: string; indexes: number }>;
+      performance: { avgResponseTime: number; slowQueries: number };
+      connections: { active: number; available: number };
     }>
   > {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.baseUrl}/sessions/analytics${queryString}`);
+    return apiClient.get(`${this.baseUrl}/monitoring/database-stats`);
   }
 
-  async getAdminSessions(adminId: string): Promise<
-    ApiResponse<
-      Array<{
-        id: string;
-        startTime: string;
-        endTime?: string;
-        duration: number;
-        ipAddress: string;
-        userAgent: string;
-        location: string;
-      }>
-    >
-  > {
-    return apiClient.get(`${this.baseUrl}/sessions/${adminId}`);
+  // Automation & Rules
+  async getAutomationRules(status?: 'active' | 'inactive'): Promise<ApiResponse<any[]>> {
+    const queryString = status ? apiClient.buildQueryString({ status }) : '';
+    return apiClient.get(`${this.baseUrl}/automation/rules${queryString}`);
   }
 
-  // Automation
-  async getAutomationRules(
-    params: {
-      status?: 'active' | 'inactive';
-    } = {}
-  ): Promise<ApiResponse<AutomationRule[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<AutomationRule[]>(`${this.baseUrl}/automation/rules${queryString}`);
+  async createAutomationRule(rule: {
+    name: string;
+    description: string;
+    trigger: string;
+    conditions: Record<string, any>;
+    actions: Array<{
+      type: string;
+      template?: string;
+      delay?: number;
+      [key: string]: any;
+    }>;
+  }): Promise<ApiResponse<{ ruleId: string; message: string }>> {
+    return apiClient.post(`${this.baseUrl}/automation/rules`, rule);
   }
 
-  async createAutomationRule(
-    data: Omit<AutomationRule, '_id' | 'createdAt'>
-  ): Promise<ApiResponse<AutomationRule>> {
-    return apiClient.post<AutomationRule>(`${this.baseUrl}/automation/rules`, data);
+  // A/B Testing & Experiments
+  async getExperiments(status?: 'draft' | 'running' | 'completed'): Promise<ApiResponse<any[]>> {
+    const queryString = status ? apiClient.buildQueryString({ status }) : '';
+    return apiClient.get(`${this.baseUrl}/experiments${queryString}`);
   }
 
-  async getExperiments(
-    params: {
-      status?: 'draft' | 'running' | 'paused' | 'completed';
-    } = {}
-  ): Promise<ApiResponse<Experiment[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Experiment[]>(`${this.baseUrl}/experiments${queryString}`);
-  }
-
-  async createExperiment(
-    data: Omit<Experiment, '_id' | 'metrics'>
-  ): Promise<ApiResponse<Experiment>> {
-    return apiClient.post<Experiment>(`${this.baseUrl}/experiments`, data);
+  async createExperiment(experiment: {
+    name: string;
+    description: string;
+    variants: Array<{ name: string; description: string }>;
+    trafficSplit: number[];
+    duration: number;
+    targetAudience?: Record<string, any>;
+  }): Promise<ApiResponse<{ experimentId: string; message: string }>> {
+    return apiClient.post(`${this.baseUrl}/experiments`, experiment);
   }
 
   // Business Intelligence
-  async getRevenueAnalytics(
-    params: {
-      period?: string;
-    } = {}
-  ): Promise<ApiResponse<RevenueAnalytics>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<RevenueAnalytics>(`${this.baseUrl}/bi/revenue-analytics${queryString}`);
+  async getRevenueAnalytics(period: string = '30d'): Promise<
+    ApiResponse<{
+      totalRevenue: number;
+      revenueGrowth: number;
+      averageRevenuePerUser: number;
+      revenueBySource: Record<string, number>;
+      monthlyRecurringRevenue: number;
+    }>
+  > {
+    const queryString = apiClient.buildQueryString({ period });
+    return apiClient.get(`${this.baseUrl}/bi/revenue-analytics${queryString}`);
   }
 
-  async getUserLifetimeValue(
-    params: {
-      segment?: string;
-    } = {}
-  ): Promise<ApiResponse<UserLifetimeValue>> {
+  async getUserLifetimeValue(segment?: string): Promise<
+    ApiResponse<{
+      averageLTV: number;
+      ltv90Days: number;
+      ltv180Days: number;
+      ltv365Days: number;
+      segmentBreakdown: Record<string, number>;
+    }>
+  > {
+    const queryString = segment ? apiClient.buildQueryString({ segment }) : '';
+    return apiClient.get(`${this.baseUrl}/bi/user-lifetime-value${queryString}`);
+  }
+
+  // Export & Reporting
+  async exportUsers(
+    format: 'csv' | 'xlsx' | 'json' = 'csv',
+    filters?: UserManagementParams
+  ): Promise<
+    ApiResponse<{
+      downloadUrl: string;
+      expiresAt: string;
+      recordCount: number;
+    }>
+  > {
+    const params = { format, ...filters };
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<UserLifetimeValue>(`${this.baseUrl}/bi/user-lifetime-value${queryString}`);
+    return apiClient.post(`${this.baseUrl}/export/users${queryString}`);
+  }
+
+  async exportAnalytics(
+    type: 'users' | 'engagement' | 'content' | 'revenue',
+    params: AnalyticsParams & { format?: 'csv' | 'xlsx' | 'pdf' } = {}
+  ): Promise<
+    ApiResponse<{
+      downloadUrl: string;
+      expiresAt: string;
+    }>
+  > {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.post(`${this.baseUrl}/export/analytics/${type}${queryString}`);
+  }
+
+  // Real-time Monitoring
+  async subscribeToLiveStats(callback: (stats: LiveStats) => void): () => void {
+    // WebSocket connection for real-time stats
+    const ws = new WebSocket(
+      `${apiClient.getInstance().defaults.baseURL?.replace('http', 'ws')}/admin/live-stats`
+    );
+
+    ws.onmessage = event => {
+      try {
+        const stats = JSON.parse(event.data);
+        callback(stats);
+      } catch (error) {
+        console.error('Failed to parse live stats:', error);
+      }
+    };
+
+    ws.onerror = error => {
+      console.error('WebSocket error:', error);
+    };
+
+    // Return cleanup function
+    return () => {
+      ws.close();
+    };
+  }
+
+  // Bulk Operations for Enterprise Scale
+  async bulkUserAction(
+    action: 'suspend' | 'activate' | 'delete',
+    userIds: string[],
+    reason?: string
+  ): Promise<
+    ApiResponse<{
+      successful: string[];
+      failed: Array<{ userId: string; error: string }>;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/users/bulk/${action}`, {
+      userIds,
+      reason,
+    });
+  }
+
+  // Cache Management
+  async clearCache(
+    type?: 'users' | 'posts' | 'analytics' | 'all'
+  ): Promise<ApiResponse<{ message: string }>> {
+    const data = type ? { type } : {};
+    return apiClient.post(`${this.baseUrl}/cache/clear`, data);
+  }
+
+  async getCacheStats(): Promise<
+    ApiResponse<{
+      totalKeys: number;
+      memoryUsage: string;
+      hitRate: number;
+      missRate: number;
+      evictions: number;
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/cache/stats`);
   }
 }
 

@@ -1,4 +1,4 @@
-import { QueryParams } from './types';
+import type { SearchParams as QueryParams } from '../../types/api';
 
 /**
  * Build query string from parameters

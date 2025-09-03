@@ -1,69 +1,144 @@
-import { apiClient } from '../core/apiClient';
-import { ApiResponse, Post, FeedParams, User } from '../../types/api';
+import { postsApi as apiClient } from '../core/serviceClients';
+import type { ApiResponse, PaginatedResponse, SearchParams } from '../../types/api';
+
+export interface Post {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+    isVerified?: boolean;
+  };
+  media?: Array<{
+    type: 'image' | 'video' | 'gif';
+    url: string;
+    thumbnail?: string;
+    alt?: string;
+  }>;
+  location?: {
+    name: string;
+    coordinates?: { lat: number; lng: number };
+  };
+  metrics: {
+    likes: number;
+    comments: number;
+    shares: number;
+    views: number;
+    reposts: number;
+  };
+  engagement: {
+    isLiked: boolean;
+    isBookmarked: boolean;
+    isReposted: boolean;
+    isFollowing: boolean;
+  };
+  visibility: 'public' | 'followers' | 'private';
+  type: 'text' | 'image' | 'video' | 'poll' | 'article' | 'repost';
+  tags?: string[];
+  mentions?: string[];
+  createdAt: string;
+  updatedAt: string;
+  scheduledAt?: string;
+  expiresAt?: string;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  postId: string;
+  parentId?: string;
+  replies?: Comment[];
+  likes: number;
+  isLiked: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePostData {
+  content: string;
+  media?: Array<{
+    type: 'image' | 'video' | 'gif';
+    url: string;
+    alt?: string;
+  }>;
+  location?: {
+    name: string;
+    coordinates?: { lat: number; lng: number };
+  };
+  visibility?: 'public' | 'followers' | 'private';
+  tags?: string[];
+  mentions?: string[];
+  scheduledAt?: string;
+  expiresAt?: string;
+}
+
+export interface FeedParams extends SearchParams {
+  type?: 'timeline' | 'explore' | 'trending' | 'following';
+  sort?: 'recent' | 'popular' | 'trending';
+  timeRange?: '1h' | '24h' | '7d' | '30d';
+  category?: string;
+  location?: string;
+  hasMedia?: boolean;
+}
 
 class FeedService {
-  private readonly baseUrl = '/users';
-  private readonly postsUrl = '/posts';
+  private readonly baseUrl = '/posts';
+  private readonly feedUrl = '/feed';
 
   // Feed Management
-  async getFeed(params: FeedParams = {}): Promise<ApiResponse<Post[]>> {
+  async getFeed(params: FeedParams = {}): Promise<ApiResponse<PaginatedResponse<Post>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Post[]>(`${this.baseUrl}/feed${queryString}`);
+    return apiClient.get<PaginatedResponse<Post>>(`${this.feedUrl}${queryString}`);
   }
 
-  async getUserFeed(userId: string, params: FeedParams = {}): Promise<ApiResponse<Post[]>> {
+  async getTimelineFeed(params: SearchParams = {}): Promise<ApiResponse<PaginatedResponse<Post>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Post[]>(`${this.baseUrl}/${userId}/feed${queryString}`);
+    return apiClient.get<PaginatedResponse<Post>>(`${this.feedUrl}/timeline${queryString}`);
   }
 
-  async getExploreFeed(params: FeedParams = {}): Promise<ApiResponse<Post[]>> {
+  async getExploreFeed(params: FeedParams = {}): Promise<ApiResponse<PaginatedResponse<Post>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Post[]>(`${this.postsUrl}/explore${queryString}`);
+    return apiClient.get<PaginatedResponse<Post>>(`${this.feedUrl}/explore${queryString}`);
   }
 
-  async getTrendingPosts(
-    params: {
-      timeframe?: '1h' | '24h' | '7d' | '30d';
-      limit?: number;
-      category?: string;
-    } = {}
-  ): Promise<ApiResponse<Post[]>> {
+  async getTrendingFeed(params: FeedParams = {}): Promise<ApiResponse<PaginatedResponse<Post>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Post[]>(`${this.postsUrl}/trending${queryString}`);
+    return apiClient.get<PaginatedResponse<Post>>(`${this.feedUrl}/trending${queryString}`);
   }
 
-  // Post Creation & Management
-  async createPost(data: {
-    content: string;
-    images?: string[];
-    visibility?: 'public' | 'private' | 'followers';
-    tags?: string[];
-    location?: {
-      name: string;
-      coordinates?: [number, number];
-    };
-    scheduledAt?: string;
-  }): Promise<ApiResponse<Post>> {
-    return apiClient.post<Post>(`${this.postsUrl}`, data);
-  }
-
-  async updatePost(
-    postId: string,
-    data: {
-      content?: string;
-      visibility?: 'public' | 'private' | 'followers';
-      tags?: string[];
-    }
-  ): Promise<ApiResponse<Post>> {
-    return apiClient.put<Post>(`${this.postsUrl}/${postId}`, data);
-  }
-
-  async deletePost(postId: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`${this.postsUrl}/${postId}`);
+  // Post Management
+  async createPost(postData: CreatePostData): Promise<ApiResponse<Post>> {
+    return apiClient.post<Post>(this.baseUrl, postData);
   }
 
   async getPost(postId: string): Promise<ApiResponse<Post>> {
-    return apiClient.get<Post>(`${this.postsUrl}/${postId}`);
+    return apiClient.get<Post>(`${this.baseUrl}/${postId}`);
+  }
+
+  async updatePost(postId: string, postData: Partial<CreatePostData>): Promise<ApiResponse<Post>> {
+    return apiClient.put<Post>(`${this.baseUrl}/${postId}`, postData);
+  }
+
+  async deletePost(postId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/${postId}`);
+  }
+
+  async getUserPosts(
+    userId: string,
+    params: SearchParams = {}
+  ): Promise<ApiResponse<PaginatedResponse<Post>>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get<PaginatedResponse<Post>>(`/users/${userId}/posts${queryString}`);
   }
 
   // Post Interactions
@@ -71,394 +146,419 @@ class FeedService {
     ApiResponse<{
       isLiked: boolean;
       likesCount: number;
+      message: string;
     }>
   > {
-    return apiClient.post(`${this.postsUrl}/${postId}/like`);
+    return apiClient.post(`${this.baseUrl}/${postId}/like`);
   }
 
   async unlikePost(postId: string): Promise<
     ApiResponse<{
       isLiked: boolean;
       likesCount: number;
+      message: string;
     }>
   > {
-    return apiClient.delete(`${this.postsUrl}/${postId}/like`);
-  }
-
-  async bookmarkPost(postId: string): Promise<
-    ApiResponse<{
-      isBookmarked: boolean;
-    }>
-  > {
-    return apiClient.post(`${this.postsUrl}/${postId}/bookmark`);
-  }
-
-  async unbookmarkPost(postId: string): Promise<
-    ApiResponse<{
-      isBookmarked: boolean;
-    }>
-  > {
-    return apiClient.delete(`${this.postsUrl}/${postId}/bookmark`);
+    return apiClient.delete(`${this.baseUrl}/${postId}/like`);
   }
 
   async repostPost(
     postId: string,
-    data?: {
-      comment?: string;
-    }
+    comment?: string
   ): Promise<
     ApiResponse<{
-      isReposted: boolean;
-      repostsCount: number;
+      repost: Post;
+      message: string;
     }>
   > {
-    return apiClient.post(`${this.postsUrl}/${postId}/repost`, data);
+    return apiClient.post(`${this.baseUrl}/${postId}/repost`, { comment });
   }
 
-  async unrepostPost(postId: string): Promise<
-    ApiResponse<{
-      isReposted: boolean;
-      repostsCount: number;
-    }>
-  > {
-    return apiClient.delete(`${this.postsUrl}/${postId}/repost`);
+  async unrepostPost(postId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/${postId}/repost`);
   }
 
   async sharePost(
     postId: string,
     data: {
-      platform: 'twitter' | 'facebook' | 'linkedin' | 'copy' | 'email';
+      platform?: 'twitter' | 'facebook' | 'linkedin' | 'copy';
       message?: string;
     }
   ): Promise<
     ApiResponse<{
       shareUrl: string;
-      sharesCount: number;
+      message: string;
     }>
   > {
-    return apiClient.post(`${this.postsUrl}/${postId}/share`, data);
+    return apiClient.post(`${this.baseUrl}/${postId}/share`, data);
   }
 
-  // Comments
-  async getComments(
-    postId: string,
-    params: {
-      page?: number;
-      limit?: number;
-      sortBy?: 'newest' | 'oldest' | 'popular';
-    } = {}
-  ): Promise<
-    ApiResponse<
-      Array<{
-        _id: string;
-        content: string;
-        author: User;
-        likesCount: number;
-        repliesCount: number;
-        isLiked: boolean;
-        createdAt: string;
-        updatedAt: string;
-        parentId?: string;
-      }>
-    >
+  async bookmarkPost(postId: string): Promise<
+    ApiResponse<{
+      isBookmarked: boolean;
+      message: string;
+    }>
   > {
+    return apiClient.post(`${this.baseUrl}/${postId}/bookmark`);
+  }
+
+  async unbookmarkPost(postId: string): Promise<
+    ApiResponse<{
+      isBookmarked: boolean;
+      message: string;
+    }>
+  > {
+    return apiClient.delete(`${this.baseUrl}/${postId}/bookmark`);
+  }
+
+  // Comments Management
+  async getPostComments(
+    postId: string,
+    params: SearchParams = {}
+  ): Promise<ApiResponse<PaginatedResponse<Comment>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.postsUrl}/${postId}/comments${queryString}`);
+    return apiClient.get<PaginatedResponse<Comment>>(
+      `${this.baseUrl}/${postId}/comments${queryString}`
+    );
   }
 
-  async addComment(
+  async createComment(
     postId: string,
     data: {
       content: string;
-      parentId?: string; // For replies
-    }
-  ): Promise<
-    ApiResponse<{
-      _id: string;
-      content: string;
-      author: User;
-      likesCount: number;
-      repliesCount: number;
-      isLiked: boolean;
-      createdAt: string;
       parentId?: string;
-    }>
-  > {
-    return apiClient.post(`${this.postsUrl}/${postId}/comments`, data);
-  }
-
-  async updateComment(
-    postId: string,
-    commentId: string,
-    data: {
-      content: string;
+      mentions?: string[];
     }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.put(`${this.postsUrl}/${postId}/comments/${commentId}`, data);
+  ): Promise<ApiResponse<Comment>> {
+    return apiClient.post<Comment>(`${this.baseUrl}/${postId}/comments`, data);
   }
 
-  async deleteComment(postId: string, commentId: string): Promise<ApiResponse<void>> {
-    return apiClient.delete(`${this.postsUrl}/${postId}/comments/${commentId}`);
+  async updateComment(commentId: string, content: string): Promise<ApiResponse<Comment>> {
+    return apiClient.put<Comment>(`/comments/${commentId}`, { content });
   }
 
-  async likeComment(
-    postId: string,
-    commentId: string
-  ): Promise<
+  async deleteComment(commentId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`/comments/${commentId}`);
+  }
+
+  async likeComment(commentId: string): Promise<
     ApiResponse<{
       isLiked: boolean;
       likesCount: number;
     }>
   > {
-    return apiClient.post(`${this.postsUrl}/${postId}/comments/${commentId}/like`);
+    return apiClient.post(`/comments/${commentId}/like`);
   }
 
-  async unlikeComment(
-    postId: string,
-    commentId: string
-  ): Promise<
+  async unlikeComment(commentId: string): Promise<
     ApiResponse<{
       isLiked: boolean;
       likesCount: number;
     }>
   > {
-    return apiClient.delete(`${this.postsUrl}/${postId}/comments/${commentId}/like`);
+    return apiClient.delete(`/comments/${commentId}/like`);
   }
 
   // Post Analytics
   async getPostAnalytics(postId: string): Promise<
     ApiResponse<{
-      views: number;
-      likes: number;
-      comments: number;
-      reposts: number;
-      shares: number;
-      engagement: {
-        rate: number;
-        score: number;
+      views: {
+        total: number;
+        unique: number;
+        byHour: Array<{ hour: number; views: number }>;
       };
-      demographics: {
-        ageGroups: Record<string, number>;
-        countries: Record<string, number>;
+      engagement: {
+        likes: number;
+        comments: number;
+        shares: number;
+        reposts: number;
+        bookmarks: number;
+        clickThroughs: number;
+      };
+      audience: {
+        demographics: Record<string, number>;
+        locations: Record<string, number>;
         devices: Record<string, number>;
       };
-      timeline: Array<{
-        date: string;
-        views: number;
-        interactions: number;
-      }>;
+      performance: {
+        engagementRate: number;
+        reachRate: number;
+        viralityScore: number;
+      };
     }>
   > {
-    return apiClient.get(`${this.postsUrl}/${postId}/analytics`);
+    return apiClient.get(`${this.baseUrl}/${postId}/analytics`);
   }
 
-  // Bookmarks
-  async getBookmarkedPosts(
-    params: {
-      page?: number;
-      limit?: number;
-      sortBy?: 'newest' | 'oldest';
-    } = {}
-  ): Promise<ApiResponse<Post[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Post[]>(`${this.baseUrl}/bookmarks${queryString}`);
-  }
-
-  // Search & Discovery
+  // Content Discovery
   async searchPosts(params: {
     query: string;
+    type?: 'text' | 'image' | 'video' | 'all';
+    sortBy?: 'relevance' | 'recent' | 'popular';
+    timeRange?: '1h' | '24h' | '7d' | '30d' | 'all';
+    location?: string;
+    author?: string;
     page?: number;
     limit?: number;
-    sortBy?: 'relevance' | 'newest' | 'popular';
-    filters?: {
-      dateRange?: {
-        start: string;
-        end: string;
-      };
-      hasImages?: boolean;
-      hasVideos?: boolean;
-      author?: string;
-      tags?: string[];
-    };
-  }): Promise<ApiResponse<Post[]>> {
+  }): Promise<ApiResponse<PaginatedResponse<Post>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Post[]>(`${this.postsUrl}/search${queryString}`);
+    return apiClient.get<PaginatedResponse<Post>>(`${this.baseUrl}/search${queryString}`);
   }
 
-  async getHashtagPosts(
+  async getPostsByHashtag(
     hashtag: string,
-    params: {
-      page?: number;
-      limit?: number;
-      sortBy?: 'newest' | 'popular';
-    } = {}
-  ): Promise<ApiResponse<Post[]>> {
+    params: SearchParams = {}
+  ): Promise<ApiResponse<PaginatedResponse<Post>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Post[]>(`${this.postsUrl}/hashtag/${hashtag}${queryString}`);
+    return apiClient.get<PaginatedResponse<Post>>(
+      `${this.baseUrl}/hashtag/${hashtag}${queryString}`
+    );
   }
 
   async getTrendingHashtags(
     params: {
+      timeRange?: '1h' | '24h' | '7d';
+      location?: string;
       limit?: number;
-      timeframe?: '1h' | '24h' | '7d';
     } = {}
   ): Promise<
     ApiResponse<
       Array<{
-        tag: string;
+        hashtag: string;
         count: number;
-        growth: number;
+        trend: 'rising' | 'stable' | 'falling';
+        change: number;
       }>
     >
   > {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.postsUrl}/hashtags/trending${queryString}`);
+    return apiClient.get(`/hashtags/trending${queryString}`);
   }
 
-  // Media Upload
-  async uploadImage(
+  // Media Management
+  async uploadMedia(
     file: File,
-    onProgress?: (progress: number) => void
+    type: 'image' | 'video' | 'gif'
   ): Promise<
     ApiResponse<{
       url: string;
-      thumbnailUrl?: string;
-      width: number;
-      height: number;
-      size: number;
+      thumbnail?: string;
+      metadata: {
+        size: number;
+        dimensions?: { width: number; height: number };
+        duration?: number;
+        format: string;
+      };
     }>
   > {
-    return apiClient.uploadFile(`${this.postsUrl}/upload/image`, file, onProgress);
+    return apiClient.uploadFile('/media/upload', file);
   }
 
-  async uploadVideo(
-    file: File,
-    onProgress?: (progress: number) => void
+  async processVideo(
+    videoUrl: string,
+    options: {
+      quality?: 'low' | 'medium' | 'high';
+      generateThumbnail?: boolean;
+      compress?: boolean;
+    } = {}
   ): Promise<
     ApiResponse<{
-      url: string;
-      thumbnailUrl: string;
-      duration: number;
-      width: number;
-      height: number;
-      size: number;
+      processedUrl: string;
+      thumbnail?: string;
+      jobId: string;
     }>
   > {
-    return apiClient.uploadFile(`${this.postsUrl}/upload/video`, file, onProgress);
+    return apiClient.post('/media/process-video', {
+      videoUrl,
+      options,
+    });
   }
 
-  // Reporting
-  async reportPost(
-    postId: string,
-    data: {
-      reason: 'spam' | 'harassment' | 'inappropriate' | 'copyright' | 'other';
+  // Bookmarks & Saved Posts
+  async getBookmarkedPosts(
+    params: SearchParams = {}
+  ): Promise<ApiResponse<PaginatedResponse<Post>>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get<PaginatedResponse<Post>>(`/bookmarks${queryString}`);
+  }
+
+  async createBookmarkCollection(
+    name: string,
+    description?: string
+  ): Promise<
+    ApiResponse<{
+      id: string;
+      name: string;
       description?: string;
-    }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.post(`${this.postsUrl}/${postId}/report`, data);
-  }
-
-  // Draft Management
-  async saveDraft(data: {
-    content: string;
-    images?: string[];
-    visibility?: 'public' | 'private' | 'followers';
-    tags?: string[];
-  }): Promise<
-    ApiResponse<{
-      _id: string;
-      content: string;
-      images?: string[];
-      visibility: string;
-      tags?: string[];
-      createdAt: string;
-      updatedAt: string;
     }>
   > {
-    return apiClient.post(`${this.postsUrl}/drafts`, data);
+    return apiClient.post('/bookmarks/collections', { name, description });
   }
 
-  async getDrafts(
-    params: {
-      page?: number;
-      limit?: number;
-    } = {}
-  ): Promise<
-    ApiResponse<
-      Array<{
-        _id: string;
-        content: string;
-        images?: string[];
-        visibility: string;
-        tags?: string[];
-        createdAt: string;
-        updatedAt: string;
-      }>
-    >
+  async addToBookmarkCollection(
+    collectionId: string,
+    postId: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`/bookmarks/collections/${collectionId}/posts`, { postId });
+  }
+
+  // Post Scheduling
+  async schedulePost(postData: CreatePostData & { scheduledAt: string }): Promise<
+    ApiResponse<{
+      id: string;
+      scheduledAt: string;
+      status: 'scheduled';
+      message: string;
+    }>
   > {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.postsUrl}/drafts${queryString}`);
+    return apiClient.post('/posts/schedule', postData);
   }
 
-  async updateDraft(
-    draftId: string,
-    data: {
-      content?: string;
-      images?: string[];
-      visibility?: 'public' | 'private' | 'followers';
-      tags?: string[];
-    }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.put(`${this.postsUrl}/drafts/${draftId}`, data);
-  }
-
-  async deleteDraft(draftId: string): Promise<ApiResponse<void>> {
-    return apiClient.delete(`${this.postsUrl}/drafts/${draftId}`);
-  }
-
-  async publishDraft(draftId: string): Promise<ApiResponse<Post>> {
-    return apiClient.post<Post>(`${this.postsUrl}/drafts/${draftId}/publish`);
-  }
-
-  // Scheduled Posts
   async getScheduledPosts(
-    params: {
-      page?: number;
-      limit?: number;
-    } = {}
-  ): Promise<
-    ApiResponse<
-      Array<{
-        _id: string;
-        content: string;
-        images?: string[];
-        visibility: string;
-        tags?: string[];
-        scheduledAt: string;
-        status: 'scheduled' | 'published' | 'failed';
-        createdAt: string;
-      }>
-    >
-  > {
+    params: SearchParams = {}
+  ): Promise<ApiResponse<PaginatedResponse<Post>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.postsUrl}/scheduled${queryString}`);
-  }
-
-  async cancelScheduledPost(postId: string): Promise<ApiResponse<void>> {
-    return apiClient.delete(`${this.postsUrl}/scheduled/${postId}`);
+    return apiClient.get<PaginatedResponse<Post>>(`/posts/scheduled${queryString}`);
   }
 
   async updateScheduledPost(
     postId: string,
+    data: Partial<CreatePostData & { scheduledAt: string }>
+  ): Promise<ApiResponse<Post>> {
+    return apiClient.put(`/posts/scheduled/${postId}`, data);
+  }
+
+  async cancelScheduledPost(postId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`/posts/scheduled/${postId}`);
+  }
+
+  // Content Moderation
+  async reportPost(
+    postId: string,
     data: {
-      content?: string;
-      images?: string[];
-      visibility?: 'public' | 'private' | 'followers';
-      tags?: string[];
-      scheduledAt?: string;
+      reason: 'spam' | 'harassment' | 'hate_speech' | 'violence' | 'copyright' | 'other';
+      description?: string;
     }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.put(`${this.postsUrl}/scheduled/${postId}`, data);
+  ): Promise<
+    ApiResponse<{
+      reportId: string;
+      message: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/${postId}/report`, data);
+  }
+
+  async hidePost(postId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/${postId}/hide`);
+  }
+
+  async unhidePost(postId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/${postId}/hide`);
+  }
+
+  // Real-time Features
+  async subscribeToPostUpdates(postId: string, callback: (update: any) => void): () => void {
+    const ws = new WebSocket(
+      `${apiClient.getInstance().defaults.baseURL?.replace('http', 'ws')}/posts/${postId}/live`
+    );
+
+    ws.onmessage = event => {
+      try {
+        const update = JSON.parse(event.data);
+        callback(update);
+      } catch (error) {
+        console.error('Failed to parse post update:', error);
+      }
+    };
+
+    return () => ws.close();
+  }
+
+  // Performance Optimizations
+  private postCache = new Map<string, { post: Post; timestamp: number }>();
+  private readonly CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+  async getCachedPost(postId: string): Promise<Post | null> {
+    const cached = this.postCache.get(postId);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+      return cached.post;
+    }
+
+    try {
+      const response = await this.getPost(postId);
+      if (response.success && response.data) {
+        this.postCache.set(postId, {
+          post: response.data,
+          timestamp: Date.now(),
+        });
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Failed to fetch post:', error);
+    }
+
+    return null;
+  }
+
+  clearPostCache(postId?: string): void {
+    if (postId) {
+      this.postCache.delete(postId);
+    } else {
+      this.postCache.clear();
+    }
+  }
+
+  // Bulk Operations
+  async bulkDeletePosts(postIds: string[]): Promise<
+    ApiResponse<{
+      successful: string[];
+      failed: Array<{ postId: string; error: string }>;
+    }>
+  > {
+    return apiClient.post('/posts/bulk/delete', { postIds });
+  }
+
+  async bulkUpdatePostVisibility(
+    postIds: string[],
+    visibility: 'public' | 'followers' | 'private'
+  ): Promise<
+    ApiResponse<{
+      successful: string[];
+      failed: Array<{ postId: string; error: string }>;
+    }>
+  > {
+    return apiClient.post('/posts/bulk/visibility', { postIds, visibility });
+  }
+
+  // Feed Customization
+  async updateFeedPreferences(preferences: {
+    showReposts?: boolean;
+    showLikedPosts?: boolean;
+    contentTypes?: Array<'text' | 'image' | 'video' | 'poll'>;
+    languages?: string[];
+    blockedKeywords?: string[];
+    prioritizeFollowing?: boolean;
+  }): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.put('/feed/preferences', preferences);
+  }
+
+  async getFeedPreferences(): Promise<ApiResponse<any>> {
+    return apiClient.get('/feed/preferences');
+  }
+
+  // Content Insights
+  async getContentInsights(timeRange: '7d' | '30d' | '90d' = '30d'): Promise<
+    ApiResponse<{
+      topPerformingPosts: Post[];
+      engagementTrends: Array<{ date: string; engagement: number }>;
+      audienceGrowth: Array<{ date: string; followers: number }>;
+      bestPostingTimes: Array<{ hour: number; engagement: number }>;
+      contentTypePerformance: Record<string, number>;
+      hashtagPerformance: Array<{ hashtag: string; reach: number; engagement: number }>;
+    }>
+  > {
+    const queryString = apiClient.buildQueryString({ timeRange });
+    return apiClient.get(`/insights/content${queryString}`);
   }
 }
 

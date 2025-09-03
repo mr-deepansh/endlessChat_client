@@ -1,4 +1,4 @@
-import { apiClient } from '../core/apiClient';
+import { usersApi as apiClient } from '../core/serviceClients';
 import { buildQueryString } from '../core/utils';
 import {
   User,

@@ -1,24 +1,84 @@
-import { apiClient } from '../core/apiClient';
-import {
-  ApiResponse,
-  CreateAdminRequest,
-  RoleChangeRequest,
-  AuditLog,
-  EmergencyLockdownRequest,
-  AdminUser,
-  BaseQueryParams,
-} from '../../types/api';
+import { adminApi as apiClient } from '../core/serviceClients';
+import type { ApiResponse, User, PaginatedResponse, SearchParams } from '../../types/api';
+
+export interface AuditLog {
+  id: string;
+  adminId: string;
+  adminUsername: string;
+  action: string;
+  targetType: 'user' | 'admin' | 'system' | 'content';
+  targetId?: string;
+  details: Record<string, any>;
+  ipAddress: string;
+  userAgent: string;
+  timestamp: string;
+  criticality: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  result: 'SUCCESS' | 'FAILURE' | 'PARTIAL';
+}
+
+export interface SystemConfig {
+  security: {
+    maxLoginAttempts: number;
+    lockoutDuration: number;
+    sessionTimeout: number;
+    passwordPolicy: {
+      minLength: number;
+      requireUppercase: boolean;
+      requireLowercase: boolean;
+      requireNumbers: boolean;
+      requireSpecialChars: boolean;
+    };
+    twoFactorAuth: {
+      enabled: boolean;
+      required: boolean;
+    };
+  };
+  features: {
+    registration: boolean;
+    emailVerification: boolean;
+    contentModeration: boolean;
+    realTimeNotifications: boolean;
+  };
+  limits: {
+    maxUsersPerDay: number;
+    maxPostsPerUser: number;
+    maxFileSize: number;
+    rateLimit: {
+      requests: number;
+      window: number;
+    };
+  };
+  maintenance: {
+    enabled: boolean;
+    message: string;
+    allowedIPs: string[];
+  };
+}
+
+export interface AdminCreationData {
+  username: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: 'admin' | 'super_admin';
+  permissions: string[];
+  department?: string;
+  notes?: string;
+}
 
 class SuperAdminService {
   private readonly baseUrl = '/admin/super-admin';
 
   // Admin Management
-  async getAllAdmins(): Promise<ApiResponse<AdminUser[]>> {
-    return apiClient.get<AdminUser[]>(`/admin/admins`);
-  }
-
-  async createAdmin(data: CreateAdminRequest): Promise<ApiResponse<AdminUser>> {
-    return apiClient.post<AdminUser>(`${this.baseUrl}/create-admin`, data);
+  async createAdmin(adminData: AdminCreationData): Promise<
+    ApiResponse<{
+      admin: User;
+      temporaryPassword?: string;
+      message: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/create-admin`, adminData);
   }
 
   async deleteAdmin(
@@ -27,92 +87,75 @@ class SuperAdminService {
       confirmPassword: string;
       reason: string;
     }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`${this.baseUrl}/delete-admin/${adminId}`, { data });
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/delete-admin/${adminId}`, {
+      data,
+    });
   }
 
-  async changeUserRole(
+  async updateAdminRole(
     userId: string,
-    data: RoleChangeRequest
-  ): Promise<
-    ApiResponse<{
-      user: AdminUser;
-      previousRole: string;
-      newRole: string;
-      changedAt: string;
-    }>
-  > {
+    data: {
+      newRole: 'user' | 'admin' | 'super_admin';
+      reason: string;
+      permissions?: string[];
+    }
+  ): Promise<ApiResponse<{ message: string }>> {
     return apiClient.put(`${this.baseUrl}/change-role/${userId}`, data);
   }
 
+  async suspendAdmin(
+    adminId: string,
+    data: {
+      reason: string;
+      duration?: string;
+    }
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/suspend-admin/${adminId}`, data);
+  }
+
+  async activateAdmin(adminId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/activate-admin/${adminId}`);
+  }
+
   // System Configuration
-  async getSystemConfig(): Promise<
-    ApiResponse<{
-      database: {
-        host: string;
-        name: string;
-        version: string;
-        status: 'connected' | 'disconnected';
-      };
-      redis: {
-        host: string;
-        status: 'connected' | 'disconnected';
-        memory: string;
-      };
-      server: {
-        version: string;
-        environment: string;
-        uptime: number;
-        nodeVersion: string;
-      };
-      features: {
-        maintenance: boolean;
-        registration: boolean;
-        emailService: boolean;
-        fileUpload: boolean;
-      };
-      limits: {
-        maxUsers: number;
-        maxFileSize: string;
-        rateLimit: number;
-      };
-    }>
-  > {
-    return apiClient.get(`${this.baseUrl}/system-config`);
+  async getSystemConfig(): Promise<ApiResponse<SystemConfig>> {
+    return apiClient.get<SystemConfig>(`${this.baseUrl}/system-config`);
   }
 
-  async updateSystemConfig(data: {
-    category: 'database' | 'redis' | 'server' | 'features' | 'limits';
-    settings: Record<string, any>;
-  }): Promise<ApiResponse<void>> {
-    return apiClient.put(`${this.baseUrl}/system-config`, data);
+  async updateSystemConfig(
+    config: Partial<SystemConfig>
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.put(`${this.baseUrl}/system-config`, config);
   }
 
-  // Audit Logs
+  async resetSystemConfig(): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/system-config/reset`);
+  }
+
+  // Audit Logs & Security
   async getAuditLogs(
     params: {
       page?: number;
       limit?: number;
       action?: string;
-      criticality?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
       adminId?: string;
+      targetType?: 'user' | 'admin' | 'system' | 'content';
+      criticality?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
       startDate?: string;
       endDate?: string;
+      result?: 'SUCCESS' | 'FAILURE' | 'PARTIAL';
     } = {}
-  ): Promise<ApiResponse<AuditLog[]>> {
+  ): Promise<ApiResponse<PaginatedResponse<AuditLog>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<AuditLog[]>(`${this.baseUrl}/audit-logs${queryString}`);
-  }
-
-  async getAuditLogById(logId: string): Promise<ApiResponse<AuditLog>> {
-    return apiClient.get<AuditLog>(`${this.baseUrl}/audit-logs/${logId}`);
+    return apiClient.get<PaginatedResponse<AuditLog>>(`${this.baseUrl}/audit-logs${queryString}`);
   }
 
   async exportAuditLogs(
     params: {
+      format?: 'csv' | 'xlsx' | 'json';
       startDate?: string;
       endDate?: string;
-      format?: 'csv' | 'json' | 'xlsx';
       adminId?: string;
       action?: string;
     } = {}
@@ -120,7 +163,7 @@ class SuperAdminService {
     ApiResponse<{
       downloadUrl: string;
       expiresAt: string;
-      fileSize: string;
+      recordCount: number;
     }>
   > {
     const queryString = apiClient.buildQueryString(params);
@@ -128,35 +171,37 @@ class SuperAdminService {
   }
 
   // Emergency Controls
-  async emergencyLockdown(data: EmergencyLockdownRequest): Promise<
+  async emergencyLockdown(data: {
+    reason: string;
+    duration: string;
+    confirmPassword: string;
+    notifyAdmins?: boolean;
+  }): Promise<
     ApiResponse<{
+      message: string;
       lockdownId: string;
-      activatedAt: string;
       expiresAt: string;
-      reason: string;
     }>
   > {
     return apiClient.post(`${this.baseUrl}/emergency-lockdown`, data);
   }
 
-  async liftLockdown(
+  async disableLockdown(
     lockdownId: string,
-    data: {
-      confirmPassword: string;
-      reason: string;
-    }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.post(`${this.baseUrl}/lift-lockdown/${lockdownId}`, data);
+    confirmPassword: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/emergency-lockdown/${lockdownId}`, {
+      data: { confirmPassword },
+    });
   }
 
   async getLockdownStatus(): Promise<
     ApiResponse<{
       isActive: boolean;
-      lockdownId?: string;
+      reason?: string;
+      activatedBy?: string;
       activatedAt?: string;
       expiresAt?: string;
-      reason?: string;
-      activatedBy?: AdminUser;
     }>
   > {
     return apiClient.get(`${this.baseUrl}/lockdown-status`);
@@ -164,50 +209,81 @@ class SuperAdminService {
 
   // System Maintenance
   async enableMaintenanceMode(data: {
-    reason: string;
-    estimatedDuration: string;
-    message?: string;
-    allowAdminAccess?: boolean;
-  }): Promise<
-    ApiResponse<{
-      maintenanceId: string;
-      startTime: string;
-      estimatedEndTime: string;
-    }>
-  > {
+    message: string;
+    estimatedDuration?: string;
+    allowedIPs?: string[];
+    notifyUsers?: boolean;
+  }): Promise<ApiResponse<{ message: string }>> {
     return apiClient.post(`${this.baseUrl}/maintenance/enable`, data);
   }
 
-  async disableMaintenanceMode(maintenanceId: string): Promise<ApiResponse<void>> {
-    return apiClient.post(`${this.baseUrl}/maintenance/disable/${maintenanceId}`);
+  async disableMaintenanceMode(): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/maintenance/disable`);
   }
 
   async getMaintenanceStatus(): Promise<
     ApiResponse<{
-      isActive: boolean;
-      maintenanceId?: string;
-      startTime?: string;
-      estimatedEndTime?: string;
-      reason?: string;
+      enabled: boolean;
       message?: string;
-      enabledBy?: AdminUser;
+      startedAt?: string;
+      estimatedEnd?: string;
+      allowedIPs?: string[];
     }>
   > {
     return apiClient.get(`${this.baseUrl}/maintenance/status`);
   }
 
-  // Database Operations
-  async createDatabaseBackup(
-    data: {
-      name?: string;
-      description?: string;
-      includeFiles?: boolean;
-    } = {}
-  ): Promise<
+  // Database Management
+  async getDatabaseHealth(): Promise<
+    ApiResponse<{
+      status: 'healthy' | 'warning' | 'critical';
+      connections: {
+        active: number;
+        idle: number;
+        total: number;
+        max: number;
+      };
+      performance: {
+        avgQueryTime: number;
+        slowQueries: number;
+        indexEfficiency: number;
+      };
+      storage: {
+        totalSize: string;
+        dataSize: string;
+        indexSize: string;
+        freeSpace: string;
+      };
+      replication: {
+        status: string;
+        lag: number;
+        lastSync: string;
+      };
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/database/health`);
+  }
+
+  async optimizeDatabase(): Promise<
+    ApiResponse<{
+      message: string;
+      jobId: string;
+      estimatedDuration: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/database/optimize`);
+  }
+
+  async createDatabaseBackup(data: {
+    type: 'full' | 'incremental';
+    compression?: boolean;
+    encryption?: boolean;
+  }): Promise<
     ApiResponse<{
       backupId: string;
-      startedAt: string;
-      estimatedCompletion: string;
+      message: string;
+      estimatedSize: string;
+      estimatedDuration: string;
     }>
   > {
     return apiClient.post(`${this.baseUrl}/database/backup`, data);
@@ -217,10 +293,10 @@ class SuperAdminService {
     ApiResponse<
       Array<{
         id: string;
-        name: string;
+        type: 'full' | 'incremental';
         size: string;
         createdAt: string;
-        status: 'creating' | 'completed' | 'failed';
+        status: 'completed' | 'in_progress' | 'failed';
         downloadUrl?: string;
       }>
     >
@@ -228,160 +304,172 @@ class SuperAdminService {
     return apiClient.get(`${this.baseUrl}/database/backups`);
   }
 
-  async restoreDatabase(
-    backupId: string,
-    data: {
-      confirmPassword: string;
-      reason: string;
-    }
-  ): Promise<
+  // System Monitoring
+  async getSystemMetrics(): Promise<
     ApiResponse<{
-      restoreId: string;
-      startedAt: string;
-      estimatedCompletion: string;
-    }>
-  > {
-    return apiClient.post(`${this.baseUrl}/database/restore/${backupId}`, data);
-  }
-
-  // System Analytics
-  async getSystemAnalytics(
-    params: {
-      timeRange?: '1h' | '24h' | '7d' | '30d';
-    } = {}
-  ): Promise<
-    ApiResponse<{
-      performance: {
-        averageResponseTime: number;
+      server: {
+        uptime: number;
+        cpu: { usage: number; cores: number; load: number[] };
+        memory: { used: number; total: number; percentage: number };
+        disk: { used: number; total: number; percentage: number };
+        network: { bytesIn: number; bytesOut: number };
+      };
+      application: {
+        activeUsers: number;
         requestsPerSecond: number;
         errorRate: number;
-        uptime: number;
-      };
-      resources: {
-        cpuUsage: number;
-        memoryUsage: number;
-        diskUsage: number;
-        networkIO: {
-          incoming: number;
-          outgoing: number;
-        };
+        responseTime: number;
+        cacheHitRate: number;
       };
       database: {
         connections: number;
         queryTime: number;
-        operations: {
-          reads: number;
-          writes: number;
-          updates: number;
-          deletes: number;
-        };
-      };
-      users: {
-        totalActive: number;
-        concurrentSessions: number;
-        newRegistrations: number;
-        authenticatedRequests: number;
+        throughput: number;
+        lockWaits: number;
       };
     }>
   > {
+    return apiClient.get(`${this.baseUrl}/system/metrics`);
+  }
+
+  async getSystemLogs(
+    params: {
+      level?: 'error' | 'warn' | 'info' | 'debug';
+      service?: string;
+      startDate?: string;
+      endDate?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ): Promise<
+    ApiResponse<
+      PaginatedResponse<{
+        timestamp: string;
+        level: string;
+        service: string;
+        message: string;
+        metadata?: Record<string, any>;
+      }>
+    >
+  > {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.baseUrl}/analytics/system${queryString}`);
+    return apiClient.get(`${this.baseUrl}/system/logs${queryString}`);
   }
 
   // Security Management
-  async getSecuritySettings(): Promise<
+  async getSecurityEvents(
+    params: {
+      type?: 'login_failure' | 'suspicious_activity' | 'data_breach' | 'privilege_escalation';
+      severity?: 'low' | 'medium' | 'high' | 'critical';
+      startDate?: string;
+      endDate?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ): Promise<
+    ApiResponse<
+      PaginatedResponse<{
+        id: string;
+        type: string;
+        severity: string;
+        description: string;
+        sourceIP: string;
+        userId?: string;
+        timestamp: string;
+        resolved: boolean;
+        resolvedBy?: string;
+        resolvedAt?: string;
+      }>
+    >
+  > {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.baseUrl}/security/events${queryString}`);
+  }
+
+  async resolveSecurityEvent(
+    eventId: string,
+    resolution: {
+      action: string;
+      notes: string;
+    }
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/security/events/${eventId}/resolve`, resolution);
+  }
+
+  async getSecurityReport(timeRange: '24h' | '7d' | '30d' = '7d'): Promise<
     ApiResponse<{
-      authentication: {
-        maxLoginAttempts: number;
-        lockoutDuration: number;
-        sessionTimeout: number;
-        requireTwoFactor: boolean;
+      summary: {
+        totalEvents: number;
+        criticalEvents: number;
+        resolvedEvents: number;
+        averageResolutionTime: number;
       };
-      passwords: {
-        minLength: number;
-        requireSpecialChars: boolean;
-        requireNumbers: boolean;
-        requireUppercase: boolean;
-        expirationDays: number;
-      };
-      api: {
-        rateLimit: number;
-        allowedOrigins: string[];
-        requireApiKey: boolean;
-      };
-      monitoring: {
-        logLevel: 'error' | 'warn' | 'info' | 'debug';
-        enableAuditLog: boolean;
-        enableSecurityAlerts: boolean;
-      };
+      trends: Array<{
+        date: string;
+        events: number;
+        severity: Record<string, number>;
+      }>;
+      topThreats: Array<{
+        type: string;
+        count: number;
+        trend: 'increasing' | 'decreasing' | 'stable';
+      }>;
+      recommendations: string[];
     }>
   > {
-    return apiClient.get(`${this.baseUrl}/security/settings`);
+    const queryString = apiClient.buildQueryString({ timeRange });
+    return apiClient.get(`${this.baseUrl}/security/report${queryString}`);
   }
 
-  async updateSecuritySettings(data: {
-    category: 'authentication' | 'passwords' | 'api' | 'monitoring';
-    settings: Record<string, any>;
-  }): Promise<ApiResponse<void>> {
-    return apiClient.put(`${this.baseUrl}/security/settings`, data);
-  }
-
-  // License & Billing (if applicable)
+  // License & Compliance
   async getLicenseInfo(): Promise<
     ApiResponse<{
       type: 'free' | 'pro' | 'enterprise';
       status: 'active' | 'expired' | 'suspended';
       expiresAt?: string;
       features: string[];
-      limits: {
-        maxUsers: number;
-        maxStorage: string;
-        maxBandwidth: string;
-      };
-      usage: {
-        currentUsers: number;
-        currentStorage: string;
-        currentBandwidth: string;
-      };
+      limits: Record<string, number>;
+      usage: Record<string, number>;
     }>
   > {
-    return apiClient.get(`${this.baseUrl}/license`);
+    return apiClient.get(`${this.baseUrl}/license/info`);
   }
 
-  // System Health Checks
-  async runHealthCheck(): Promise<
+  async updateLicense(licenseKey: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/license/update`, { licenseKey });
+  }
+
+  async getComplianceReport(): Promise<
     ApiResponse<{
-      overall: 'healthy' | 'warning' | 'critical';
-      services: {
-        database: 'healthy' | 'warning' | 'critical';
-        redis: 'healthy' | 'warning' | 'critical';
-        fileSystem: 'healthy' | 'warning' | 'critical';
-        externalAPIs: 'healthy' | 'warning' | 'critical';
+      gdpr: {
+        dataRetentionCompliance: boolean;
+        consentManagement: boolean;
+        dataPortability: boolean;
+        rightToErasure: boolean;
       };
-      details: Record<
-        string,
-        {
-          status: string;
-          responseTime: number;
-          lastChecked: string;
-          error?: string;
-        }
-      >;
+      security: {
+        encryptionAtRest: boolean;
+        encryptionInTransit: boolean;
+        accessControls: boolean;
+        auditLogging: boolean;
+      };
+      recommendations: string[];
+      lastAudit: string;
     }>
   > {
-    return apiClient.get(`${this.baseUrl}/health-check`);
+    return apiClient.get(`${this.baseUrl}/compliance/report`);
   }
 
-  // Feature Flags
+  // Feature Flags & Experiments
   async getFeatureFlags(): Promise<
     ApiResponse<
       Record<
         string,
         {
           enabled: boolean;
-          description: string;
           rolloutPercentage: number;
-          conditions?: Record<string, any>;
+          targetAudience?: string[];
+          description: string;
         }
       >
     >
@@ -391,13 +479,145 @@ class SuperAdminService {
 
   async updateFeatureFlag(
     flagName: string,
-    data: {
+    config: {
       enabled: boolean;
       rolloutPercentage?: number;
-      conditions?: Record<string, any>;
+      targetAudience?: string[];
     }
-  ): Promise<ApiResponse<void>> {
-    return apiClient.put(`${this.baseUrl}/feature-flags/${flagName}`, data);
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.put(`${this.baseUrl}/feature-flags/${flagName}`, config);
+  }
+
+  // System Updates & Deployment
+  async getSystemVersion(): Promise<
+    ApiResponse<{
+      current: string;
+      latest: string;
+      updateAvailable: boolean;
+      releaseNotes?: string;
+      securityUpdate: boolean;
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/system/version`);
+  }
+
+  async initiateSystemUpdate(data: {
+    version: string;
+    confirmPassword: string;
+    maintenanceWindow?: {
+      start: string;
+      duration: number;
+    };
+  }): Promise<
+    ApiResponse<{
+      updateId: string;
+      message: string;
+      estimatedDuration: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/system/update`, data);
+  }
+
+  async getUpdateStatus(updateId: string): Promise<
+    ApiResponse<{
+      status: 'pending' | 'in_progress' | 'completed' | 'failed';
+      progress: number;
+      currentStep: string;
+      estimatedTimeRemaining?: string;
+      error?: string;
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/system/update/${updateId}/status`);
+  }
+
+  // Global Settings
+  async getGlobalSettings(): Promise<
+    ApiResponse<{
+      branding: {
+        appName: string;
+        logo: string;
+        favicon: string;
+        primaryColor: string;
+        secondaryColor: string;
+      };
+      email: {
+        provider: string;
+        fromAddress: string;
+        fromName: string;
+        templates: Record<string, any>;
+      };
+      storage: {
+        provider: string;
+        maxFileSize: number;
+        allowedTypes: string[];
+      };
+      integrations: {
+        analytics: boolean;
+        socialLogin: string[];
+        paymentGateways: string[];
+      };
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/global-settings`);
+  }
+
+  async updateGlobalSettings(
+    settings: Record<string, any>
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.put(`${this.baseUrl}/global-settings`, settings);
+  }
+
+  // Emergency Actions
+  async forceLogoutAllUsers(reason: string): Promise<
+    ApiResponse<{
+      message: string;
+      affectedUsers: number;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/emergency/logout-all`, { reason });
+  }
+
+  async disableUserRegistration(
+    reason: string,
+    duration?: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/emergency/disable-registration`, {
+      reason,
+      duration,
+    });
+  }
+
+  async enableUserRegistration(): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/emergency/enable-registration`);
+  }
+
+  // Data Management
+  async initiateDataCleanup(data: {
+    type: 'inactive_users' | 'old_logs' | 'temp_files' | 'cache';
+    olderThan: string; // e.g., "30d", "1y"
+    dryRun?: boolean;
+  }): Promise<
+    ApiResponse<{
+      jobId: string;
+      estimatedRecords: number;
+      estimatedSize: string;
+      message: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/data/cleanup`, data);
+  }
+
+  async getDataCleanupStatus(jobId: string): Promise<
+    ApiResponse<{
+      status: 'pending' | 'running' | 'completed' | 'failed';
+      progress: number;
+      recordsProcessed: number;
+      recordsDeleted: number;
+      spaceFreed: string;
+      error?: string;
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/data/cleanup/${jobId}/status`);
   }
 }
 

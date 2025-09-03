@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { ApiResponse, ApiError } from '../../types/api';
+import type { ApiResponse, ApiError } from '../../types/api';
 import { config } from '../../config/environment';
 import { requestQueue } from '../../utils/requestQueue';
 
@@ -8,8 +8,8 @@ class ApiClient {
   private baseURL: string;
   private token: string | null = null;
 
-  constructor() {
-    this.baseURL = config.apiBaseUrl;
+  constructor(baseURL: string = config.apiBaseUrl) {
+    this.baseURL = baseURL;
 
     this.instance = axios.create({
       baseURL: this.baseURL,
@@ -19,16 +19,31 @@ class ApiClient {
       },
     });
 
+    // Remove any problematic headers that might cause CORS issues
+    delete this.instance.defaults.headers.common['accept-version'];
+    delete this.instance.defaults.headers.common['Accept-Version'];
+
     this.setupInterceptors();
     this.loadTokenFromStorage();
+
+    // Ensure token is set on instance creation
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      this.instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
   }
 
   private setupInterceptors(): void {
     // Request interceptor
     this.instance.interceptors.request.use(
       config => {
-        if (this.token) {
-          config.headers.Authorization = `Bearer ${this.token}`;
+        // Always check for token from storage
+        const token = this.token || localStorage.getItem('auth_token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+          if (!this.token) {
+            this.token = token; // Update instance token
+          }
         }
 
         // Add request timestamp for performance monitoring
@@ -137,6 +152,7 @@ class ApiClient {
     localStorage.setItem('auth_token', token);
     // Update default headers immediately
     this.instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    console.log('🔑 Token set in API client:', token.substring(0, 20) + '...');
   }
 
   public clearAuth(): void {
@@ -174,10 +190,11 @@ class ApiClient {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    // Ensure data is properly serialized
-    const serializedData = data && typeof data === 'object' ? data : data;
-    const response = await this.instance.post(url, serializedData, config);
-    return response.data;
+    return requestQueue.add(async () => {
+      const serializedData = data && typeof data === 'object' ? data : data;
+      const response = await this.instance.post(url, serializedData, config);
+      return response.data;
+    });
   }
 
   public async put<T>(
@@ -261,7 +278,7 @@ class ApiClient {
   // Health check method
   public async healthCheck(): Promise<boolean> {
     try {
-      await this.get('/health');
+      await this.get('/');
       return true;
     } catch {
       return false;
@@ -274,6 +291,10 @@ class ApiClient {
   }
 }
 
-// Export singleton instance
-export const apiClient = new ApiClient();
+// Single global API client instance for consistent token management
+export const apiClient = new ApiClient(config.apiBaseUrl);
+
+// Factory function for creating new instances if needed
+export const createApiClient = (baseURL?: string): ApiClient => new ApiClient(baseURL);
+
 export default apiClient;

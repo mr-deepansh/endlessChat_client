@@ -86,9 +86,10 @@ export interface ChangePasswordRequest {
   confirmNewPassword: string;
 }
 
-// User Types
+// User Types (with backward compatibility)
 export interface User {
   id: string;
+  _id?: string; // Backward compatibility
   username: string;
   email: string;
   firstName: string;
@@ -205,9 +206,10 @@ export interface LocationAnalytics {
   riskScore?: number;
 }
 
-// Post Types
+// Post Types (with backward compatibility)
 export interface Post {
   id: string;
+  _id?: string; // Backward compatibility
   content: string;
   author: User;
   type: 'text' | 'image' | 'video' | 'poll' | 'article' | 'repost';
@@ -283,9 +285,10 @@ export interface LocationData {
   };
 }
 
-// Comment Types
+// Comment Types (with backward compatibility)
 export interface Comment {
   id: string;
+  _id?: string; // Backward compatibility
   content: string;
   author: User;
   postId: string;
@@ -480,36 +483,3 @@ export interface AuditLog {
   success: boolean;
   errorMessage?: string;
 }
-
-// Export all types
-export type {
-  ApiResponse,
-  ApiError,
-  PaginatedResponse,
-  SearchParams,
-  LoginRequest,
-  RegisterRequest,
-  AuthResponse,
-  ChangePasswordRequest,
-  User,
-  NotificationPreferences,
-  ActivityLog,
-  LocationAnalytics,
-  Post,
-  MediaItem,
-  LocationData,
-  Comment,
-  Notification,
-  FollowStats,
-  Relationship,
-  AdminStats,
-  SecurityEvent,
-  AnalyticsData,
-  FileUploadResponse,
-  WebhookEvent,
-  RateLimitInfo,
-  CacheInfo,
-  HealthStatus,
-  FeatureFlag,
-  AuditLog,
-};

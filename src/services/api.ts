@@ -1,109 +1,9 @@
-// src/services/api.ts
-import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import { api, withErrorHandling } from './axiosInstance';
+import type { ApiResponse, User, Post, Comment, Notification } from './types';
 
-// Base API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v2';
-
-// Create axios instance
-export const api: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Request interceptor for auth token
-api.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  error => Promise.reject(error)
-);
-
-// Response interceptor for error handling
-api.interceptors.response.use(
-  response => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Error handler utility
-export const withErrorHandling = async <T>(
-  apiCall: () => Promise<AxiosResponse<T>>,
-  errorMessage: string = 'An error occurred'
-): Promise<AxiosResponse<T>> => {
-  try {
-    return await apiCall();
-  } catch (error: any) {
-    console.error(errorMessage, error);
-    throw new Error(error.response?.data?.message || errorMessage);
-  }
-};
-
-// Types
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  message?: string;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-}
-
-export interface User {
-  _id: string;
-  username: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: 'user' | 'admin' | 'super_admin';
-  bio?: string;
-  avatar?: string;
-  isActive: boolean;
-  followers?: string[];
-  following?: string[];
-  followerCount?: number;
-  followingCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Post {
-  _id: string;
-  title: string;
-  content: string;
-  author: User;
-  likes: string[];
-  likeCount: number;
-  comments: Comment[];
-  commentCount: number;
-  isVisible: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Comment {
-  _id: string;
-  content: string;
-  author: User;
-  post: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// Re-export for backward compatibility
+export { api, withErrorHandling };
+export type * from './types';
 
 // Authentication Services
 export const authService = {
@@ -146,6 +46,43 @@ export const authService = {
     withErrorHandling(() => api.post('/users/upload-avatar', avatarData)),
 };
 
+// Post Services
+export const postService = {
+  getAllPosts: (params?: { page?: number; limit?: number; sort?: 'recent' | 'popular' }) =>
+    withErrorHandling(() => api.get<ApiResponse<Post[]>>('/posts', { params })),
+
+  getPostById: (postId: string) =>
+    withErrorHandling(() => api.get<ApiResponse<Post>>(`/posts/${postId}`)),
+
+  createPost: (postData: { title: string; content: string }) =>
+    withErrorHandling(() => api.post<ApiResponse<Post>>('/posts', postData)),
+
+  updatePost: (postId: string, postData: { title?: string; content?: string }) =>
+    withErrorHandling(() => api.put<ApiResponse<Post>>(`/posts/${postId}`, postData)),
+
+  deletePost: (postId: string) => withErrorHandling(() => api.delete(`/posts/${postId}`)),
+
+  likePost: (postId: string) => withErrorHandling(() => api.post(`/posts/${postId}/like`)),
+
+  unlikePost: (postId: string) => withErrorHandling(() => api.delete(`/posts/${postId}/like`)),
+
+  getPostComments: (postId: string, params?: { page?: number; limit?: number }) =>
+    withErrorHandling(() =>
+      api.get<ApiResponse<Comment[]>>(`/posts/${postId}/comments`, { params })
+    ),
+
+  addComment: (postId: string, commentData: { content: string }) =>
+    withErrorHandling(() =>
+      api.post<ApiResponse<Comment>>(`/posts/${postId}/comments`, commentData)
+    ),
+
+  updateComment: (postId: string, commentId: string, commentData: { content: string }) =>
+    withErrorHandling(() => api.put(`/posts/${postId}/comments/${commentId}`, commentData)),
+
+  deleteComment: (postId: string, commentId: string) =>
+    withErrorHandling(() => api.delete(`/posts/${postId}/comments/${commentId}`)),
+};
+
 // User Services
 export const userService = {
   getAllUsers: (params?: {
@@ -168,22 +105,10 @@ export const userService = {
 
   unfollowUser: (userId: string) => withErrorHandling(() => api.post(`/users/unfollow/${userId}`)),
 
-  getFollowers: (
-    userId: string,
-    params?: {
-      limit?: number;
-      page?: number;
-    }
-  ) =>
+  getFollowers: (userId: string, params?: { limit?: number; page?: number }) =>
     withErrorHandling(() => api.get<ApiResponse<User[]>>(`/users/followers/${userId}`, { params })),
 
-  getFollowing: (
-    userId: string,
-    params?: {
-      limit?: number;
-      page?: number;
-    }
-  ) =>
+  getFollowing: (userId: string, params?: { limit?: number; page?: number }) =>
     withErrorHandling(() => api.get<ApiResponse<User[]>>(`/users/following/${userId}`, { params })),
 
   getFeed: (params?: { limit?: number; page?: number; sort?: 'recent' | 'popular' }) =>
@@ -192,12 +117,10 @@ export const userService = {
 
 // Admin Services
 export const adminService = {
-  // Stats & Analytics
   getStats: () => withErrorHandling(() => api.get<ApiResponse>('/admin/stats')),
   getLiveStats: () => withErrorHandling(() => api.get<ApiResponse>('/admin/stats/live')),
   getDashboard: () => withErrorHandling(() => api.get<ApiResponse>('/admin/dashboard')),
 
-  // User Management
   getAllUsers: () => withErrorHandling(() => api.get<ApiResponse<User[]>>('/admin/users')),
   getUserById: (userId: string) =>
     withErrorHandling(() => api.get<ApiResponse<User>>(`/admin/users/${userId}`)),
@@ -210,7 +133,6 @@ export const adminService = {
   activateUser: (userId: string) =>
     withErrorHandling(() => api.patch(`/admin/users/${userId}/activate`)),
 
-  // Content Management
   getAllPosts: (params?: { page?: number; limit?: number; status?: string }) =>
     withErrorHandling(() => api.get<ApiResponse<Post[]>>('/admin/content/posts', { params })),
 
@@ -219,7 +141,6 @@ export const adminService = {
       api.patch(`/admin/content/posts/${postId}/toggle-visibility`, { action, reason })
     ),
 
-  // Security & Moderation
   getSuspiciousAccounts: (params?: { page?: number; limit?: number; riskLevel?: string }) =>
     withErrorHandling(() => api.get('/admin/security/suspicious-accounts', { params })),
 
@@ -236,7 +157,6 @@ export const adminService = {
 
   getThreatDetection: () => withErrorHandling(() => api.get('/admin/security/threat-detection')),
 
-  // Analytics
   getOverviewAnalytics: (params?: { timeRange?: string }) =>
     withErrorHandling(() => api.get('/admin/analytics/overview', { params })),
 
@@ -252,12 +172,10 @@ export const adminService = {
   getEngagementMetrics: (params?: { timeRange?: string; metric?: string }) =>
     withErrorHandling(() => api.get('/admin/analytics/engagement/metrics', { params })),
 
-  // Configuration
   getAppSettings: () => withErrorHandling(() => api.get('/admin/config/app-settings')),
   updateAppSettings: (settings: { category: string; settings: Record<string, any> }) =>
     withErrorHandling(() => api.put('/admin/config/app-settings', settings)),
 
-  // Notifications
   getNotificationTemplates: (params?: { type?: string }) =>
     withErrorHandling(() => api.get('/admin/notifications/templates', { params })),
 
@@ -266,11 +184,17 @@ export const adminService = {
     template: string;
     channels: string[];
     priority: string;
-    customMessage?: {
-      title: string;
-      content: string;
-    };
+    customMessage?: { title: string; content: string };
   }) => withErrorHandling(() => api.post('/admin/notifications/send-bulk', notificationData)),
+
+  getAllAdmins: () => withErrorHandling(() => api.get<ApiResponse<User[]>>('/admin/admins')),
+  getAdminById: (adminId: string) =>
+    withErrorHandling(() => api.get<ApiResponse<User>>(`/admin/admins/${adminId}`)),
+
+  getSessionAnalytics: (params?: { timeRange?: string }) =>
+    withErrorHandling(() => api.get('/admin/sessions/analytics', { params })),
+  getAdminSessions: (adminId: string) =>
+    withErrorHandling(() => api.get(`/admin/sessions/${adminId}`)),
 };
 
 // Super Admin Services
@@ -281,23 +205,16 @@ export const superAdminService = {
     password: string;
     role: string;
     permissions: string[];
-  }) => withErrorHandling(() => api.post('/admin/super-admin/create-admin', adminData)),
+  }) =>
+    withErrorHandling(() =>
+      api.post<ApiResponse<User>>('/admin/super-admin/create-admin', adminData)
+    ),
 
-  deleteAdmin: (
-    adminId: string,
-    data: {
-      confirmPassword: string;
-      reason: string;
-    }
-  ) => withErrorHandling(() => api.delete(`/admin/super-admin/delete-admin/${adminId}`, { data })),
+  deleteAdmin: (adminId: string, data: { confirmPassword: string; reason: string }) =>
+    withErrorHandling(() => api.delete(`/admin/super-admin/delete-admin/${adminId}`, { data })),
 
-  changeUserRole: (
-    userId: string,
-    roleData: {
-      newRole: string;
-      reason: string;
-    }
-  ) => withErrorHandling(() => api.put(`/admin/super-admin/change-role/${userId}`, roleData)),
+  changeUserRole: (userId: string, roleData: { newRole: string; reason: string }) =>
+    withErrorHandling(() => api.put(`/admin/super-admin/change-role/${userId}`, roleData)),
 
   getSystemConfig: () => withErrorHandling(() => api.get('/admin/super-admin/system-config')),
 
@@ -315,7 +232,7 @@ export const superAdminService = {
   }) => withErrorHandling(() => api.post('/admin/super-admin/emergency-lockdown', lockdownData)),
 };
 
-// Activity & Location Services
+// Activity Services
 export const activityService = {
   getActivityStats: (params?: { days?: number }) =>
     withErrorHandling(() => api.get('/auth/activity/stats', { params })),
@@ -359,6 +276,22 @@ export const automationService = {
     trafficSplit: number[];
     duration: number;
   }) => withErrorHandling(() => api.post('/admin/experiments', experimentData)),
+};
+
+// Notification Services
+export const notificationService = {
+  getNotifications: (params?: { page?: number; limit?: number; type?: string; read?: boolean }) =>
+    withErrorHandling(() => api.get<ApiResponse<Notification[]>>('/notifications', { params })),
+
+  markAsRead: (notificationId: string) =>
+    withErrorHandling(() => api.patch(`/notifications/${notificationId}/read`)),
+
+  markAllAsRead: () => withErrorHandling(() => api.patch('/notifications/mark-all-read')),
+
+  deleteNotification: (notificationId: string) =>
+    withErrorHandling(() => api.delete(`/notifications/${notificationId}`)),
+
+  getUnreadCount: () => withErrorHandling(() => api.get('/notifications/unread-count')),
 };
 
 // Health Check

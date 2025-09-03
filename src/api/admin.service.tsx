@@ -1,172 +1,7 @@
-// 📁 PROJECT STRUCTURE
-/*
-admin-panel-microservice/
-├── 🎯 FRONTEND (React + TypeScript + Vite)
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/                     # Reusable UI components
-│   │   │   ├── forms/                  # Form components
-│   │   │   ├── tables/                 # Data table components
-│   │   │   ├── charts/                 # Analytics charts
-│   │   │   └── layout/                 # Layout components
-│   │   ├── pages/
-│   │   │   ├── analytics/              # Analytics pages
-│   │   │   ├── users/                  # User management
-│   │   │   ├── content/                # Content management
-│   │   │   ├── security/               # Security & moderation
-│   │   │   ├── settings/               # System configuration
-│   │   │   ├── monitoring/             # Performance monitoring
-│   │   │   └── communication/          # Notifications & announcements
-│   │   ├── services/
-│   │   │   ├── api/                    # API service layer
-│   │   │   ├── auth/                   # Authentication services
-│   │   │   └── utils/                  # Utility services
-│   │   ├── hooks/
-│   │   │   ├── useAuth.ts              # Authentication hook
-│   │   │   ├── useApi.ts               # API hooks
-│   │   │   └── usePermissions.ts       # Permission management
-│   │   ├── types/
-│   │   │   ├── api.types.ts            # API types
-│   │   │   ├── user.types.ts           # User types
-│   │   │   └── admin.types.ts          # Admin types
-│   │   ├── config/
-│   │   │   ├── api-routes.ts           # Route definitions
-│   │   │   ├── constants.ts            # App constants
-│   │   │   └── permissions.ts          # Permission definitions
-│   │   ├── store/
-│   │   │   ├── slices/                 # Redux slices
-│   │   │   └── store.ts                # Store configuration
-│   │   └── utils/
-│   │       ├── formatters.ts           # Data formatters
-│   │       ├── validators.ts           # Form validators
-│   │       └── helpers.ts              # Helper functions
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── tsconfig.json
-│
-├── 🚀 BACKEND (Node.js + Express + TypeScript)
-│   ├── src/
-│   │   ├── controllers/
-│   │   │   ├── analytics.controller.ts
-│   │   │   ├── users.controller.ts
-│   │   │   ├── content.controller.ts
-│   │   │   ├── security.controller.ts
-│   │   │   ├── system.controller.ts
-│   │   │   └── monitoring.controller.ts
-│   │   ├── services/
-│   │   │   ├── analytics.service.ts
-│   │   │   ├── user.service.ts
-│   │   │   ├── content.service.ts
-│   │   │   ├── security.service.ts
-│   │   │   └── notification.service.ts
-│   │   ├── models/
-│   │   │   ├── User.model.ts
-│   │   │   ├── Admin.model.ts
-│   │   │   ├── Content.model.ts
-│   │   │   └── AuditLog.model.ts
-│   │   ├── routes/
-│   │   │   ├── admin.routes.ts
-│   │   │   ├── analytics.routes.ts
-│   │   │   ├── users.routes.ts
-│   │   │   ├── content.routes.ts
-│   │   │   └── security.routes.ts
-│   │   ├── middleware/
-│   │   │   ├── auth.middleware.ts
-│   │   │   ├── permissions.middleware.ts
-│   │   │   ├── validation.middleware.ts
-│   │   │   └── rate-limit.middleware.ts
-│   │   ├── config/
-│   │   │   ├── database.ts
-│   │   │   ├── redis.ts
-│   │   │   └── env.ts
-│   │   └── utils/
-│   │       ├── logger.ts
-│   │       ├── errors.ts
-│   │       └── helpers.ts
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── 🗄️ DATABASE
-    ├── migrations/
-    ├── seeders/
-    └── backup/
-*/
-
-// =============================================================================
-// 🎯 FRONTEND SERVICE LAYER (React Query + Axios)
-// =============================================================================
-
 // services/api/admin.service.ts
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { API_BASE_URL, ADMIN_API_ROUTES, buildApiUrl } from '../../config/api-routes';
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  message?: string;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface ApiError {
-  success: false;
-  message: string;
-  errors?: Record<string, string[]>;
-  statusCode: number;
-}
+import { api, withErrorHandling, ApiResponse } from '../services/api';
 
 class AdminApiService {
-  private api: AxiosInstance;
-
-  constructor() {
-    this.api = axios.create({
-      baseURL: API_BASE_URL,
-      timeout: 30000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    this.setupInterceptors();
-  }
-
-  private setupInterceptors() {
-    // Request interceptor - Add auth token
-    this.api.interceptors.request.use(
-      config => {
-        const token = localStorage.getItem('admin_token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      error => Promise.reject(error)
-    );
-
-    // Response interceptor - Handle errors globally
-    this.api.interceptors.response.use(
-      (response: AxiosResponse<ApiResponse>) => response,
-      error => {
-        if (error.response?.status === 401) {
-          // Handle unauthorized - redirect to login
-          localStorage.removeItem('admin_token');
-          window.location.href = '/admin/login';
-        }
-
-        if (error.response?.status === 403) {
-          // Handle forbidden - show permission error
-          console.error('Access denied:', error.response.data.message);
-        }
-
-        return Promise.reject(error);
-      }
-    );
-  }
-
   // =============================================================================
   // 📊 ANALYTICS METHODS
   // =============================================================================
@@ -174,25 +9,20 @@ class AdminApiService {
     startDate?: string;
     endDate?: string;
     granularity?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/analytics/overview', { params });
-    return response.data;
+  }) {
+    return withErrorHandling(() => api.get<ApiResponse>('/admin/analytics/overview', { params }));
   }
 
-  async getUserGrowthAnalytics(params?: {
-    period?: string;
-    segment?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/analytics/users/growth', { params });
-    return response.data;
+  async getUserGrowthAnalytics(params?: { period?: string; segment?: string }) {
+    return withErrorHandling(() =>
+      api.get<ApiResponse>('/admin/analytics/users/growth', { params })
+    );
   }
 
-  async getUserRetentionMetrics(params?: {
-    cohort?: string;
-    period?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/analytics/users/retention', { params });
-    return response.data;
+  async getUserRetentionMetrics(params?: { cohort?: string; period?: string }) {
+    return withErrorHandling(() =>
+      api.get<ApiResponse>('/admin/analytics/users/retention', { params })
+    );
   }
 
   async exportReport(params: {
@@ -200,12 +30,13 @@ class AdminApiService {
     format: 'csv' | 'xlsx' | 'pdf';
     startDate?: string;
     endDate?: string;
-  }): Promise<Blob> {
-    const response = await this.api.get('/admin/reports/export', {
-      params,
-      responseType: 'blob',
-    });
-    return response.data;
+  }) {
+    return withErrorHandling(() =>
+      api.get('/admin/reports/export', {
+        params,
+        responseType: 'blob',
+      })
+    );
   }
 
   // =============================================================================
@@ -217,14 +48,12 @@ class AdminApiService {
     search?: string;
     role?: string;
     status?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/users', { params });
-    return response.data;
+  }) {
+    return withErrorHandling(() => api.get<ApiResponse>('/admin/users', { params }));
   }
 
-  async getUserDetails(userId: string): Promise<ApiResponse> {
-    const response = await this.api.get(buildApiUrl('/admin/users/:id', { id: userId }));
-    return response.data;
+  async getUserDetails(userId: string) {
+    return withErrorHandling(() => api.get<ApiResponse>(`/admin/users/${userId}`));
   }
 
   async updateUser(
@@ -235,9 +64,8 @@ class AdminApiService {
       role?: string;
       status?: string;
     }
-  ): Promise<ApiResponse> {
-    const response = await this.api.put(buildApiUrl('/admin/users/:id', { id: userId }), data);
-    return response.data;
+  ) {
+    return withErrorHandling(() => api.put<ApiResponse>(`/admin/users/${userId}`, data));
   }
 
   async suspendUser(
@@ -246,22 +74,16 @@ class AdminApiService {
       reason: string;
       duration?: number;
     }
-  ): Promise<ApiResponse> {
-    const response = await this.api.patch(
-      buildApiUrl('/admin/users/:id/suspend', { id: userId }),
-      data
-    );
-    return response.data;
+  ) {
+    return withErrorHandling(() => api.patch<ApiResponse>(`/admin/users/${userId}/suspend`, data));
   }
 
-  async activateUser(userId: string): Promise<ApiResponse> {
-    const response = await this.api.patch(buildApiUrl('/admin/users/:id/activate', { id: userId }));
-    return response.data;
+  async activateUser(userId: string) {
+    return withErrorHandling(() => api.patch<ApiResponse>(`/admin/users/${userId}/activate`));
   }
 
-  async deleteUser(userId: string): Promise<ApiResponse> {
-    const response = await this.api.delete(buildApiUrl('/admin/users/:id', { id: userId }));
-    return response.data;
+  async deleteUser(userId: string) {
+    return withErrorHandling(() => api.delete<ApiResponse>(`/admin/users/${userId}`));
   }
 
   async getUserActivityLog(
@@ -271,69 +93,51 @@ class AdminApiService {
       endDate?: string;
       type?: string;
     }
-  ): Promise<ApiResponse> {
-    const response = await this.api.get(
-      buildApiUrl('/admin/users/:id/activity-log', { id: userId }),
-      { params }
+  ) {
+    return withErrorHandling(() =>
+      api.get<ApiResponse>(`/admin/users/${userId}/activity-log`, { params })
     );
-    return response.data;
   }
 
   async bulkUserActions(data: {
     userIds: string[];
     action: 'suspend' | 'activate' | 'delete' | 'update_role';
     params?: Record<string, any>;
-  }): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/users/bulk-actions', data);
-    return response.data;
+  }) {
+    return withErrorHandling(() => api.post<ApiResponse>('/admin/users/bulk-actions', data));
   }
 
   // =============================================================================
   // 🛡️ SECURITY & MODERATION METHODS
   // =============================================================================
-  async getSuspiciousAccounts(params?: {
-    severity?: string;
-    status?: string;
-    limit?: number;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/security/suspicious-accounts', { params });
-    return response.data;
+  async getSuspiciousAccounts(params?: { severity?: string; status?: string; limit?: number }) {
+    return withErrorHandling(() =>
+      api.get<ApiResponse>('/admin/security/suspicious-accounts', { params })
+    );
   }
 
-  async getLoginAttempts(params?: {
-    ip?: string;
-    user_id?: string;
-    time_range?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/security/login-attempts', { params });
-    return response.data;
+  async getLoginAttempts(params?: { ip?: string; user_id?: string; time_range?: string }) {
+    return withErrorHandling(() =>
+      api.get<ApiResponse>('/admin/security/login-attempts', { params })
+    );
   }
 
-  async blockIpAddress(data: {
-    ip: string;
-    reason: string;
-    duration?: number;
-  }): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/security/block-ip', data);
-    return response.data;
+  async blockIpAddress(data: { ip: string; reason: string; duration?: number }) {
+    return withErrorHandling(() => api.post<ApiResponse>('/admin/security/block-ip', data));
   }
 
-  async getReportedContent(params?: {
-    status?: string;
-    type?: string;
-    severity?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/moderation/reported-content', { params });
-    return response.data;
+  async getReportedContent(params?: { status?: string; type?: string; severity?: string }) {
+    return withErrorHandling(() =>
+      api.get<ApiResponse>('/admin/moderation/reported-content', { params })
+    );
   }
 
   async reviewContent(data: {
     contentId: string;
     action: 'approve' | 'reject' | 'escalate';
     reason?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/moderation/review-content', data);
-    return response.data;
+  }) {
+    return withErrorHandling(() => api.post<ApiResponse>('/admin/moderation/review-content', data));
   }
 
   // =============================================================================
@@ -345,57 +149,51 @@ class AdminApiService {
     category?: string;
     sort?: string;
     page?: number;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/content/posts', { params });
-    return response.data;
+  }) {
+    return withErrorHandling(() => api.get<ApiResponse>('/admin/content/posts', { params }));
   }
 
-  async getReportedPosts(): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/content/posts/reported');
-    return response.data;
+  async getReportedPosts() {
+    return withErrorHandling(() => api.get<ApiResponse>('/admin/content/posts/reported'));
   }
 
-  async getTrendingPosts(params?: { timeframe?: string; limit?: number }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/content/posts/trending', { params });
-    return response.data;
-  }
-
-  async deletePost(postId: string): Promise<ApiResponse> {
-    const response = await this.api.delete(buildApiUrl('/admin/content/posts/:id', { id: postId }));
-    return response.data;
-  }
-
-  async hidePost(postId: string, reason: string): Promise<ApiResponse> {
-    const response = await this.api.patch(
-      buildApiUrl('/admin/content/posts/:id/hide', { id: postId }),
-      { reason }
+  async getTrendingPosts(params?: { timeframe?: string; limit?: number }) {
+    return withErrorHandling(() =>
+      api.get<ApiResponse>('/admin/content/posts/trending', { params })
     );
-    return response.data;
   }
 
-  async featurePost(postId: string): Promise<ApiResponse> {
-    const response = await this.api.patch(
-      buildApiUrl('/admin/content/posts/:id/feature', { id: postId })
+  async deletePost(postId: string) {
+    return withErrorHandling(() => api.delete<ApiResponse>(`/admin/content/posts/${postId}`));
+  }
+
+  async hidePost(postId: string, reason: string) {
+    return withErrorHandling(() =>
+      api.patch<ApiResponse>(`/admin/content/posts/${postId}/hide`, { reason })
     );
-    return response.data;
+  }
+
+  async featurePost(postId: string) {
+    return withErrorHandling(() =>
+      api.patch<ApiResponse>(`/admin/content/posts/${postId}/feature`)
+    );
   }
 
   // =============================================================================
   // 🎛️ SYSTEM CONFIGURATION METHODS
   // =============================================================================
-  async getAppSettings(): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/config/app-settings');
-    return response.data;
+  async getAppSettings() {
+    return withErrorHandling(() => api.get<ApiResponse>('/admin/config/app-settings'));
   }
 
-  async updateAppSettings(settings: Record<string, any>): Promise<ApiResponse> {
-    const response = await this.api.put('/admin/config/app-settings', { settings });
-    return response.data;
+  async updateAppSettings(settings: Record<string, any>) {
+    return withErrorHandling(() =>
+      api.put<ApiResponse>('/admin/config/app-settings', { settings })
+    );
   }
 
-  async getFeatureFlags(): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/config/feature-flags');
-    return response.data;
+  async getFeatureFlags() {
+    return withErrorHandling(() => api.get<ApiResponse>('/admin/config/feature-flags'));
   }
 
   async toggleFeatureFlag(
@@ -404,95 +202,16 @@ class AdminApiService {
       enabled: boolean;
       config?: Record<string, any>;
     }
-  ): Promise<ApiResponse> {
-    const response = await this.api.patch(
-      buildApiUrl('/admin/config/feature-flags/:flag', { flag }),
-      data
+  ) {
+    return withErrorHandling(() =>
+      api.put<ApiResponse>(`/admin/config/feature-flags/${flag}`, data)
     );
-    return response.data;
   }
 
-  async enableMaintenanceMode(data: {
-    message: string;
-    estimated_duration?: number;
-  }): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/config/maintenance-mode/enable', data);
-    return response.data;
-  }
-
-  async disableMaintenanceMode(): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/config/maintenance-mode/disable');
-    return response.data;
-  }
-
-  // =============================================================================
-  // 📢 COMMUNICATION METHODS
-  // =============================================================================
-  async getNotificationTemplates(): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/notifications/templates');
-    return response.data;
-  }
-
-  async createNotificationTemplate(data: {
-    name: string;
-    subject: string;
-    content: string;
-    type: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/notifications/templates', data);
-    return response.data;
-  }
-
-  async sendBulkNotification(data: {
-    recipients: string[] | 'all';
-    template: string;
-    schedule?: Date;
-  }): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/notifications/send-bulk', data);
-    return response.data;
-  }
-
-  async createAnnouncement(data: {
-    title: string;
-    message: string;
-    type: 'info' | 'warning' | 'success' | 'error';
-    target_audience: string[];
-  }): Promise<ApiResponse> {
-    const response = await this.api.post('/admin/announcements/create', data);
-    return response.data;
-  }
-
-  // =============================================================================
-  // 📈 MONITORING METHODS
-  // =============================================================================
-  async getServerHealth(): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/monitoring/server-health');
-    return response.data;
-  }
-
-  async getDatabaseStats(): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/monitoring/database-stats');
-    return response.data;
-  }
-
-  async getApiPerformance(params?: {
-    endpoint?: string;
-    time_range?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/monitoring/api-performance', { params });
-    return response.data;
-  }
-
-  async getErrorLogs(params?: {
-    level?: string;
-    service?: string;
-    time_range?: string;
-  }): Promise<ApiResponse> {
-    const response = await this.api.get('/admin/monitoring/error-logs', { params });
-    return response.data;
+  async getSystemHealth() {
+    return withErrorHandling(() => api.get<ApiResponse>('/admin/system/health'));
   }
 }
 
-// Create singleton instance
 export const adminApiService = new AdminApiService();
 export default adminApiService;

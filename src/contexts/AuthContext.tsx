@@ -201,7 +201,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: 'You have been successfully logged out.',
       });
 
-      navigate('/login');
+      // Redirect to home page after logout
+      navigate('/');
     }
   };
 

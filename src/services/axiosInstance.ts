@@ -38,21 +38,11 @@ api.interceptors.response.use(
 export const withErrorHandling = async <T>(
   apiCall: () => Promise<AxiosResponse<T>>,
   errorMessage: string = 'An error occurred'
-): Promise<T> => {
+): Promise<AxiosResponse<T>> => {
   try {
-    const response = await apiCall();
-    return response.data;
+    return await apiCall();
   } catch (error: any) {
     console.error(errorMessage, error);
-    // Return fallback data for notifications
-    if (errorMessage.includes('notification')) {
-      return [] as T;
-    }
-    // Return error structure for other services
-    return {
-      success: false,
-      message: error.response?.data?.message || errorMessage,
-      data: null,
-    } as T;
+    throw new Error(error.response?.data?.message || errorMessage);
   }
 };

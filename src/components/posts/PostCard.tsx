@@ -14,6 +14,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -35,6 +36,8 @@ import {
   BarChart3,
   Calendar,
   FileText,
+  MessageSquare,
+  Send,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -101,7 +104,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const [selectedPollOption, setSelectedPollOption] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
 
-  const isOwnPost = currentUserId === post.author._id;
+  const isOwnPost = currentUserId === post.author?._id;
 
   const handleLike = () => {
     const newIsLiked = !isLiked;
@@ -158,16 +161,18 @@ const PostCard: React.FC<PostCardProps> = ({
     <div className="mt-3 p-3 border border-border/50 rounded-lg bg-muted/20">
       <div className="flex items-center space-x-2 mb-2">
         <Avatar className="w-6 h-6">
-          <AvatarImage src={quotedPost.author.avatar} alt={quotedPost.author.username} />
+          <AvatarImage src={quotedPost.author?.avatar} alt={quotedPost.author?.username} />
           <AvatarFallback className="text-xs">
-            {quotedPost.author.firstName[0]}
-            {quotedPost.author.lastName[0]}
+            {quotedPost.author?.firstName?.[0] || 'U'}
+            {quotedPost.author?.lastName?.[0] || ''}
           </AvatarFallback>
         </Avatar>
         <span className="text-sm font-medium">
-          {quotedPost.author.firstName} {quotedPost.author.lastName}
+          {quotedPost.author?.firstName || 'Unknown'} {quotedPost.author?.lastName || 'User'}
         </span>
-        <span className="text-xs text-muted-foreground">@{quotedPost.author.username}</span>
+        <span className="text-xs text-muted-foreground">
+          @{quotedPost.author?.username || 'unknown'}
+        </span>
       </div>
       <p className="text-sm text-foreground/80">{quotedPost.content}</p>
     </div>
@@ -235,18 +240,17 @@ const PostCard: React.FC<PostCardProps> = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <Avatar className="w-12 h-12 ring-2 ring-primary/20">
-              <AvatarImage src={post.author.avatar} alt={post.author.username} />
+              <AvatarImage src={post.author?.avatar} alt={post.author?.username} />
               <AvatarFallback className="bg-gradient-primary text-white">
-                {post.author.firstName[0]}
-                {post.author.lastName[0]}
+                {post.author?.firstName?.[0] || 'U'}
+                {post.author?.lastName?.[0] || ''}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <div className="flex items-center space-x-2">
                 <span className="font-semibold text-foreground">
-                  {post.author.firstName} {post.author.lastName}
+                  {post.author?.firstName || 'Unknown'} {post.author?.lastName || 'User'}
                 </span>
-                <span className="text-muted-foreground text-sm">@{post.author.username}</span>
                 <span className="text-muted-foreground text-sm">•</span>
                 <span className="text-muted-foreground text-sm">
                   {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
@@ -258,6 +262,9 @@ const PostCard: React.FC<PostCardProps> = ({
                   </Badge>
                 )}
               </div>
+              <span className="text-muted-foreground text-sm mt-0.5">
+                @{post.author?.username || 'unknown'}
+              </span>
               {post.location && (
                 <div className="flex items-center space-x-1 mt-1">
                   <MapPin className="w-3 h-3 text-muted-foreground" />
@@ -368,6 +375,9 @@ const PostCard: React.FC<PostCardProps> = ({
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Quote Repost</DialogTitle>
+                      <DialogDescription>
+                        Add your thoughts to this post and share it with your followers.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <Textarea
@@ -402,15 +412,57 @@ const PostCard: React.FC<PostCardProps> = ({
               <span className="text-sm">{formatNumber(likesCount)}</span>
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onShare?.(post._id)}
-              className="flex items-center space-x-2 text-muted-foreground hover:text-accent hover:bg-accent/10 transition-all duration-200 hover:scale-105"
-            >
-              <Share className="w-4 h-4" />
-              <span className="text-sm">{formatNumber(post.sharesCount)}</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center space-x-2 text-muted-foreground hover:text-accent hover:bg-accent/10 transition-all duration-200 hover:scale-105"
+                >
+                  <Share className="w-4 h-4" />
+                  <span className="text-sm">{formatNumber(post.sharesCount)}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => onShare?.(post._id, 'whatsapp')}>
+                  <MessageSquare className="w-4 h-4 mr-2 text-green-600" />
+                  WhatsApp
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onShare?.(post._id, 'x')}>
+                  <span className="w-4 h-4 mr-2 text-black font-bold text-xs flex items-center justify-center">
+                    𝕏
+                  </span>
+                  X (Twitter)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onShare?.(post._id, 'threads')}>
+                  <MessageSquare className="w-4 h-4 mr-2 text-black" />
+                  Threads
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onShare?.(post._id, 'linkedin')}>
+                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold text-xs flex items-center justify-center">
+                    in
+                  </span>
+                  LinkedIn
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onShare?.(post._id, 'facebook')}>
+                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold text-xs flex items-center justify-center">
+                    f
+                  </span>
+                  Facebook
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onShare?.(post._id, 'instagram')}>
+                  <span className="w-4 h-4 mr-2 text-pink-600 font-bold text-xs flex items-center justify-center">
+                    📷
+                  </span>
+                  Instagram
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onShare?.(post._id)}>
+                  <Send className="w-4 h-4 mr-2" />
+                  Copy Link
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <div className="flex items-center space-x-1 text-xs text-muted-foreground ml-2">
               <Eye className="w-3 h-3" />

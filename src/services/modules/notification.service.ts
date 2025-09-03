@@ -1,178 +1,312 @@
-import { apiClient } from '../core/apiClient';
-import { ApiResponse, User, BaseQueryParams } from '../../types/api';
+import { notificationsApi as apiClient } from '../core/serviceClients';
+import type { ApiResponse, PaginatedResponse, SearchParams } from '../../types/api';
 
-interface Notification {
-  _id: string;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'repost' | 'system';
+export interface Notification {
+  id: string;
+  type: 'like' | 'comment' | 'follow' | 'mention' | 'repost' | 'system' | 'security';
   title: string;
   message: string;
   data?: Record<string, any>;
-  sender?: User;
+  actor?: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  target?: {
+    type: 'post' | 'comment' | 'user';
+    id: string;
+    title?: string;
+  };
   isRead: boolean;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  channels: Array<'in-app' | 'email' | 'push' | 'sms'>;
   createdAt: string;
   readAt?: string;
+  expiresAt?: string;
 }
 
-interface NotificationPreferences {
+export interface NotificationPreferences {
   email: {
-    likes: boolean;
-    comments: boolean;
-    follows: boolean;
-    mentions: boolean;
-    reposts: boolean;
-    system: boolean;
+    enabled: boolean;
+    frequency: 'immediate' | 'hourly' | 'daily' | 'weekly';
+    types: {
+      likes: boolean;
+      comments: boolean;
+      follows: boolean;
+      mentions: boolean;
+      reposts: boolean;
+      system: boolean;
+      marketing: boolean;
+    };
   };
   push: {
-    likes: boolean;
-    comments: boolean;
-    follows: boolean;
-    mentions: boolean;
-    reposts: boolean;
-    system: boolean;
+    enabled: boolean;
+    types: {
+      likes: boolean;
+      comments: boolean;
+      follows: boolean;
+      mentions: boolean;
+      reposts: boolean;
+      system: boolean;
+    };
   };
   inApp: {
-    likes: boolean;
-    comments: boolean;
-    follows: boolean;
-    mentions: boolean;
-    reposts: boolean;
-    system: boolean;
+    enabled: boolean;
+    sound: boolean;
+    desktop: boolean;
+    types: {
+      likes: boolean;
+      comments: boolean;
+      follows: boolean;
+      mentions: boolean;
+      reposts: boolean;
+      system: boolean;
+    };
   };
+  sms: {
+    enabled: boolean;
+    types: {
+      security: boolean;
+      urgent: boolean;
+    };
+  };
+  quietHours: {
+    enabled: boolean;
+    start: string; // HH:mm format
+    end: string; // HH:mm format
+    timezone: string;
+  };
+}
+
+export interface NotificationStats {
+  total: number;
+  unread: number;
+  byType: Record<string, number>;
+  byPriority: Record<string, number>;
+  todayCount: number;
+  weekCount: number;
 }
 
 class NotificationService {
   private readonly baseUrl = '/notifications';
+  private eventSource: EventSource | null = null;
+  private listeners: Set<(notification: Notification) => void> = new Set();
 
-  // Get Notifications
+  // Notification Management
   async getNotifications(
     params: {
+      type?: 'all' | 'following' | 'you' | 'system';
+      status?: 'all' | 'unread' | 'read';
+      priority?: 'low' | 'normal' | 'high' | 'urgent';
       page?: number;
       limit?: number;
-      type?: 'all' | 'following' | 'you';
-      filter?: 'like' | 'comment' | 'follow' | 'mention' | 'repost' | 'system';
-      unreadOnly?: boolean;
     } = {}
-  ): Promise<ApiResponse<Notification[]>> {
+  ): Promise<ApiResponse<PaginatedResponse<Notification>>> {
     const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<Notification[]>(`${this.baseUrl}${queryString}`);
+    return apiClient.get<PaginatedResponse<Notification>>(`${this.baseUrl}${queryString}`);
   }
 
-  async getUnreadCount(): Promise<
-    ApiResponse<{
-      total: number;
-      byType: Record<string, number>;
-    }>
-  > {
-    return apiClient.get(`${this.baseUrl}/unread-count`);
+  async getNotificationById(notificationId: string): Promise<ApiResponse<Notification>> {
+    return apiClient.get<Notification>(`${this.baseUrl}/${notificationId}`);
   }
 
-  // Mark as Read/Unread
-  async markAsRead(notificationId: string): Promise<ApiResponse<void>> {
+  async markAsRead(notificationId: string): Promise<ApiResponse<{ message: string }>> {
     return apiClient.patch(`${this.baseUrl}/${notificationId}/read`);
   }
 
-  async markAsUnread(notificationId: string): Promise<ApiResponse<void>> {
+  async markAsUnread(notificationId: string): Promise<ApiResponse<{ message: string }>> {
     return apiClient.patch(`${this.baseUrl}/${notificationId}/unread`);
   }
 
-  async markAllAsRead(): Promise<
+  async markAllAsRead(type?: string): Promise<
     ApiResponse<{
-      markedCount: number;
+      message: string;
+      updatedCount: number;
     }>
   > {
-    return apiClient.patch(`${this.baseUrl}/mark-all-read`);
+    const data = type ? { type } : {};
+    return apiClient.patch(`${this.baseUrl}/mark-all-read`, data);
   }
 
-  async markMultipleAsRead(notificationIds: string[]): Promise<
-    ApiResponse<{
-      markedCount: number;
-      failed: string[];
-    }>
-  > {
-    return apiClient.patch(`${this.baseUrl}/mark-multiple-read`, {
-      notificationIds,
-    });
-  }
-
-  // Delete Notifications
-  async deleteNotification(notificationId: string): Promise<ApiResponse<void>> {
+  async deleteNotification(notificationId: string): Promise<ApiResponse<{ message: string }>> {
     return apiClient.delete(`${this.baseUrl}/${notificationId}`);
   }
 
-  async deleteMultipleNotifications(notificationIds: string[]): Promise<
+  async deleteAllNotifications(type?: string): Promise<
     ApiResponse<{
+      message: string;
       deletedCount: number;
-      failed: string[];
     }>
   > {
-    return apiClient.delete(`${this.baseUrl}/bulk-delete`, {
-      data: { notificationIds },
-    });
+    const data = type ? { type } : {};
+    return apiClient.delete(`${this.baseUrl}/delete-all`, { data });
   }
 
-  async clearAllNotifications(): Promise<
-    ApiResponse<{
-      deletedCount: number;
-    }>
-  > {
-    return apiClient.delete(`${this.baseUrl}/clear-all`);
+  // Notification Statistics
+  async getNotificationStats(): Promise<ApiResponse<NotificationStats>> {
+    return apiClient.get<NotificationStats>(`${this.baseUrl}/stats`);
+  }
+
+  async getUnreadCount(): Promise<ApiResponse<{ count: number }>> {
+    return apiClient.get(`${this.baseUrl}/unread-count`);
   }
 
   // Notification Preferences
   async getPreferences(): Promise<ApiResponse<NotificationPreferences>> {
-    return apiClient.get<NotificationPreferences>(`${this.baseUrl}/preferences`);
+    return apiClient.get(`${this.baseUrl}/preferences`);
   }
 
   async updatePreferences(
     preferences: Partial<NotificationPreferences>
-  ): Promise<ApiResponse<NotificationPreferences>> {
-    return apiClient.put<NotificationPreferences>(`${this.baseUrl}/preferences`, preferences);
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.put(`${this.baseUrl}/preferences`, preferences);
   }
 
-  async updateChannelPreferences(
-    channel: 'email' | 'push' | 'inApp',
-    preferences: Record<string, boolean>
-  ): Promise<ApiResponse<void>> {
-    return apiClient.patch(`${this.baseUrl}/preferences/${channel}`, preferences);
+  async updateEmailPreferences(
+    emailPrefs: Partial<NotificationPreferences['email']>
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/preferences/email`, emailPrefs);
   }
 
-  // Push Notifications
-  async subscribeToPush(subscription: {
-    endpoint: string;
-    keys: {
-      p256dh: string;
-      auth: string;
+  async updatePushPreferences(
+    pushPrefs: Partial<NotificationPreferences['push']>
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/preferences/push`, pushPrefs);
+  }
+
+  // Push Notification Management
+  async registerPushDevice(data: {
+    token: string;
+    platform: 'web' | 'ios' | 'android';
+    deviceInfo?: {
+      model?: string;
+      os?: string;
+      browser?: string;
     };
-  }): Promise<ApiResponse<void>> {
-    return apiClient.post(`${this.baseUrl}/push/subscribe`, subscription);
+  }): Promise<
+    ApiResponse<{
+      deviceId: string;
+      message: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/push/register`, data);
   }
 
-  async unsubscribeFromPush(): Promise<ApiResponse<void>> {
-    return apiClient.delete(`${this.baseUrl}/push/unsubscribe`);
+  async unregisterPushDevice(deviceId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/push/devices/${deviceId}`);
   }
 
-  async testPushNotification(): Promise<ApiResponse<void>> {
-    return apiClient.post(`${this.baseUrl}/push/test`);
+  async getPushDevices(): Promise<
+    ApiResponse<
+      Array<{
+        id: string;
+        platform: string;
+        deviceInfo: any;
+        registeredAt: string;
+        lastUsed: string;
+        isActive: boolean;
+      }>
+    >
+  > {
+    return apiClient.get(`${this.baseUrl}/push/devices`);
   }
 
-  // Real-time Notifications (WebSocket)
-  private eventSource: EventSource | null = null;
+  async testPushNotification(deviceId?: string): Promise<ApiResponse<{ message: string }>> {
+    const data = deviceId ? { deviceId } : {};
+    return apiClient.post(`${this.baseUrl}/push/test`, data);
+  }
 
-  connectToRealTime(onNotification: (notification: Notification) => void): void {
-    if (this.eventSource) {
-      this.eventSource.close();
+  // Email Notifications
+  async subscribeToEmailNotifications(email?: string): Promise<ApiResponse<{ message: string }>> {
+    const data = email ? { email } : {};
+    return apiClient.post(`${this.baseUrl}/email/subscribe`, data);
+  }
+
+  async unsubscribeFromEmailNotifications(
+    token?: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    const data = token ? { token } : {};
+    return apiClient.post(`${this.baseUrl}/email/unsubscribe`, data);
+  }
+
+  async getEmailSubscriptionStatus(): Promise<
+    ApiResponse<{
+      isSubscribed: boolean;
+      email: string;
+      subscribedAt?: string;
+      unsubscribedAt?: string;
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/email/status`);
+  }
+
+  // Custom Notifications
+  async createCustomNotification(data: {
+    title: string;
+    message: string;
+    type?: string;
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+    channels?: Array<'in-app' | 'email' | 'push'>;
+    scheduledAt?: string;
+    expiresAt?: string;
+    data?: Record<string, any>;
+  }): Promise<ApiResponse<Notification>> {
+    return apiClient.post<Notification>(`${this.baseUrl}/custom`, data);
+  }
+
+  // Notification Templates (for admin use)
+  async getNotificationTemplates(): Promise<
+    ApiResponse<
+      Array<{
+        id: string;
+        name: string;
+        type: string;
+        channels: string[];
+        template: {
+          title: string;
+          message: string;
+          variables: string[];
+        };
+        isActive: boolean;
+      }>
+    >
+  > {
+    return apiClient.get(`${this.baseUrl}/templates`);
+  }
+
+  // Real-time Notifications
+  async subscribeToRealTimeNotifications(
+    callback: (notification: Notification) => void
+  ): () => void {
+    this.listeners.add(callback);
+
+    if (!this.eventSource) {
+      this.setupEventSource();
     }
 
+    // Return unsubscribe function
+    return () => {
+      this.listeners.delete(callback);
+      if (this.listeners.size === 0 && this.eventSource) {
+        this.eventSource.close();
+        this.eventSource = null;
+      }
+    };
+  }
+
+  private setupEventSource(): void {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+    const baseUrl = apiClient.getInstance().defaults.baseURL;
     this.eventSource = new EventSource(`${baseUrl}/notifications/stream?token=${token}`);
 
     this.eventSource.onmessage = event => {
       try {
-        const notification = JSON.parse(event.data);
-        onNotification(notification);
+        const notification: Notification = JSON.parse(event.data);
+        this.listeners.forEach(callback => callback(notification));
       } catch (error) {
         console.error('Failed to parse notification:', error);
       }
@@ -182,164 +316,224 @@ class NotificationService {
       console.error('Notification stream error:', error);
       // Attempt to reconnect after 5 seconds
       setTimeout(() => {
-        if (this.eventSource?.readyState === EventSource.CLOSED) {
-          this.connectToRealTime(onNotification);
+        if (this.listeners.size > 0) {
+          this.setupEventSource();
         }
       }, 5000);
     };
   }
 
-  disconnectFromRealTime(): void {
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
-  }
-
-  // Notification Analytics
-  async getNotificationStats(
-    params: {
-      timeRange?: '7d' | '30d' | '90d';
-    } = {}
-  ): Promise<
-    ApiResponse<{
-      totalSent: number;
-      totalRead: number;
-      readRate: number;
-      byType: Record<
-        string,
-        {
-          sent: number;
-          read: number;
-          readRate: number;
-        }
-      >;
-      byChannel: Record<
-        string,
-        {
-          sent: number;
-          delivered: number;
-          opened: number;
-        }
-      >;
-      timeline: Array<{
-        date: string;
-        sent: number;
-        read: number;
-      }>;
-    }>
-  > {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.baseUrl}/stats${queryString}`);
-  }
-
-  // Notification Templates (for admin use)
-  async getTemplates(): Promise<
-    ApiResponse<
-      Array<{
-        _id: string;
-        name: string;
-        type: string;
-        subject: string;
-        content: string;
-        variables: string[];
-        isActive: boolean;
-      }>
-    >
-  > {
-    return apiClient.get(`${this.baseUrl}/templates`);
-  }
-
-  // Mute/Unmute Users
-  async muteUser(userId: string): Promise<ApiResponse<void>> {
-    return apiClient.post(`${this.baseUrl}/mute/${userId}`);
-  }
-
-  async unmuteUser(userId: string): Promise<ApiResponse<void>> {
-    return apiClient.delete(`${this.baseUrl}/mute/${userId}`);
-  }
-
-  async getMutedUsers(params: BaseQueryParams = {}): Promise<ApiResponse<User[]>> {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get<User[]>(`${this.baseUrl}/muted${queryString}`);
-  }
-
-  // Notification Scheduling
-  async scheduleNotification(data: {
-    type: string;
-    title: string;
-    message: string;
-    scheduledAt: string;
-    recipients?: string[];
-    data?: Record<string, any>;
-  }): Promise<
-    ApiResponse<{
-      _id: string;
-      scheduledAt: string;
-      status: 'scheduled' | 'sent' | 'failed';
-    }>
-  > {
-    return apiClient.post(`${this.baseUrl}/schedule`, data);
-  }
-
-  async getScheduledNotifications(params: BaseQueryParams = {}): Promise<
-    ApiResponse<
-      Array<{
-        _id: string;
-        type: string;
-        title: string;
-        message: string;
-        scheduledAt: string;
-        status: 'scheduled' | 'sent' | 'failed';
-        recipientCount: number;
-        createdAt: string;
-      }>
-    >
-  > {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.baseUrl}/scheduled${queryString}`);
-  }
-
-  async cancelScheduledNotification(notificationId: string): Promise<ApiResponse<void>> {
-    return apiClient.delete(`${this.baseUrl}/scheduled/${notificationId}`);
+  // Notification Actions
+  async performNotificationAction(
+    notificationId: string,
+    action: string,
+    data?: any
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/${notificationId}/actions/${action}`, data);
   }
 
   // Notification History
   async getNotificationHistory(
     params: {
-      page?: number;
-      limit?: number;
-      type?: string;
       startDate?: string;
       endDate?: string;
+      type?: string;
+      page?: number;
+      limit?: number;
     } = {}
+  ): Promise<ApiResponse<PaginatedResponse<Notification>>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get<PaginatedResponse<Notification>>(`${this.baseUrl}/history${queryString}`);
+  }
+
+  // Notification Analytics
+  async getNotificationAnalytics(timeRange: '7d' | '30d' | '90d' = '30d'): Promise<
+    ApiResponse<{
+      deliveryStats: {
+        sent: number;
+        delivered: number;
+        opened: number;
+        clicked: number;
+        failed: number;
+      };
+      channelPerformance: Record<
+        string,
+        {
+          sent: number;
+          delivered: number;
+          openRate: number;
+          clickRate: number;
+        }
+      >;
+      typePerformance: Record<
+        string,
+        {
+          sent: number;
+          engagementRate: number;
+        }
+      >;
+      trends: Array<{
+        date: string;
+        sent: number;
+        delivered: number;
+        opened: number;
+      }>;
+    }>
+  > {
+    const queryString = apiClient.buildQueryString({ timeRange });
+    return apiClient.get(`${this.baseUrl}/analytics${queryString}`);
+  }
+
+  // Notification Scheduling
+  async scheduleNotification(data: {
+    title: string;
+    message: string;
+    scheduledAt: string;
+    recipients?: string[] | 'all' | 'active';
+    type?: string;
+    channels?: Array<'in-app' | 'email' | 'push'>;
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+  }): Promise<
+    ApiResponse<{
+      scheduleId: string;
+      message: string;
+      scheduledAt: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/schedule`, data);
+  }
+
+  async getScheduledNotifications(
+    params: SearchParams = {}
+  ): Promise<ApiResponse<PaginatedResponse<any>>> {
+    const queryString = apiClient.buildQueryString(params);
+    return apiClient.get(`${this.baseUrl}/scheduled${queryString}`);
+  }
+
+  async cancelScheduledNotification(scheduleId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/scheduled/${scheduleId}`);
+  }
+
+  // Notification Digest
+  async getNotificationDigest(period: 'daily' | 'weekly' | 'monthly'): Promise<
+    ApiResponse<{
+      period: string;
+      summary: {
+        totalNotifications: number;
+        newFollowers: number;
+        postEngagement: number;
+        mentions: number;
+      };
+      highlights: Array<{
+        type: string;
+        message: string;
+        data: any;
+      }>;
+      topPosts: Array<{
+        id: string;
+        content: string;
+        engagement: number;
+      }>;
+    }>
+  > {
+    return apiClient.get(`${this.baseUrl}/digest/${period}`);
+  }
+
+  async subscribeToDigest(
+    period: 'daily' | 'weekly' | 'monthly',
+    enabled: boolean
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post(`${this.baseUrl}/digest/${period}/subscribe`, { enabled });
+  }
+
+  // Notification Filters
+  async createNotificationFilter(filter: {
+    name: string;
+    conditions: Array<{
+      field: string;
+      operator: 'equals' | 'contains' | 'starts_with' | 'ends_with';
+      value: string;
+    }>;
+    actions: Array<{
+      type: 'mark_read' | 'delete' | 'move_to_folder' | 'set_priority';
+      value?: string;
+    }>;
+  }): Promise<ApiResponse<{ filterId: string; message: string }>> {
+    return apiClient.post(`${this.baseUrl}/filters`, filter);
+  }
+
+  async getNotificationFilters(): Promise<ApiResponse<Array<any>>> {
+    return apiClient.get(`${this.baseUrl}/filters`);
+  }
+
+  async updateNotificationFilter(
+    filterId: string,
+    filter: any
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.put(`${this.baseUrl}/filters/${filterId}`, filter);
+  }
+
+  async deleteNotificationFilter(filterId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete(`${this.baseUrl}/filters/${filterId}`);
+  }
+
+  // Notification Folders/Categories
+  async createNotificationFolder(
+    name: string,
+    description?: string
   ): Promise<
+    ApiResponse<{
+      folderId: string;
+      message: string;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/folders`, { name, description });
+  }
+
+  async getNotificationFolders(): Promise<
     ApiResponse<
       Array<{
-        _id: string;
-        type: string;
-        title: string;
-        message: string;
-        channel: 'email' | 'push' | 'inApp';
-        status: 'sent' | 'delivered' | 'read' | 'failed';
-        sentAt: string;
-        readAt?: string;
-        error?: string;
+        id: string;
+        name: string;
+        description?: string;
+        count: number;
+        unreadCount: number;
       }>
     >
   > {
-    const queryString = apiClient.buildQueryString(params);
-    return apiClient.get(`${this.baseUrl}/history${queryString}`);
+    return apiClient.get(`${this.baseUrl}/folders`);
   }
 
-  // Utility Methods
-  async testNotification(type: string, data?: Record<string, any>): Promise<ApiResponse<void>> {
-    return apiClient.post(`${this.baseUrl}/test`, { type, data });
+  async moveNotificationToFolder(
+    notificationId: string,
+    folderId: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.patch(`${this.baseUrl}/${notificationId}/move`, { folderId });
   }
 
+  // Bulk Operations
+  async bulkMarkAsRead(notificationIds: string[]): Promise<
+    ApiResponse<{
+      successful: string[];
+      failed: Array<{ notificationId: string; error: string }>;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/bulk/mark-read`, { notificationIds });
+  }
+
+  async bulkDeleteNotifications(notificationIds: string[]): Promise<
+    ApiResponse<{
+      successful: string[];
+      failed: Array<{ notificationId: string; error: string }>;
+    }>
+  > {
+    return apiClient.post(`${this.baseUrl}/bulk/delete`, { notificationIds });
+  }
+
+  // Notification Export
   async exportNotifications(
     params: {
-      format?: 'csv' | 'json';
+      format?: 'json' | 'csv';
       startDate?: string;
       endDate?: string;
       type?: string;
@@ -348,10 +542,20 @@ class NotificationService {
     ApiResponse<{
       downloadUrl: string;
       expiresAt: string;
+      recordCount: number;
     }>
   > {
     const queryString = apiClient.buildQueryString(params);
     return apiClient.post(`${this.baseUrl}/export${queryString}`);
+  }
+
+  // Cleanup
+  disconnect(): void {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+    this.listeners.clear();
   }
 }
 

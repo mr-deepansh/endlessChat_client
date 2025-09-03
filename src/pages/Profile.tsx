@@ -5,24 +5,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Badge } from '../components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 import Navbar from '../components/layout/Navbar';
-import { userService, User, Post } from '../services';
+import PostCard from '../components/posts/PostCard';
+import { blogService, userService, socialService, User, Post } from '../services';
+import { realTimePostService } from '../services/realTimePostService';
 import { useAuth } from '../contexts/AuthContext';
 import { useApi } from '../hooks/useApi';
-import {
-  MessageCircle,
-  Heart,
-  Repeat2,
-  Eye,
-  Calendar,
-  MapPin,
-  Link as LinkIcon,
-  Github,
-  Linkedin,
-  UserPlus,
-  UserMinus,
-  Settings,
-} from 'lucide-react';
+import { Calendar, MapPin, Link as LinkIcon, Settings, Filter, Grid3X3, List } from 'lucide-react';
 import { FollowButton } from '../components/common/FollowButton';
 
 const Profile = () => {
@@ -33,6 +29,9 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
+  const [postFilter, setPostFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
 
   // Clean username helper
   const cleanUsername = username?.replace(/^@+/, '') || '';
@@ -52,17 +51,21 @@ const Profile = () => {
 
           // Fetch current user's posts
           try {
-            const response = await userService.getUserFeed(currentUser._id);
-            setPosts(response.success ? response.data || [] : []);
+            const userPosts = await realTimePostService.getMyPosts();
+            const postsData = userPosts.data?.posts || [];
+            setPosts(postsData);
+            setFilteredPosts(postsData);
           } catch (error) {
-            console.warn('Posts API not available:', error);
+            console.warn('User posts API not available:', error);
             setPosts([]);
+            setFilteredPosts([]);
           }
         } else {
           // Find other user by username
-          const response = await userService.searchUsers({ username: cleanUsername });
-          const users = response.success && Array.isArray(response.data) ? response.data : [];
-          const foundUser = users.find(u => u.username === cleanUsername);
+          const users = await userService.searchUsers(cleanUsername);
+          const foundUser = Array.isArray(users)
+            ? users.find(u => u.username === cleanUsername)
+            : null;
 
           if (foundUser) {
             setUser(foundUser);
@@ -70,11 +73,16 @@ const Profile = () => {
 
             // Fetch user posts
             try {
-              const response = await userService.getUserFeed(foundUser._id);
-              setPosts(response.success ? response.data || [] : []);
+              const userPosts = await realTimePostService.getUserPostsByUsername(
+                foundUser.username
+              );
+              const postsData = userPosts.data?.posts || [];
+              setPosts(postsData);
+              setFilteredPosts(postsData);
             } catch (error) {
-              console.warn('Posts API not available:', error);
+              console.warn('User posts API not available:', error);
               setPosts([]);
+              setFilteredPosts([]);
             }
           }
         }
@@ -88,6 +96,30 @@ const Profile = () => {
     fetchUserData();
   }, [username, currentUser]);
 
+  // Filter posts based on selected filter
+  useEffect(() => {
+    let filtered = posts;
+
+    switch (postFilter) {
+      case 'text':
+        filtered = posts.filter(post => post.type === 'text' || !post.type);
+        break;
+      case 'media':
+        filtered = posts.filter(post => post.type === 'media' || post.images?.length);
+        break;
+      case 'poll':
+        filtered = posts.filter(post => post.type === 'poll' || post.poll);
+        break;
+      case 'article':
+        filtered = posts.filter(post => post.type === 'article');
+        break;
+      default:
+        filtered = posts;
+    }
+
+    setFilteredPosts(filtered);
+  }, [posts, postFilter]);
+
   const { execute: executeFollow } = useApi({
     showSuccessToast: true,
     successMessage: 'Follow status updated successfully',
@@ -98,8 +130,8 @@ const Profile = () => {
 
     try {
       const response = isFollowing
-        ? await followService.unfollowUser(user._id)
-        : await followService.followUser(user._id);
+        ? await socialService.unfollowUser(user._id)
+        : await socialService.followUser(user._id);
 
       if (response.success) {
         setIsFollowing(!isFollowing);
@@ -107,9 +139,7 @@ const Profile = () => {
           prev
             ? {
                 ...prev,
-                followersCount:
-                  response.data?.followersCount ||
-                  (isFollowing ? prev.followersCount - 1 : prev.followersCount + 1),
+                followersCount: isFollowing ? prev.followersCount - 1 : prev.followersCount + 1,
               }
             : null
         );
@@ -241,26 +271,28 @@ const Profile = () => {
             {/* Stats */}
             <div className="grid grid-cols-4 gap-2 sm:gap-4 xl:gap-6 2xl:gap-8 mt-4 sm:mt-6 xl:mt-8 2xl:mt-10 pt-4 sm:pt-6 xl:pt-8 2xl:pt-10 border-t">
               <div className="text-center">
-                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">
-                  {user.postsCount || 0}
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold text-primary">
+                  {posts.length || user.postsCount || 0}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Posts</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold text-blue-500">
                   {user.followersCount || 0}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Followers</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold text-green-500">
                   {user.followingCount || 0}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Following</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold">0</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Mutual</div>
+                <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold text-purple-500">
+                  {posts.reduce((sum, post) => sum + (post.likesCount || 0), 0)}
+                </div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Likes</div>
               </div>
             </div>
           </CardContent>
@@ -268,104 +300,147 @@ const Profile = () => {
 
         {/* Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="posts" className="text-xs sm:text-sm">
-              Posts
-            </TabsTrigger>
-            <TabsTrigger value="reposts" className="text-xs sm:text-sm">
-              Reposts
-            </TabsTrigger>
-            <TabsTrigger value="comments" className="text-xs sm:text-sm">
-              Comments
-            </TabsTrigger>
-            <TabsTrigger value="likes" className="text-xs sm:text-sm">
-              Likes
-            </TabsTrigger>
-            <TabsTrigger value="views" className="text-xs sm:text-sm">
-              Views
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-4">
+            <TabsList className="grid grid-cols-4 w-auto">
+              <TabsTrigger value="posts" className="text-xs sm:text-sm">
+                Posts ({posts.length})
+              </TabsTrigger>
+              <TabsTrigger value="reposts" className="text-xs sm:text-sm">
+                Reposts
+              </TabsTrigger>
+              <TabsTrigger value="likes" className="text-xs sm:text-sm">
+                Likes
+              </TabsTrigger>
+              <TabsTrigger value="media" className="text-xs sm:text-sm">
+                Media
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="flex items-center gap-2">
+              <Select value={postFilter} onValueChange={setPostFilter}>
+                <SelectTrigger className="w-32">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Posts</SelectItem>
+                  <SelectItem value="text">Text</SelectItem>
+                  <SelectItem value="media">Media</SelectItem>
+                  <SelectItem value="poll">Polls</SelectItem>
+                  <SelectItem value="article">Articles</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-r-none"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-l-none"
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
 
           <TabsContent value="posts" className="mt-4 sm:mt-6">
-            <div className="space-y-4">
-              {posts.length > 0 ? (
-                posts.map(post => (
-                  <Card key={post._id}>
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex items-start gap-2 sm:gap-3">
-                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                          <AvatarImage src={post.author.avatar} alt={post.author.username} />
-                          <AvatarFallback className="bg-gradient-primary text-white text-sm">
-                            {post.author.firstName?.[0] || post.author.username?.[0] || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-2">
-                            <span className="font-semibold text-sm sm:text-base">
-                              {post.author.firstName} {post.author.lastName}
-                            </span>
-                            <span className="text-muted-foreground text-xs sm:text-sm">
-                              @{post.author.username}
-                            </span>
-                            <span className="text-muted-foreground text-xs sm:text-sm">·</span>
-                            <span className="text-muted-foreground text-xs sm:text-sm">
-                              {new Date(post.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <p className="mb-3 sm:mb-4 text-sm sm:text-base">{post.content}</p>
-
-                          <div className="flex items-center gap-4 sm:gap-6 text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="text-xs sm:text-sm">{post.commentsCount || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Repeat2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="text-xs sm:text-sm">{post.repostsCount || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="text-xs sm:text-sm">{post.likesCount || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="text-xs sm:text-sm">0</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+            <div
+              className={
+                viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-4'
+              }
+            >
+              {filteredPosts.length > 0 ? (
+                filteredPosts.map((post, index) => (
+                  <PostCard
+                    key={post._id || `post-${index}`}
+                    post={{
+                      _id: post._id || `post-${index}`,
+                      content: post.content || '',
+                      author: {
+                        _id: post.author?._id || user._id,
+                        username: post.author?.username || user.username,
+                        firstName: post.author?.firstName || user.firstName,
+                        lastName: post.author?.lastName || user.lastName,
+                        avatar: post.author?.avatar || user.avatar,
+                      },
+                      createdAt: post.createdAt || new Date().toISOString(),
+                      likesCount: post.engagement?.likes || post.likesCount || 0,
+                      commentsCount: post.engagement?.comments || post.commentsCount || 0,
+                      repostsCount: post.engagement?.shares || post.repostsCount || 0,
+                      sharesCount: post.engagement?.shares || post.sharesCount || 0,
+                      viewsCount: post.engagement?.views || post.viewsCount || 0,
+                      isLiked: post.isLiked || false,
+                      isReposted: post.isReposted || false,
+                      isBookmarked: post.isBookmarked || false,
+                      images: post.images || [],
+                      poll: post.poll,
+                      location: post.location,
+                      type: post.type || 'text',
+                    }}
+                    currentUserId={currentUser?._id}
+                  />
                 ))
               ) : (
-                <div className="text-center py-8 sm:py-12">
-                  <p className="text-muted-foreground text-sm sm:text-base">No posts yet</p>
+                <div className="text-center py-12 col-span-full">
+                  <p className="text-muted-foreground">No posts found</p>
+                  {postFilter !== 'all' && (
+                    <Button variant="ghost" onClick={() => setPostFilter('all')} className="mt-2">
+                      Clear filter
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
           </TabsContent>
 
           <TabsContent value="reposts" className="mt-4 sm:mt-6">
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-muted-foreground text-sm sm:text-base">No reposts yet</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="comments" className="mt-4 sm:mt-6">
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-muted-foreground text-sm sm:text-base">No comments yet</p>
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No reposts yet</p>
             </div>
           </TabsContent>
 
           <TabsContent value="likes" className="mt-4 sm:mt-6">
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-muted-foreground text-sm sm:text-base">No liked posts yet</p>
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No liked posts yet</p>
             </div>
           </TabsContent>
 
-          <TabsContent value="views" className="mt-4 sm:mt-6">
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-muted-foreground text-sm sm:text-base">No viewed posts yet</p>
+          <TabsContent value="media" className="mt-4 sm:mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {posts
+                .filter(post => post.images?.length || post.type === 'media')
+                .map((post, index) => (
+                  <div
+                    key={post._id || `media-${index}`}
+                    className="aspect-square bg-muted rounded-lg overflow-hidden"
+                  >
+                    {post.images?.[0] ? (
+                      <img
+                        src={post.images[0]}
+                        alt="Post media"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        Media
+                      </div>
+                    )}
+                  </div>
+                ))}
+              {posts.filter(post => post.images?.length || post.type === 'media').length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">No media posts yet</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

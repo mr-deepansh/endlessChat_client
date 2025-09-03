@@ -32,9 +32,10 @@
     --accent-glow: 212 100% 70%;
 
     /* Social Action Colors */
-    --like-color: 0 84% 60%;
-    --repost-color: 120 60% 50%;
-    --comment-color: 200 80% 55%;
+    --social-like: 0 84% 60%;
+    --social-repost: 120 60% 50%;
+    --social-comment: 200 80% 55%;
+    --social-share: 280 60% 60%;
 
     /* Muted Colors */
     --muted: 220 20% 94%;
@@ -217,6 +218,35 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Social Action Colors */
+  .text-social-like {
+    color: hsl(var(--social-like));
+  }
+
+  .text-social-repost {
+    color: hsl(var(--social-repost));
+  }
+
+  .text-social-comment {
+    color: hsl(var(--social-comment));
+  }
+
+  .text-social-share {
+    color: hsl(var(--social-share));
+  }
+
+  .bg-social-like\/10 {
+    background-color: hsl(var(--social-like) / 0.1);
+  }
+
+  .bg-social-repost\/10 {
+    background-color: hsl(var(--social-repost) / 0.1);
+  }
+
+  .bg-social-comment\/10 {
+    background-color: hsl(var(--social-comment) / 0.1);
+  }
+
   /* Soft Background Utilities */
   .bg-soft {
     background: hsl(220 20% 97%);
@@ -317,5 +347,27 @@
     50% {
       transform: translateY(-20px);
     }
+  }
+
+  /* Text Utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 }

@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,8 +32,13 @@ import {
   Globe,
   Video,
   Camera,
+  Hash,
+  AtSign,
+  Zap,
+  Users,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { uploadService } from '../../services/uploadService';
 
 interface CreatePostProps {
   onSubmit?: (postData: any) => void;
@@ -51,6 +57,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
   const [postType, setPostType] = useState<'text' | 'article' | 'poll' | 'media'>('text');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [location, setLocation] = useState('');
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState('');
@@ -66,7 +73,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
   const [articleTitle, setArticleTitle] = useState('');
 
   const handleSubmit = async () => {
-    if (!content.trim() && postType !== 'poll') return;
+    if (!content.trim() && postType !== 'poll' && images.length === 0) return;
     if (
       postType === 'poll' &&
       (!pollQuestion.trim() || pollOptions.filter(opt => opt.text.trim()).length < 2)
@@ -75,10 +82,19 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
     setIsSubmitting(true);
     try {
+      // Upload files first if any
+      let uploadedImageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        uploadedImageUrls = await uploadService.uploadFiles(imageFiles);
+      }
+
       const postData: any = {
-        content: postType === 'article' ? `${articleTitle}\n\n${content}` : content,
+        content:
+          postType === 'article'
+            ? `${articleTitle}\n\n${content}`
+            : content || (images.length > 0 ? '📷 Shared media' : 'New post'),
         type: postType,
-        images: images.length > 0 ? images : undefined,
+        images: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
         location: location.trim() || undefined,
         scheduledFor:
           scheduledDate && scheduledTime
@@ -103,6 +119,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
       setContent('');
       setPostType('text');
       setImages([]);
+      setImageFiles([]);
       setLocation('');
       setScheduledDate(undefined);
       setScheduledTime('');
@@ -118,19 +135,44 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
     const files = event.target.files;
     if (files) {
       Array.from(files).forEach(file => {
+        const isVideo = file.type.startsWith('video/');
+        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 50MB for videos, 10MB for images
+
+        if (file.size > maxSize) {
+          toast({
+            title: 'File too large',
+            description: `Please select ${isVideo ? 'videos under 50MB' : 'images under 10MB'}.`,
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Store the actual file
+        setImageFiles(prev => [...prev, file]);
+
+        // Create preview URL
         const reader = new FileReader();
         reader.onload = e => {
           if (e.target?.result) {
             setImages(prev => [...prev, e.target!.result as string]);
           }
         };
+        reader.onerror = () => {
+          toast({
+            title: 'Upload failed',
+            description: 'Failed to read the file.',
+            variant: 'destructive',
+          });
+        };
         reader.readAsDataURL(file);
       });
     }
+    event.target.value = '';
   };
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const addPollOption = () => {
@@ -153,6 +195,22 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
     setContent(prev => prev + emoji);
     setShowEmojiPicker(false);
   };
+
+  const handleHashtagClick = () => {
+    setContent(prev => prev + '#');
+  };
+
+  const handleMentionClick = () => {
+    setContent(prev => prev + '@');
+  };
+
+  const detectHashtagsAndMentions = (text: string) => {
+    const hashtags = text.match(/#\w+/g) || [];
+    const mentions = text.match(/@\w+/g) || [];
+    return { hashtags, mentions };
+  };
+
+  const { hashtags, mentions } = detectHashtagsAndMentions(content);
 
   const handleGetLocation = async () => {
     if (!navigator.geolocation) {
@@ -208,7 +266,6 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
     if (files) {
       Array.from(files).forEach(file => {
         if (file.size > 50 * 1024 * 1024) {
-          // 50MB limit
           toast({
             title: 'File too large',
             description: 'Video files must be under 50MB.',
@@ -216,6 +273,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
           });
           return;
         }
+
         const reader = new FileReader();
         reader.onload = e => {
           if (e.target?.result) {
@@ -226,9 +284,18 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
             });
           }
         };
+        reader.onerror = () => {
+          toast({
+            title: 'Upload failed',
+            description: 'Failed to read the video file.',
+            variant: 'destructive',
+          });
+        };
         reader.readAsDataURL(file);
       });
     }
+    // Reset input value
+    event.target.value = '';
   };
 
   const characterLimit = postType === 'article' ? 2000 : 280;
@@ -252,9 +319,26 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
   return (
     <Card className="border-none shadow-soft bg-gradient-card backdrop-blur-sm">
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
+        {/* Mobile Header with Logo */}
+        <div className="flex items-center justify-between mb-3 sm:hidden">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">💬</span>
+            </div>
+            <span className="font-bold text-lg gradient-text">EndlessChat</span>
+          </div>
+          <Badge variant="secondary" className="text-xs">
+            {postType === 'text' && '📝'}
+            {postType === 'poll' && '📊'}
+            {postType === 'article' && '📄'}
+            {postType === 'media' && '🎬'}
+            {postType.charAt(0).toUpperCase() + postType.slice(1)}
+          </Badge>
+        </div>
+
         <div className="flex space-x-3">
-          <Avatar className="w-12 h-12 ring-2 ring-primary/20">
+          <Avatar className="w-10 h-10 sm:w-12 sm:h-12 ring-2 ring-primary/20">
             <AvatarImage src={user.avatar} alt={user.username} />
             <AvatarFallback className="bg-gradient-primary text-white">
               {user.firstName?.[0] || user.username?.[0] || 'U'}
@@ -262,9 +346,9 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex-1 space-y-4">
-            {/* Post Type Selector */}
-            <div className="flex items-center space-x-2">
+          <div className="flex-1 space-y-3">
+            {/* Post Type Selector - Hidden on mobile, shown in header */}
+            <div className="hidden sm:flex items-center space-x-2">
               <Badge className={`${getPostTypeColor()} cursor-pointer`}>
                 {postType === 'text' && <Globe className="w-3 h-3 mr-1" />}
                 {postType === 'poll' && <BarChart3 className="w-3 h-3 mr-1" />}
@@ -306,6 +390,46 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                   <Image className="w-3 h-3" />
                 </Button>
               </div>
+            </div>
+
+            {/* Mobile Post Type Selector */}
+            <div className="sm:hidden flex space-x-1 overflow-x-auto pb-2">
+              <Button
+                variant={postType === 'text' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setPostType('text')}
+                className="h-8 px-3 flex-shrink-0"
+              >
+                <Globe className="w-4 h-4 mr-1" />
+                Text
+              </Button>
+              <Button
+                variant={postType === 'poll' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setPostType('poll')}
+                className="h-8 px-3 flex-shrink-0"
+              >
+                <BarChart3 className="w-4 h-4 mr-1" />
+                Poll
+              </Button>
+              <Button
+                variant={postType === 'article' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setPostType('article')}
+                className="h-8 px-3 flex-shrink-0"
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                Article
+              </Button>
+              <Button
+                variant={postType === 'media' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setPostType('media')}
+                className="h-8 px-3 flex-shrink-0"
+              >
+                <Image className="w-4 h-4 mr-1" />
+                Media
+              </Button>
             </div>
 
             {/* Article Title */}
@@ -385,8 +509,38 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
               placeholder={postType === 'poll' ? 'Add context to your poll...' : placeholder}
               value={content}
               onChange={e => setContent(e.target.value)}
-              className="min-h-[120px] border-none bg-transparent text-lg placeholder:text-muted-foreground resize-none focus-visible:ring-0"
+              className="min-h-[80px] max-h-[300px] border-none bg-transparent text-lg placeholder:text-muted-foreground resize-none focus-visible:ring-0 overflow-hidden"
+              style={{ height: 'auto' }}
+              onInput={e => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = Math.min(target.scrollHeight, 300) + 'px';
+              }}
             />
+
+            {/* Hashtags and Mentions Preview */}
+            {(hashtags.length > 0 || mentions.length > 0) && (
+              <div className="flex flex-wrap gap-1.5 p-2 bg-muted/20 rounded-lg">
+                {hashtags.map((tag, index) => (
+                  <Badge
+                    key={`hashtag-${index}`}
+                    variant="secondary"
+                    className="text-blue-600 text-xs"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+                {mentions.map((mention, index) => (
+                  <Badge
+                    key={`mention-${index}`}
+                    variant="secondary"
+                    className="text-green-600 text-xs"
+                  >
+                    {mention}
+                  </Badge>
+                ))}
+              </div>
+            )}
 
             {/* Location Input */}
             {location !== undefined && (
@@ -406,22 +560,56 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
             {/* Image Preview */}
             {images.length > 0 && (
-              <div className="grid grid-cols-2 gap-2">
+              <div
+                className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'}`}
+              >
                 {images.map((image, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={image}
-                      alt={`Upload ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon-sm"
-                      className="absolute top-1 right-1"
-                      onClick={() => removeImage(index)}
+                  <div
+                    key={index}
+                    className="relative group bg-muted/20 rounded-lg overflow-hidden border border-border/50"
+                  >
+                    <div
+                      className={`${images.length === 1 ? 'aspect-video' : 'aspect-square'} w-full`}
                     >
-                      <X className="w-3 h-3" />
-                    </Button>
+                      <img
+                        src={image}
+                        alt={`Upload ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                      />
+                    </div>
+
+                    {/* Overlay with actions */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="h-8 px-3 bg-white/90 hover:bg-white text-black"
+                          onClick={() => {
+                            // Crop functionality placeholder
+                            toast({
+                              title: 'Crop Feature',
+                              description: 'Image cropping will be available soon!',
+                            });
+                          }}
+                        >
+                          <span className="text-xs">Crop</span>
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="h-8 w-8 p-0 rounded-full"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* File info */}
+                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                      {index + 1}/{images.length}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -448,12 +636,12 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
             )}
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 overflow-x-auto pb-2">
                 {/* Poll */}
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className={`transition-colors hover:scale-105 ${
+                  className={`transition-colors hover:scale-105 flex-shrink-0 ${
                     postType === 'poll'
                       ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
                       : 'text-primary hover:bg-primary/10'
@@ -468,7 +656,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105"
+                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105 flex-shrink-0"
                   onClick={() => fileInputRef.current?.click()}
                   title="Add photos"
                 >
@@ -477,17 +665,18 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*,video/*"
+                  accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/mov,video/avi"
                   multiple
                   onChange={handleImageUpload}
                   className="hidden"
+                  key={images.length} // Force re-render to allow same file selection
                 />
 
                 {/* Video Upload */}
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105"
+                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105 flex-shrink-0"
                   onClick={() => {
                     const input = document.createElement('input');
                     input.type = 'file';
@@ -500,13 +689,35 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                   <Video className="w-5 h-5" />
                 </Button>
 
+                {/* Hashtag */}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105 flex-shrink-0"
+                  onClick={handleHashtagClick}
+                  title="Add hashtag"
+                >
+                  <Hash className="w-5 h-5" />
+                </Button>
+
+                {/* Mention */}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-primary hover:bg-primary/10 transition-colors hover:scale-105 flex-shrink-0"
+                  onClick={handleMentionClick}
+                  title="Mention someone"
+                >
+                  <AtSign className="w-5 h-5" />
+                </Button>
+
                 {/* Emoji */}
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      className="text-primary hover:bg-primary/10 transition-colors hover:scale-105"
+                      className="text-primary hover:bg-primary/10 transition-colors hover:scale-105 flex-shrink-0"
                       title="Add emoji"
                     >
                       <Smile className="w-5 h-5" />
@@ -619,7 +830,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className={`transition-colors hover:scale-105 ${
+                  className={`transition-colors hover:scale-105 flex-shrink-0 ${
                     location
                       ? 'text-green-600 bg-green-50 hover:bg-green-100'
                       : 'text-primary hover:bg-primary/10'
@@ -637,7 +848,11 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      className="text-primary hover:bg-primary/10 transition-colors"
+                      className={`transition-colors flex-shrink-0 ${
+                        scheduledDate
+                          ? 'text-purple-600 bg-purple-50 hover:bg-purple-100'
+                          : 'text-primary hover:bg-primary/10'
+                      }`}
                       title="Schedule post"
                     >
                       <CalendarIcon className="w-5 h-5" />
@@ -646,6 +861,9 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Schedule Post</DialogTitle>
+                      <DialogDescription>
+                        Choose when you want your post to be published.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
@@ -685,7 +903,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
                 <Button
                   onClick={handleSubmit}
                   disabled={
-                    (!content.trim() && postType !== 'poll') ||
+                    (!content.trim() && postType !== 'poll' && images.length === 0) ||
                     (postType === 'poll' &&
                       (!pollQuestion.trim() ||
                         pollOptions.filter(opt => opt.text.trim()).length < 2)) ||
