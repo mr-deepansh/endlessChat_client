@@ -38,7 +38,7 @@ import {
   Users,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { uploadService } from '../../services/uploadService';
+// Upload service will be handled by postService
 
 interface CreatePostProps {
   onSubmit?: (postData: any) => void;
@@ -82,19 +82,13 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
     setIsSubmitting(true);
     try {
-      // Upload files first if any
-      let uploadedImageUrls: string[] = [];
-      if (imageFiles.length > 0) {
-        uploadedImageUrls = await uploadService.uploadFiles(imageFiles);
-      }
-
       const postData: any = {
         content:
           postType === 'article'
             ? `${articleTitle}\n\n${content}`
             : content || (images.length > 0 ? '📷 Shared media' : 'New post'),
+        files: imageFiles.length > 0 ? imageFiles : undefined,
         type: postType,
-        images: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
         location: location.trim() || undefined,
         scheduledFor:
           scheduledDate && scheduledTime

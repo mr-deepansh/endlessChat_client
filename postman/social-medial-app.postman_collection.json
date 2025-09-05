@@ -25,12 +25,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/users/logout",
+							"raw": "{{server}}/auth/logout",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
-								"users",
+								"auth",
 								"logout"
 							]
 						}
@@ -47,7 +47,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"user3\",\r\n    \"email\": \"user3@example.com\",\r\n    \"password\": \"Strong@123\",\r\n    \"confirmPassword\": \"Strong@123\",\r\n    \"firstName\": \"user3\",\r\n    \"lastName\": \"Kumar\",\r\n    \"role\":\"user\"\r\n}",
+							"raw": "{\r\n    \"username\": \"user_name.in\",\r\n    \"email\": \"user6@example.com\",\r\n    \"password\": \"Strong@123\",\r\n    \"confirmPassword\": \"Strong@123\",\r\n    \"firstName\": \"user5\",\r\n    \"lastName\": \"Kumar\",\r\n    \"role\":\"user\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -55,12 +55,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/users/register",
+							"raw": "{{server}}/auth/register",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
-								"users",
+								"auth",
 								"register"
 							]
 						}
@@ -77,7 +77,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"identifier\": \"mr_deepansh\",\r\n    \"password\": \"Strong@123\",\r\n    \"rememberMe\": false\r\n}\r\n",
+							"raw": "{\r\n    \"identifier\": \"mr_deepansh\",\r\n    \"password\": \"Strong@123\",\r\n    \"rememberMe\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -85,12 +85,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/users/login",
+							"raw": "{{server}}/auth/login",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
-								"users",
+								"auth",
 								"login"
 							]
 						}
@@ -120,12 +120,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/users/change-password",
+							"raw": "{{server}}/auth/change-password",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
-								"users",
+								"auth",
 								"change-password"
 							]
 						}

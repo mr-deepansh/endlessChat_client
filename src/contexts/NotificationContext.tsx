@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { notificationService } from '../services/notificationService';
+import notificationService from '../services/notificationService';
 import { toast } from '../hooks/use-toast';
 import { useNotificationSound } from '../hooks/useNotificationSound';
 import { showNotificationToast } from '../components/notifications/NotificationToast';

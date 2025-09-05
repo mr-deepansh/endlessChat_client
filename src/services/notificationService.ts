@@ -1,113 +1,152 @@
-import { api } from '../api/axiosInstance';
+import api from './api';
 
 export interface Notification {
   _id: string;
-  type: 'like' | 'comment' | 'follow' | 'repost' | 'mention' | 'comment_like' | 'unfollow';
+  type: 'like' | 'comment' | 'follow' | 'unfollow' | 'repost' | 'mention' | 'system';
   message: string;
   from: {
     _id: string;
-    avatar?: string;
     username: string;
     firstName: string;
     lastName: string;
+    avatar?: string;
   };
   to: string;
   postId?: string;
-  commentId?: string;
-  isRead: boolean;
-  createdAt: string;
-  updatedAt: string;
   postContent?: string;
   postImage?: string;
+  isRead: boolean;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  data?: any;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const notificationService = {
-  getNotifications: async (params?: {
-    page?: number;
-    limit?: number;
-    type?: string;
-    isRead?: boolean;
-  }): Promise<{ success: boolean; data: Notification[]; error?: string }> => {
-    try {
-      const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, String(value));
-          }
-        });
-      }
-      console.log('🔔 Fetching notifications from API...');
-      const response = await api.get(`/notifications?${queryParams.toString()}`);
-      console.log('✅ Notifications API success:', response.data);
-      const notifications =
-        response.data?.data?.notifications ||
-        response.data?.notifications ||
-        response.data?.data ||
-        response.data ||
-        [];
-      return { success: true, data: notifications };
-    } catch (error: any) {
-      console.error('❌ Notifications API failed:', error.message);
-      return { success: false, data: [], error: error.message };
-    }
-  },
+export interface NotificationsResponse {
+  notifications: Notification[];
+  totalNotifications: number;
+  totalPages: number;
+  currentPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  unreadCount: number;
+}
 
-  markAsRead: async (notificationId: string): Promise<{ success: boolean; message: string }> => {
-    try {
-      const response = await api.patch(`/notifications/${notificationId}/read`);
-      return { success: true, message: 'Marked as read' };
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-      return { success: false, message: 'Failed to mark as read' };
-    }
-  },
+export interface NotificationStats {
+  total: number;
+  unread: number;
+  byType: Record<string, number>;
+  byPriority: Record<string, number>;
+}
 
-  markAllAsRead: async (): Promise<{ success: boolean; message: string }> => {
-    try {
-      const response = await api.patch('/notifications/mark-all-read');
-      return { success: true, message: 'All notifications marked as read' };
-    } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
-      return { success: false, message: 'Failed to mark all as read' };
-    }
-  },
+export interface NotificationPreferences {
+  email: {
+    likes: boolean;
+    comments: boolean;
+    follows: boolean;
+    mentions: boolean;
+    reposts: boolean;
+    system: boolean;
+  };
+  push: {
+    likes: boolean;
+    comments: boolean;
+    follows: boolean;
+    mentions: boolean;
+    reposts: boolean;
+    system: boolean;
+  };
+  inApp: {
+    likes: boolean;
+    comments: boolean;
+    follows: boolean;
+    mentions: boolean;
+    reposts: boolean;
+    system: boolean;
+  };
+}
 
-  deleteNotification: async (
-    notificationId: string
-  ): Promise<{ success: boolean; message: string }> => {
-    try {
-      const response = await api.delete(`/notifications/${notificationId}`);
-      return { success: true, message: 'Notification deleted' };
-    } catch (error) {
-      console.error('Failed to delete notification:', error);
-      return { success: false, message: 'Failed to delete notification' };
-    }
-  },
+class NotificationService {
+  // Get notifications
+  async getNotifications(
+    page = 1,
+    limit = 20,
+    type?: string,
+    isRead?: boolean,
+    priority?: string
+  ): Promise<NotificationsResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
 
-  getUnreadCount: async (): Promise<{ count: number }> => {
-    try {
-      const response = await api.get('/notifications/unread-count');
-      return response.data?.data || response.data || { count: 0 };
-    } catch (error) {
-      console.error('Failed to get unread count:', error);
-      return { count: 0 };
-    }
-  },
+    if (type) params.append('type', type);
+    if (isRead !== undefined) params.append('isRead', isRead.toString());
+    if (priority) params.append('priority', priority);
 
-  createSystemNotification: async (data: {
-    type: string;
+    const response = await api.get(`/notifications?${params}`);
+    return response.data.data;
+  }
+
+  // Get unread count
+  async getUnreadCount(): Promise<{ count: number }> {
+    const response = await api.get('/notifications/unread-count');
+    return response.data.data;
+  }
+
+  // Mark notification as read
+  async markAsRead(notificationId: string): Promise<void> {
+    await api.patch(`/notifications/${notificationId}/read`);
+  }
+
+  // Mark all notifications as read
+  async markAllAsRead(): Promise<void> {
+    await api.patch('/notifications/mark-all-read');
+  }
+
+  // Delete notification
+  async deleteNotification(notificationId: string): Promise<void> {
+    await api.delete(`/notifications/${notificationId}`);
+  }
+
+  // Clear all notifications
+  async clearAllNotifications(): Promise<void> {
+    await api.delete('/notifications/clear-all');
+  }
+
+  // Get notification statistics
+  async getNotificationStats(): Promise<NotificationStats> {
+    const response = await api.get('/notifications/stats');
+    return response.data.data;
+  }
+
+  // Get notification preferences
+  async getNotificationPreferences(): Promise<NotificationPreferences> {
+    const response = await api.get('/notifications/preferences');
+    return response.data.data;
+  }
+
+  // Update notification preferences
+  async updateNotificationPreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
+    const response = await api.put('/notifications/preferences', preferences);
+    return response.data.data;
+  }
+
+  // Create test notification (for development)
+  async createTestNotification(): Promise<Notification> {
+    const response = await api.post('/notifications/test/create');
+    return response.data.data;
+  }
+
+  // Create system notification (admin only)
+  async createSystemNotification(data: {
+    recipients: string[];
+    title: string;
     message: string;
-    recipients?: string[];
-  }): Promise<{ success: boolean; message: string }> => {
-    try {
-      const response = await api.post('/notifications/system', data);
-      return { success: true, message: 'System notification created' };
-    } catch (error) {
-      console.error('Failed to create system notification:', error);
-      return { success: false, message: 'Failed to create notification' };
-    }
-  },
-};
+    data?: any;
+  }): Promise<void> {
+    await api.post('/notifications/system', data);
+  }
+}
 
-export default notificationService;
+export default new NotificationService();

@@ -1,6 +1,5 @@
-import { api, withErrorHandling } from './api';
+import api from './api';
 
-// User-related types
 export interface User {
   _id: string;
   username: string;
@@ -9,300 +8,200 @@ export interface User {
   lastName: string;
   bio?: string;
   avatar?: string;
-  role: 'user' | 'admin';
-  isActive: boolean;
+  coverImage?: string;
+  followers: string[];
+  following: string[];
+  postsCount: number;
   followersCount: number;
   followingCount: number;
-  postsCount: number;
-  createdAt: string;
-  lastActive: string;
-  location?: string;
-  website?: string;
   isFollowing?: boolean;
-}
-
-export interface Post {
-  _id: string;
-  content: string;
-  author: {
-    _id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    avatar?: string;
-  };
-  likesCount: number;
-  commentsCount: number;
-  repostsCount: number;
-  isLiked: boolean;
-  isBookmarked: boolean;
-  isReposted: boolean;
-  createdAt: string;
-  updatedAt: string;
-  media?: string[];
-  repost?: {
-    _id: string;
-    content: string;
-    author: User;
-  };
-}
-
-export interface Comment {
-  _id: string;
-  content: string;
-  author: User;
-  post: string;
-  parent?: string;
-  likesCount: number;
-  repliesCount: number;
-  isLiked: boolean;
+  isFollowedBy?: boolean;
+  isVerified: boolean;
+  role: 'user' | 'admin' | 'super_admin';
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface UserStats {
-  postsCount: number;
-  followersCount: number;
-  followingCount: number;
-  mutualFollowersCount: number;
-  likesReceived: number;
-  commentsReceived: number;
+export interface UserProfile {
+  user: User;
+  stats: {
+    postsCount: number;
+    followersCount: number;
+    followingCount: number;
+  };
 }
 
-export interface LoginData {
-  identifier: string;
-  password: string;
-  rememberMe?: boolean;
+export interface UsersResponse {
+  users: User[];
+  totalUsers: number;
+  totalPages: number;
+  currentPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
-export interface RegisterData {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  role?: 'user' | 'admin';
+export interface FeedResponse {
+  posts: any[];
+  totalPosts: number;
+  totalPages: number;
+  currentPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
-export interface UpdateProfileData {
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  bio?: string;
-  location?: string;
-  website?: string;
-}
+class UserService {
+  // Get current user profile
+  async getCurrentProfile(): Promise<User> {
+    const response = await api.get('/users/profile');
+    return response.data.data;
+  }
 
-// User Service
-export const userService = {
-  // Authentication
-  login: async (data: LoginData): Promise<{ data: { user: User; accessToken: string } }> => {
-    console.log('🔄 UserService: Sending login data:', data);
-    const response = await api.post<{ data: { user: User; accessToken: string } }>(
-      '/users/login',
-      data
-    );
-    console.log('📊 UserService: Login response:', response);
-    return response;
-  },
+  // Update current user profile
+  async updateProfile(data: Partial<User>): Promise<User> {
+    const response = await api.put('/users/profile', data);
+    return response.data.data;
+  }
 
-  register: async (data: RegisterData): Promise<{ message: string }> => {
-    console.log('🔄 UserService: Sending register data:', data);
-    const response = await api.post<{ message: string }>('/users/register', data);
-    console.log('📊 UserService: Register response:', response);
-    return response;
-  },
+  // Get user profile by username
+  async getUserProfile(username: string): Promise<UserProfile> {
+    const response = await api.get(`/users/profile/${username}`);
+    return response.data.data;
+  }
 
-  logout: async (): Promise<{ message: string }> => {
-    return api.post<{ message: string }>('/users/logout');
-  },
+  // Get user by ID
+  async getUserById(id: string): Promise<User> {
+    const response = await api.get(`/users/${id}`);
+    return response.data.data;
+  }
 
-  forgotPassword: async (email: string): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.post<{ message: string }>('/users/forgot-password', { email }),
-      'Failed to send password reset email'
-    );
-  },
+  // Search users
+  async searchUsers(query: string, page = 1, limit = 10): Promise<UsersResponse> {
+    const response = await api.get(`/users/search?username=${query}&page=${page}&limit=${limit}`);
+    return response.data.data;
+  }
 
-  resetPassword: async (token: string, password: string): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.post<{ message: string }>('/users/reset-password', { token, password }),
-      'Failed to reset password'
-    );
-  },
+  // Get all users
+  async getAllUsers(page = 1, limit = 10, filters?: any): Promise<UsersResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...filters,
+    });
+    const response = await api.get(`/users?${params}`);
+    return response.data.data;
+  }
 
-  // Profile Management
-  getProfile: async (): Promise<User> => {
-    return withErrorHandling(() => api.get<User>('/users/profile/me'), 'Failed to load profile');
-  },
+  // Follow user
+  async followUser(userId: string): Promise<{ isFollowing: boolean; followersCount: number }> {
+    const response = await api.post(`/users/follow/${userId}`);
+    return response.data.data;
+  }
 
-  getUserProfile: async (userId: string): Promise<User> => {
-    return withErrorHandling(
-      () =>
-        api.get<User>(`/users/${userId}`, {
-          cache: {
-            ttl: 10 * 60 * 1000, // 10 minutes
-            tags: ['user', `user_${userId}`],
-          },
-        }),
-      'Failed to load user profile'
-    );
-  },
+  // Unfollow user
+  async unfollowUser(userId: string): Promise<{ isFollowing: boolean; followersCount: number }> {
+    const response = await api.post(`/users/unfollow/${userId}`);
+    return response.data.data;
+  }
 
-  updateProfile: async (data: UpdateProfileData): Promise<User> => {
-    return withErrorHandling(
-      () => api.put<User>('/users/profile/me', data),
-      'Failed to update profile'
-    );
-  },
+  // Get user followers
+  async getUserFollowers(userId: string, page = 1, limit = 50): Promise<UsersResponse> {
+    const response = await api.get(`/users/followers/${userId}?page=${page}&limit=${limit}`);
+    return response.data.data;
+  }
 
-  uploadAvatar: async (avatarUrl: string): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.post<{ message: string }>('/users/upload-avatar', { avatarUrl }),
-      'Failed to upload avatar'
-    );
-  },
-
-  changePassword: async (
-    currentPassword: string,
-    newPassword: string,
-    confirmNewPassword: string
-  ): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () =>
-        api.post<{ message: string }>('/users/change-password', {
-          currentPassword,
-          newPassword,
-          confirmNewPassword,
-        }),
-      'Failed to change password'
-    );
-  },
-
-  // Follow System
-  followUser: async (userId: string): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.post<{ message: string }>(`/users/follow/${userId}`),
-      'Failed to follow user'
-    );
-  },
-
-  unfollowUser: async (userId: string): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.post<{ message: string }>(`/users/unfollow/${userId}`),
-      'Failed to unfollow user'
-    );
-  },
-
-  getFollowers: async (userId: string, page: number = 1, limit: number = 50): Promise<User[]> => {
-    return withErrorHandling(
-      () => api.get<User[]>(`/users/followers/${userId}?page=${page}&limit=${limit}`),
-      'Failed to load followers'
-    );
-  },
-
-  getFollowing: async (userId: string, page: number = 1, limit: number = 50): Promise<User[]> => {
-    return withErrorHandling(
-      () => api.get<User[]>(`/users/following/${userId}?page=${page}&limit=${limit}`),
-      'Failed to load following'
-    );
-  },
-
-  // User Stats
-  getUserStats: async (userId?: string): Promise<UserStats> => {
-    const endpoint = userId ? `/users/${userId}/stats` : '/users/stats/me';
-    try {
-      return await withErrorHandling(
-        () => api.get<UserStats>(endpoint),
-        'Failed to load user stats'
-      );
-    } catch (error: any) {
-      // Return default stats if endpoint doesn't exist yet
-      if (error.response?.status === 404) {
-        console.warn('Stats endpoint not available yet');
-        return {
-          postsCount: 0,
-          followersCount: 0,
-          followingCount: 0,
-          mutualFollowersCount: 0,
-          likesReceived: 0,
-          commentsReceived: 0,
-        };
-      }
-      throw error;
-    }
-  },
-
-  // Posts
-  getUserPosts: async (userId?: string): Promise<Post[]> => {
-    const endpoint = userId ? `/posts/user/${userId}` : '/posts/me';
-    try {
-      return await withErrorHandling(() => api.get<Post[]>(endpoint), 'Failed to load posts');
-    } catch (error: any) {
-      // Return empty array if endpoint doesn't exist yet
-      if (error.response?.status === 404) {
-        console.warn('Posts endpoint not available yet');
-        return [];
-      }
-      throw error;
-    }
-  },
-
-  // Get all users with pagination and filtering
-  getAllUsers: async (params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    role?: string;
-    isActive?: boolean;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<User[]> => {
-    const queryParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) {
-          queryParams.append(key, value.toString());
-        }
-      });
-    }
-
-    return api.get<User[]>(`/users?${queryParams.toString()}`);
-  },
-
-  // Search users with debouncing
-  searchUsers: async (username: string): Promise<User[]> => {
-    if (!username.trim()) return [];
-    return api.get<User[]>(`/users/search?username=${encodeURIComponent(username)}`);
-  },
+  // Get user following
+  async getUserFollowing(userId: string, page = 1, limit = 50): Promise<UsersResponse> {
+    const response = await api.get(`/users/following/${userId}?page=${page}&limit=${limit}`);
+    return response.data.data;
+  }
 
   // Get user feed
-  getUserFeed: async (params?: {
-    limit?: number;
-    page?: number;
-    sort?: string;
-  }): Promise<any[]> => {
-    const queryParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) {
-          queryParams.append(key, value.toString());
-        }
-      });
+  async getUserFeed(page = 1, limit = 20, sort = 'recent'): Promise<FeedResponse> {
+    const response = await api.get(`/users/feed?page=${page}&limit=${limit}&sort=${sort}`);
+    return response.data.data;
+  }
+
+  // Change password
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await api.post('/users/change-password', {
+      currentPassword,
+      newPassword,
+    });
+  }
+
+  // Upload avatar
+  async uploadAvatar(file: File): Promise<{ avatar: string }> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await api.post('/users/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.data;
+  }
+
+  // Upload cover image
+  async uploadCoverImage(file: File): Promise<{ coverImage: string }> {
+    const formData = new FormData();
+    formData.append('cover', file);
+
+    const response = await api.post('/users/upload-cover', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.data;
+  }
+
+  // Update user (admin)
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    const response = await api.put(`/users/${id}`, data);
+    return response.data.data;
+  }
+
+  // Delete user
+  async deleteUser(id: string): Promise<void> {
+    await api.delete(`/users/${id}`);
+  }
+
+  // Get user posts
+  async getUserPosts(page = 1, limit = 20): Promise<any[]> {
+    try {
+      const response = await api.get(`/users/posts?page=${page}&limit=${limit}`);
+      return response.data.data || [];
+    } catch (error) {
+      console.warn('getUserPosts API not available');
+      return [];
     }
+  }
 
-    return withErrorHandling(
-      () =>
-        api.get<any[]>(`/users/feed?${queryParams.toString()}`, {
-          cache: {
-            ttl: 30 * 1000, // 30 seconds for feed
-            tags: ['feed', 'posts'],
-          },
-        }),
-      'Failed to load feed'
-    );
-  },
-};
+  // Get user stats
+  async getUserStats(): Promise<any> {
+    try {
+      const response = await api.get('/users/stats');
+      return response.data.data || {
+        postsCount: 0,
+        followersCount: 0,
+        followingCount: 0,
+        mutualFollowersCount: 0,
+        likesReceived: 0,
+        commentsReceived: 0
+      };
+    } catch (error) {
+      console.warn('getUserStats API not available');
+      return {
+        postsCount: 0,
+        followersCount: 0,
+        followingCount: 0,
+        mutualFollowersCount: 0,
+        likesReceived: 0,
+        commentsReceived: 0
+      };
+    }
+  }
+}
 
-export default userService;
+export default new UserService();

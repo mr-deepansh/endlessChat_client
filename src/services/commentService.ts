@@ -1,84 +1,67 @@
-import { api, withErrorHandling } from './api';
-import { Comment } from './userService';
+import api from './api';
 
-export interface CreateCommentData {
+export interface Comment {
+  _id: string;
   content: string;
-  postId: string;
-  parentId?: string;
-}
-
-export interface UpdateCommentData {
-  content: string;
+  author: {
+    _id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  post: string;
+  likes: string[];
+  replies: Comment[];
+  isLiked?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CommentsResponse {
   comments: Comment[];
-  hasMore: boolean;
-  nextCursor?: string;
+  totalComments: number;
+  totalPages: number;
+  currentPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
-export const commentService = {
-  // Create comment
-  createComment: async (data: CreateCommentData): Promise<Comment> => {
-    return withErrorHandling(
-      () => api.post<Comment>('/comments', data),
-      'Failed to create comment'
-    );
-  },
+class CommentService {
+  // Get comments for a post
+  async getComments(postId: string, page = 1, limit = 20): Promise<CommentsResponse> {
+    const response = await api.get(`/blogs/comments/${postId}?page=${page}&limit=${limit}`);
+    return response.data.data;
+  }
 
-  // Get post comments
-  getPostComments: async (
-    postId: string,
-    cursor?: string,
-    limit: number = 20
-  ): Promise<CommentsResponse> => {
-    const params = new URLSearchParams();
-    if (cursor) params.append('cursor', cursor);
-    params.append('limit', limit.toString());
-
-    return withErrorHandling(
-      () => api.get<CommentsResponse>(`/comments/post/${postId}?${params.toString()}`),
-      'Failed to load comments'
-    );
-  },
-
-  // Get comment replies
-  getCommentReplies: async (
-    commentId: string,
-    cursor?: string,
-    limit: number = 10
-  ): Promise<CommentsResponse> => {
-    const params = new URLSearchParams();
-    if (cursor) params.append('cursor', cursor);
-    params.append('limit', limit.toString());
-
-    return withErrorHandling(
-      () => api.get<CommentsResponse>(`/comments/${commentId}/replies?${params.toString()}`),
-      'Failed to load replies'
-    );
-  },
-
-  // Update comment
-  updateComment: async (commentId: string, data: UpdateCommentData): Promise<Comment> => {
-    return withErrorHandling(
-      () => api.put<Comment>(`/comments/${commentId}`, data),
-      'Failed to update comment'
-    );
-  },
-
-  // Delete comment
-  deleteComment: async (commentId: string): Promise<{ message: string }> => {
-    return withErrorHandling(
-      () => api.delete<{ message: string }>(`/comments/${commentId}`),
-      'Failed to delete comment'
-    );
-  },
+  // Add comment to post
+  async addComment(postId: string, content: string): Promise<Comment> {
+    const response = await api.post(`/blogs/comments/${postId}`, { content });
+    return response.data.data;
+  }
 
   // Like/Unlike comment
-  toggleLike: async (commentId: string): Promise<{ isLiked: boolean; likesCount: number }> => {
-    return withErrorHandling(
-      () => api.post<{ isLiked: boolean; likesCount: number }>(`/comments/${commentId}/like`),
-      'Failed to update like'
-    );
-  },
-};
+  async toggleCommentLike(commentId: string): Promise<{ isLiked: boolean; likesCount: number }> {
+    const response = await api.post(`/blogs/comments/${commentId}/like`);
+    return response.data.data;
+  }
+
+  // Reply to comment
+  async replyToComment(commentId: string, content: string): Promise<Comment> {
+    const response = await api.post(`/blogs/comments/${commentId}/reply`, { content });
+    return response.data.data;
+  }
+
+  // Update comment
+  async updateComment(commentId: string, content: string): Promise<Comment> {
+    const response = await api.patch(`/blogs/comments/${commentId}`, { content });
+    return response.data.data;
+  }
+
+  // Delete comment
+  async deleteComment(commentId: string): Promise<void> {
+    await api.delete(`/blogs/comments/${commentId}`);
+  }
+}
+
+export default new CommentService();

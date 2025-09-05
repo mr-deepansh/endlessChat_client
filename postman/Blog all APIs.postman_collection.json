@@ -1,0 +1,1285 @@
+{
+	"info": {
+		"_postman_id": "1afe72e3-ceaa-4590-8acd-43c98bf19c04",
+		"name": "Blog all APIs",
+		"description": "Complete API collection for Blog Microservice with Posts, Comments, Engagement, Media & Analytics",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31311755"
+	},
+	"item": [
+		{
+			"name": "📝 Posts Management",
+			"item": [
+				{
+					"name": "Create Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"🚀 Super Admin Announcement: First Official Tech Blog\",\n    \"content\": \"Hello Community! 👋\\n\\nI’m excited to publish my very first official post as the Super Admin. This platform is built to empower developers, tech enthusiasts, and innovators. Here, we’ll share insights, tutorials, and updates to help you grow and stay ahead in the tech world.\\n\\n✨ Key Highlights:\\n- Deep dives into #NodeJS and #JavaScript\\n- Real-world problem solving with modern technologies\\n- Community-driven discussions and collaborations\\n\\nStay tuned — this is just the beginning! Together, let’s build something extraordinary. 💡\\n\\n#SuperAdmin #Tech #Innovation\",\n    \"type\": \"post\",\n    \"category\": \"tech\",\n    \"tags\": [\n        \"nodejs\",\n        \"javascript\",\n        \"super_admin\",\n        \"innovation\"\n    ],\n    \"hashtags\": [\n        \"superadmin\",\n        \"tech\",\n        \"innovation\"\n    ],\n    \"status\": \"published\",\n    \"visibility\": \"public\"\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/posts",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Poll Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"📊 Super Admin Poll: Favorite Programming Language?\",\n    \"content\": \"Hello Community! 👋\\n\\nAs the Super Admin, I want to hear directly from our amazing developers. Your opinion matters — let’s find out which programming language leads in our community! 🚀\\n\\nCast your vote below and let’s settle this debate once and for all. 🔥\",\n    \"type\": \"poll\",\n    \"category\": \"tech\",\n    \"status\": \"published\",\n    \"visibility\": \"public\",\n    \"poll\": {\n        \"question\": \"Which programming language do you prefer the most?\",\n        \"options\": [\n            {\n                \"text\": \"JavaScript\"\n            },\n            {\n                \"text\": \"Python\"\n            },\n            {\n                \"text\": \"Java\"\n            }\n        ],\n        \"allowMultiple\": false,\n        \"endsAt\": \"2024-12-31T23:59:59Z\"\n    },\n    \"tags\": [\n        \"poll\",\n        \"programming\",\n        \"super_admin\",\n        \"community\"\n    ],\n    \"hashtags\": [\n        \"SuperAdmin\",\n        \"Programming\",\n        \"JavaScript\",\n        \"Python\",\n        \"Java\",\n        \"Community\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/posts",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Schedule Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"🎯 Super Admin Scheduled Post: Holiday Special\",\n    \"content\": \"Hello Community! 👋\\n\\nThis is a special scheduled post from your Super Admin. It’s all set to go live automatically on Christmas 🎄. \\n\\nStay tuned for exclusive insights, updates, and a few surprises. 🚀✨\\n\\nMark your calendars — great things are coming your way!\\n\\n#SuperAdmin #Scheduled #HolidaySpecial\",\n    \"type\": \"post\",\n    \"category\": \"announcement\",\n    \"tags\": [\n        \"super_admin\",\n        \"scheduled\",\n        \"holiday\",\n        \"announcement\"\n    ],\n    \"status\": \"scheduled\",\n    \"visibility\": \"public\",\n    \"isPublic\": true,\n    \"scheduledAt\": \"2024-12-25T10:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/posts",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Posts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?page=1&limit=20&type=post&sortBy=createdAt&sortOrder=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "type",
+									"value": "post"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/posts/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"published\",\n    \"visibility\": \"private\",\n    \"isPublic\": false\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/posts/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/posts/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Draft Post",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?page=1&limit=20&status=draft&sortBy=createdAt&sortOrder=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "status",
+									"value": "draft"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Post",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?includeAll=true",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "includeAll",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "📝 Drafts (saved but not published)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?page=1&limit=20&type=post&status=draft&sortBy=updatedAt&sortOrder=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "type",
+									"value": "post"
+								},
+								{
+									"key": "status",
+									"value": "draft"
+								},
+								{
+									"key": "sortBy",
+									"value": "updatedAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "🔒 Private Posts (visible only to author/admins)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?page=1&limit=20&type=post&visibility=private&sortBy=createdAt&sortOrder=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "type",
+									"value": "post"
+								},
+								{
+									"key": "visibility",
+									"value": "private"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Private Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"🔒 Super Admin Private Note\",\r\n    \"content\": \"This is a private blog post visible only to admins/moderators.\",\r\n    \"type\": \"post\",\r\n    \"category\": \"internal\",\r\n    \"tags\": [\r\n        \"private\",\r\n        \"confidential\",\r\n        \"super_admin\"\r\n    ],\r\n    \"hashtags\": [\r\n        \"privatepost\",\r\n        \"superadmin\"\r\n    ],\r\n    \"visibility\": \"private\",\r\n    \"isPublic\": false,\r\n    \"status\": \"draft\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/blogs/posts",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Archived Posts (pagination + filters)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?page=1&limit=20&type=post&status=archived&sortBy=updatedAt&sortOrder=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "type",
+									"value": "post"
+								},
+								{
+									"key": "status",
+									"value": "archived"
+								},
+								{
+									"key": "sortBy",
+									"value": "updatedAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Archived Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"🔒 Super Admin Internal Memo (Archived)\",\r\n    \"content\": \"This post was originally shared as a private internal memo for the admin and moderation team. It contained operational guidelines and confidential notes intended for restricted access only.\\n\\nSince the information has been reviewed, actioned, and is no longer required for daily operations, the Super Admin has archived it for record-keeping purposes.\\n\\n📌 Please note:\\n- Archived posts are preserved securely in the system.\\n- They remain accessible only to authorized personnel.\\n- They do not appear in active feeds or timelines.\\n\\nThis ensures transparency, compliance, and proper documentation of administrative activities.\\n\\n#SuperAdmin #Confidential #Archived #InternalUseOnly\",\r\n    \"type\": \"post\",\r\n    \"category\": \"internal\",\r\n    \"tags\": [\r\n        \"archived\",\r\n        \"confidential\",\r\n        \"super_admin\",\r\n        \"internal\",\r\n        \"memo\"\r\n    ],\r\n    \"visibility\": \"private\",\r\n    \"status\": \"archived\",\r\n    \"isPublic\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/blogs/posts",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Post without filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?page=1&limit=20&sortBy=updatedAt&sortOrder=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "sortBy",
+									"value": "updatedAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Posts by Post filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?type=post",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "post"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Posts by Poll filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?type=poll",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "poll"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Posts by Status filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?status=draft",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "draft"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Posts by Published filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?status=published",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "published"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Posts by Archived filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/posts?status=archived",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "archived"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "💬 Comments Management",
+			"item": [
+				{
+					"name": "Add Comment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Great post! Thanks for sharing.\"\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/comments/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"comments",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reply to Comment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"I agree with your comment!\",\n    \"parentCommentId\": \"COMMENT_ID\"\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/comments/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"comments",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Comments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/blogs/comments/POST_ID?page=1&limit=20",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"comments",
+								"POST_ID"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "❤️ Engagement Actions",
+			"item": [
+				{
+					"name": "Like Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/blogs/engagement/POST_ID/like",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"engagement",
+								"POST_ID",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Track View",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/blogs/engagement/POST_ID/view",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"engagement",
+								"POST_ID",
+								"view"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Share Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"platform\": \"twitter\"\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/engagement/POST_ID/share",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"engagement",
+								"POST_ID",
+								"share"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Repost",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quote\": \"Amazing post! Check it out.\"\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/engagement/POST_ID/repost",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"engagement",
+								"POST_ID",
+								"repost"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bookmark Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/blogs/engagement/POST_ID/bookmark",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"engagement",
+								"POST_ID",
+								"bookmark"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Vote on Poll",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"optionIndex\": 0\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/engagement/POST_ID/vote",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"engagement",
+								"POST_ID",
+								"vote"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📁 Media Management",
+			"item": [
+				{
+					"name": "Upload Media",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/blogs/media/upload",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"media",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Media",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/media?page=1&limit=20&type=image",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"media"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "type",
+									"value": "image"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Media",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/media/MEDIA_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"media",
+								"MEDIA_ID"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📊 Analytics & Insights",
+			"item": [
+				{
+					"name": "Get User Analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/analytics/user?timeframe=30d",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"user"
+							],
+							"query": [
+								{
+									"key": "timeframe",
+									"value": "30d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Post Analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/analytics/post/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"post",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Platform Analytics (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/analytics/platform?timeframe=30d",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"platform"
+							],
+							"query": [
+								{
+									"key": "timeframe",
+									"value": "30d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Real-time Engagement",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/analytics/post/POST_ID/realtime?minutes=60",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"post",
+								"POST_ID",
+								"realtime"
+							],
+							"query": [
+								{
+									"key": "minutes",
+									"value": "60"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "⏰ Scheduling Management",
+			"item": [
+				{
+					"name": "Get Scheduled Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/analytics/scheduled?page=1&limit=20",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"scheduled"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Scheduled Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/analytics/scheduled/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"scheduled",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reschedule Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"scheduledAt\": \"2024-12-31T15:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{server}}/blogs/analytics/scheduled/POST_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"scheduled",
+								"POST_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Scheduling Analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/blogs/analytics/scheduling",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"blogs",
+								"analytics",
+								"scheduling"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "server",
+			"value": "http://localhost:5000/api/v1"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_JWT_TOKEN_HERE"
+		}
+	]
+}

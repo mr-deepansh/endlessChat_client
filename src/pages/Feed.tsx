@@ -4,7 +4,7 @@ import Navbar from '../components/layout/Navbar';
 import CreatePost from '../components/posts/CreatePost';
 import PostCard from '../components/posts/PostCard';
 import { useAuth } from '../contexts/AuthContext';
-import { realTimePostService } from '../services/realTimePostService';
+import { postService, userService } from '../services';
 import { toast } from '../hooks/use-toast';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Card, CardContent } from '../components/ui/card';
@@ -43,9 +43,9 @@ const Feed: React.FC = () => {
 
     const loadPosts = async () => {
       try {
-        const response = await realTimePostService.getMyPosts();
-        if (response.success && response.data?.posts) {
-          setPosts(response.data.posts);
+        const response = await userService.getUserFeed();
+        if (response.posts) {
+          setPosts(response.posts);
         }
       } catch (error) {
         console.error('Failed to load posts:', error);
@@ -60,42 +60,34 @@ const Feed: React.FC = () => {
   const handleCreatePost = async (postData: any) => {
     setLoading(true);
     try {
-      const response = await realTimePostService.createPost(postData);
+      const newPost = await postService.createPost({
+        content: postData.content,
+        files: postData.files
+      });
 
-      if (response.success) {
-        const newPostData: Post = {
-          _id: response.data._id || Date.now().toString(),
-          author: {
-            _id: user?._id || '',
-            firstName: user?.firstName || 'User',
-            lastName: user?.lastName || '',
-            username: user?.username || 'user',
-            avatar: user?.avatar,
-            title: 'EndlessChat User',
-          },
-          content: postData.content,
-          images: response.data.images || postData.images || [],
-          createdAt: new Date().toISOString(),
-          likesCount: 0,
-          commentsCount: 0,
-          repostsCount: 0,
-          sharesCount: 0,
-          isLiked: false,
-          isBookmarked: false,
-          isReposted: false,
-          comments: [],
-        };
+      const newPostData: Post = {
+        _id: newPost._id,
+        author: newPost.author,
+        content: newPost.content,
+        images: newPost.media?.map(m => m.url) || [],
+        createdAt: newPost.createdAt,
+        likesCount: newPost.likes.length,
+        commentsCount: newPost.comments.length,
+        repostsCount: newPost.reposts.length,
+        sharesCount: 0,
+        isLiked: newPost.isLiked || false,
+        isBookmarked: false,
+        isReposted: newPost.isReposted || false,
+        comments: [],
+      };
 
-        setPosts([newPostData, ...posts]);
+      setPosts([newPostData, ...posts]);
 
-        toast({
-          title: postData.scheduledFor ? 'Post Scheduled' : 'Post Created',
-          description: postData.scheduledFor
-            ? `Your post will be published on ${new Date(postData.scheduledFor).toLocaleDateString()}`
-            : 'Your post has been published successfully.',
-          duration: 3000,
-        });
-      }
+      toast({
+        title: 'Post Created',
+        description: 'Your post has been published successfully.',
+        duration: 3000,
+      });
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -113,23 +105,19 @@ const Feed: React.FC = () => {
     if (!post) return;
 
     try {
-      const response = post.isLiked
-        ? await realTimePostService.unlikePost(postId)
-        : await realTimePostService.likePost(postId);
-
-      if (response.success) {
-        setPosts(
-          posts.map(p =>
-            p._id === postId
-              ? {
-                  ...p,
-                  isLiked: !p.isLiked,
-                  likesCount: p.isLiked ? p.likesCount - 1 : p.likesCount + 1,
-                }
-              : p
-          )
-        );
-      }
+      const response = await postService.toggleLike(postId);
+      
+      setPosts(
+        posts.map(p =>
+          p._id === postId
+            ? {
+                ...p,
+                isLiked: response.isLiked,
+                likesCount: response.likesCount,
+              }
+            : p
+        )
+      );
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -144,28 +132,24 @@ const Feed: React.FC = () => {
     if (!post) return;
 
     try {
-      const response = post.isReposted
-        ? await realTimePostService.unrepost(postId)
-        : await realTimePostService.repost(postId, withQuote ? quoteText : undefined);
+      const repostedPost = await postService.repost(postId, quoteText);
+      
+      setPosts(
+        posts.map(p =>
+          p._id === postId
+            ? {
+                ...p,
+                isReposted: true,
+                repostsCount: p.repostsCount + 1,
+              }
+            : p
+        )
+      );
 
-      if (response.success) {
-        setPosts(
-          posts.map(p =>
-            p._id === postId
-              ? {
-                  ...p,
-                  isReposted: !p.isReposted,
-                  repostsCount: p.isReposted ? p.repostsCount - 1 : p.repostsCount + 1,
-                }
-              : p
-          )
-        );
-
-        toast({
-          title: 'Success',
-          description: post.isReposted ? 'Post unreposted' : 'Post reposted successfully',
-        });
-      }
+      toast({
+        title: 'Success',
+        description: 'Post reposted successfully',
+      });
     } catch (error: any) {
       toast({
         title: 'Error',

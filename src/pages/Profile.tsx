@@ -14,8 +14,9 @@ import {
 } from '../components/ui/select';
 import Navbar from '../components/layout/Navbar';
 import PostCard from '../components/posts/PostCard';
-import { blogService, userService, socialService, User, Post } from '../services';
-import { realTimePostService } from '../services/realTimePostService';
+import { userService, postService } from '../services';
+import type { User } from '../services/userService';
+import type { Post } from '../services/postService';
 import { useAuth } from '../contexts/AuthContext';
 import { useApi } from '../hooks/useApi';
 import { Calendar, MapPin, Link as LinkIcon, Settings, Filter, Grid3X3, List } from 'lucide-react';
@@ -51,8 +52,8 @@ const Profile = () => {
 
           // Fetch current user's posts
           try {
-            const userPosts = await realTimePostService.getMyPosts();
-            const postsData = userPosts.data?.posts || [];
+            const userPosts = await postService.getMyPosts();
+            const postsData = userPosts.posts || [];
             setPosts(postsData);
             setFilteredPosts(postsData);
           } catch (error) {
@@ -62,10 +63,8 @@ const Profile = () => {
           }
         } else {
           // Find other user by username
-          const users = await userService.searchUsers(cleanUsername);
-          const foundUser = Array.isArray(users)
-            ? users.find(u => u.username === cleanUsername)
-            : null;
+          const usersResponse = await userService.searchUsers(cleanUsername);
+          const foundUser = usersResponse.users?.find(u => u.username === cleanUsername);
 
           if (foundUser) {
             setUser(foundUser);
@@ -73,10 +72,8 @@ const Profile = () => {
 
             // Fetch user posts
             try {
-              const userPosts = await realTimePostService.getUserPostsByUsername(
-                foundUser.username
-              );
-              const postsData = userPosts.data?.posts || [];
+              const userPosts = await postService.getUserPosts(foundUser.username);
+              const postsData = userPosts.posts || [];
               setPosts(postsData);
               setFilteredPosts(postsData);
             } catch (error) {
@@ -130,20 +127,18 @@ const Profile = () => {
 
     try {
       const response = isFollowing
-        ? await socialService.unfollowUser(user._id)
-        : await socialService.followUser(user._id);
+        ? await userService.unfollowUser(user._id)
+        : await userService.followUser(user._id);
 
-      if (response.success) {
-        setIsFollowing(!isFollowing);
-        setUser(prev =>
-          prev
-            ? {
-                ...prev,
-                followersCount: isFollowing ? prev.followersCount - 1 : prev.followersCount + 1,
-              }
-            : null
-        );
-      }
+      setIsFollowing(response.isFollowing);
+      setUser(prev =>
+        prev
+          ? {
+              ...prev,
+              followersCount: response.followersCount,
+            }
+          : null
+      );
     } catch (error: any) {
       console.error('Follow action failed:', error);
     }

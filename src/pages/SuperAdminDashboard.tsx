@@ -6,12 +6,35 @@ import { isSuperAdmin } from '../utils/roleUtils';
 import { adminService, superAdminService } from '../services';
 import {
   AdminStats,
-  AdminUser,
-  UserManagementParams,
-  CreateAdminRequest,
   AuditLog,
-  EmergencyLockdownRequest,
+  User as AdminUser,
 } from '../types/api';
+
+// Define missing types locally
+interface UserManagementParams {
+  page: number;
+  limit: number;
+  search: string;
+  role: string;
+  status: string;
+  sortBy: string;
+  sortOrder: string;
+}
+
+interface CreateAdminRequest {
+  username: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'super_admin';
+  firstName?: string;
+  lastName?: string;
+}
+
+interface EmergencyLockdownRequest {
+  reason: string;
+  duration: string;
+  password: string;
+}
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';

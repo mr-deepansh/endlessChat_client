@@ -1,4 +1,4 @@
-import { api, withErrorHandling } from './api';
+import api, { withErrorHandling, type ApiResponse } from './api';
 import type { ApiResponse } from './api';
 
 export interface FollowResponse {

@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Navbar from '../components/layout/Navbar';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { useNotifications } from '../contexts/NotificationContext';
+import { notificationService } from '../services';
+import type { Notification } from '../services/notificationService';
 import {
   Bell,
   Check,
@@ -33,7 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import type { Notification } from '../contexts/NotificationContext';
+
 
 const NotificationSkeleton = () => (
   <div className="flex items-start space-x-4 p-6 animate-pulse">
@@ -237,22 +238,86 @@ const NotificationItem: React.FC<{
 
 function Notifications() {
   usePageTitle('Notifications');
-  const {
-    notifications,
-    unreadCount,
-    loading,
-    refreshing,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    refreshNotifications,
-    getFilteredNotifications,
-  } = useNotifications();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
 
+  // Load notifications
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await notificationService.getNotifications();
+      setNotifications(response.notifications || []);
+      setUnreadCount(response.unreadCount || 0);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications(prev => 
+        prev.map(n => n._id === id ? { ...n, isRead: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    }
+  };
+
+  const deleteNotification = async (id: string) => {
+    try {
+      await notificationService.deleteNotification(id);
+      setNotifications(prev => prev.filter(n => n._id !== id));
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
+  };
+
+  const refreshNotifications = async () => {
+    try {
+      setRefreshing(true);
+      await loadNotifications();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const filteredNotifications = useMemo(() => {
-    return getFilteredNotifications(activeTab);
-  }, [getFilteredNotifications, activeTab]);
+    switch (activeTab) {
+      case 'unread':
+        return notifications.filter(n => !n.isRead);
+      case 'interactions':
+        return notifications.filter(n => 
+          ['like', 'comment', 'repost', 'mention'].includes(n.type)
+        );
+      case 'follows':
+        return notifications.filter(n => 
+          ['follow', 'unfollow'].includes(n.type)
+        );
+      default:
+        return notifications;
+    }
+  }, [notifications, activeTab]);
 
   const tabCounts = useMemo(() => {
     return {

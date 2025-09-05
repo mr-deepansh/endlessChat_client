@@ -26,7 +26,16 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { userService, type UserStats } from '@/services/userService';
+import userService from '@/services/userService';
+
+export interface UserStats {
+  postsCount: number;
+  followersCount: number;
+  followingCount: number;
+  mutualFollowersCount: number;
+  likesReceived: number;
+  commentsReceived: number;
+}
 import { ProfileSkeleton } from '@/components/loaders/ProfileSkeleton';
 
 interface Post {
@@ -68,7 +77,7 @@ const CurrentUserProfile = () => {
     location: '',
   });
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v2';
 
   useEffect(() => {
     if (user) {
