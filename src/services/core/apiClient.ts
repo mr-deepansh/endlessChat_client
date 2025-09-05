@@ -38,7 +38,8 @@ class ApiClient {
     this.instance.interceptors.request.use(
       config => {
         // Always check for token from storage
-        const token = this.token || localStorage.getItem('auth_token');
+        const token =
+          this.token || localStorage.getItem('auth_token') || localStorage.getItem('accessToken');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
           if (!this.token) {
@@ -66,7 +67,8 @@ class ApiClient {
 
         // Debug logging (disabled for cleaner console)
         // if (config.isDevelopment && config.features.enableDebug) {
-        //   console.log('API Request:', config.method, config.url);
+        //   console.log('🌐 API Request:', config.method?.toUpperCase(), config.url);
+        //   console.log('🔑 Authorization header:', config.headers.Authorization);
         // }
 
         return config;
@@ -114,6 +116,17 @@ class ApiClient {
             message: 'Too many requests. Please try again later.',
             timestamp: new Date().toISOString(),
           };
+
+          // Notify rate limit context if available
+          if (typeof window !== 'undefined') {
+            // Dispatch a custom event that the rate limit context can listen to
+            window.dispatchEvent(
+              new CustomEvent('rateLimitExceeded', {
+                detail: { timestamp: Date.now() },
+              })
+            );
+          }
+
           return Promise.reject(rateLimitError);
         }
 
@@ -141,7 +154,7 @@ class ApiClient {
   }
 
   private loadTokenFromStorage(): void {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('accessToken');
     if (token) {
       this.setToken(token);
     }
@@ -150,6 +163,7 @@ class ApiClient {
   public setToken(token: string): void {
     this.token = token;
     localStorage.setItem('auth_token', token);
+    localStorage.setItem('accessToken', token); // Also store as accessToken for compatibility
     // Update default headers immediately
     this.instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     console.log('🔑 Token set in API client:', token.substring(0, 20) + '...');
@@ -158,6 +172,7 @@ class ApiClient {
   public clearAuth(): void {
     this.token = null;
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('refresh_token');
     // Remove authorization header
     delete this.instance.defaults.headers.common['Authorization'];
@@ -179,10 +194,11 @@ class ApiClient {
 
   // Generic request methods with rate limiting protection
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const requestKey = `GET_${url}_${JSON.stringify(config?.params || {})}`;
     return requestQueue.add(async () => {
       const response = await this.instance.get(url, config);
       return response.data;
-    });
+    }, requestKey);
   }
 
   public async post<T>(

@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from './core/apiClient';
 
 export interface Notification {
   _id: string;
@@ -84,58 +84,60 @@ class NotificationService {
     if (isRead !== undefined) params.append('isRead', isRead.toString());
     if (priority) params.append('priority', priority);
 
-    const response = await api.get(`/notifications?${params}`);
-    return response.data.data;
+    const response = await apiClient.get(`/notifications?${params}`);
+    return response.data;
   }
 
   // Get unread count
   async getUnreadCount(): Promise<{ count: number }> {
-    const response = await api.get('/notifications/unread-count');
-    return response.data.data;
+    const response = await apiClient.get('/notifications/unread-count');
+    return response.data;
   }
 
   // Mark notification as read
   async markAsRead(notificationId: string): Promise<void> {
-    await api.patch(`/notifications/${notificationId}/read`);
+    await apiClient.patch(`/notifications/${notificationId}/read`);
   }
 
   // Mark all notifications as read
   async markAllAsRead(): Promise<void> {
-    await api.patch('/notifications/mark-all-read');
+    await apiClient.patch('/notifications/mark-all-read');
   }
 
   // Delete notification
   async deleteNotification(notificationId: string): Promise<void> {
-    await api.delete(`/notifications/${notificationId}`);
+    await apiClient.delete(`/notifications/${notificationId}`);
   }
 
   // Clear all notifications
   async clearAllNotifications(): Promise<void> {
-    await api.delete('/notifications/clear-all');
+    await apiClient.delete('/notifications/clear-all');
   }
 
   // Get notification statistics
   async getNotificationStats(): Promise<NotificationStats> {
-    const response = await api.get('/notifications/stats');
-    return response.data.data;
+    const response = await apiClient.get('/notifications/stats');
+    return response.data;
   }
 
   // Get notification preferences
   async getNotificationPreferences(): Promise<NotificationPreferences> {
-    const response = await api.get('/notifications/preferences');
-    return response.data.data;
+    const response = await apiClient.get('/notifications/preferences');
+    return response.data;
   }
 
   // Update notification preferences
-  async updateNotificationPreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
-    const response = await api.put('/notifications/preferences', preferences);
-    return response.data.data;
+  async updateNotificationPreferences(
+    preferences: Partial<NotificationPreferences>
+  ): Promise<NotificationPreferences> {
+    const response = await apiClient.put('/notifications/preferences', preferences);
+    return response.data;
   }
 
   // Create test notification (for development)
   async createTestNotification(): Promise<Notification> {
-    const response = await api.post('/notifications/test/create');
-    return response.data.data;
+    const response = await apiClient.post('/notifications/test/create');
+    return response.data;
   }
 
   // Create system notification (admin only)
@@ -145,7 +147,7 @@ class NotificationService {
     message: string;
     data?: any;
   }): Promise<void> {
-    await api.post('/notifications/system', data);
+    await apiClient.post('/notifications/system', data);
   }
 }
 

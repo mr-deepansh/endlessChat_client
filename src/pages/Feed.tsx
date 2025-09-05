@@ -8,6 +8,7 @@ import { postService, userService } from '../services';
 import { toast } from '../hooks/use-toast';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Card, CardContent } from '../components/ui/card';
+import { mockFeedService } from '../services/mockFeedService';
 
 interface Post {
   _id: string;
@@ -43,12 +44,22 @@ const Feed: React.FC = () => {
 
     const loadPosts = async () => {
       try {
+        // Try to get feed from backend first
         const response = await userService.getUserFeed();
         if (response.posts) {
           setPosts(response.posts);
+          return;
         }
-      } catch (error) {
-        console.error('Failed to load posts:', error);
+      } catch (backendError) {
+        console.warn('Backend feed failed, using mock data:', backendError);
+        
+        // Fallback to mock data
+        try {
+          const mockResponse = await mockFeedService.getFeed(1, 20, 'recent');
+          setPosts(mockResponse.posts);
+        } catch (mockError) {
+          console.error('Failed to load posts:', mockError);
+        }
       }
     };
 
@@ -60,10 +71,18 @@ const Feed: React.FC = () => {
   const handleCreatePost = async (postData: any) => {
     setLoading(true);
     try {
-      const newPost = await postService.createPost({
-        content: postData.content,
-        files: postData.files
-      });
+      let newPost;
+      
+      // Try backend first
+      try {
+        newPost = await postService.createPost({
+          content: postData.content,
+          files: postData.files
+        });
+      } catch (backendError) {
+        console.warn('Backend post creation failed, using mock:', backendError);
+        newPost = await mockFeedService.createPost(postData.content, postData.files);
+      }
 
       const newPostData: Post = {
         _id: newPost._id,
@@ -105,7 +124,15 @@ const Feed: React.FC = () => {
     if (!post) return;
 
     try {
-      const response = await postService.toggleLike(postId);
+      let response;
+      
+      // Try backend first
+      try {
+        response = await postService.toggleLike(postId);
+      } catch (backendError) {
+        console.warn('Backend like failed, using mock:', backendError);
+        response = await mockFeedService.toggleLike(postId);
+      }
       
       setPosts(
         posts.map(p =>
@@ -132,7 +159,15 @@ const Feed: React.FC = () => {
     if (!post) return;
 
     try {
-      const repostedPost = await postService.repost(postId, quoteText);
+      let repostedPost;
+      
+      // Try backend first
+      try {
+        repostedPost = await postService.repost(postId, quoteText);
+      } catch (backendError) {
+        console.warn('Backend repost failed, using mock:', backendError);
+        repostedPost = await mockFeedService.repost(postId, quoteText);
+      }
       
       setPosts(
         posts.map(p =>

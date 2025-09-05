@@ -1,4 +1,4 @@
-import api, { withErrorHandling, type ApiResponse } from './api';
+import { apiClient } from './core/apiClient';
 import type { ApiResponse } from './api';
 
 export interface FollowResponse {
@@ -14,31 +14,31 @@ export interface FollowResponse {
 export const followService = {
   // Follow a user
   followUser: async (userId: string): Promise<FollowResponse> => {
-    const response = await api.post(`/users/follow/${userId}`);
-    return response.data;
+    const response = await apiClient.post(`/users/follow/${userId}`);
+    return response;
   },
 
   // Unfollow a user
   unfollowUser: async (userId: string): Promise<FollowResponse> => {
-    const response = await api.post(`/users/unfollow/${userId}`);
-    return response.data;
+    const response = await apiClient.post(`/users/unfollow/${userId}`);
+    return response;
   },
 
   // Get followers list
   getFollowers: async (userId: string, page = 1, limit = 20) => {
-    const response = await api.get(`/users/followers/${userId}`, { params: { page, limit } });
-    return response.data;
+    const response = await apiClient.get(`/users/followers/${userId}?page=${page}&limit=${limit}`);
+    return response;
   },
 
   // Get following list
   getFollowing: async (userId: string, page = 1, limit = 20) => {
-    const response = await api.get(`/users/following/${userId}`, { params: { page, limit } });
-    return response.data;
+    const response = await apiClient.get(`/users/following/${userId}?page=${page}&limit=${limit}`);
+    return response;
   },
 
   // Check if following
   checkFollowStatus: async (userId: string) => {
-    const response = await api.get(`/users/${userId}/follow-status`);
-    return response.data;
+    const response = await apiClient.get(`/users/${userId}/follow-status`);
+    return response;
   },
 };

@@ -8,6 +8,8 @@ import { TooltipProvider } from './components/ui/tooltip';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { RateLimitProvider } from './contexts/RateLimitContext';
+import RateLimitIndicator from './components/common/RateLimitIndicator';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -56,11 +58,13 @@ const App = () => {
         <TooltipProvider>
           <BrowserRouter>
             <ThemeProvider>
-              <AuthProvider>
-                <NotificationProvider>
-                  <Toaster />
-                  <Sonner />
-                  <PageTransition>
+              <RateLimitProvider>
+                <AuthProvider>
+                  <NotificationProvider>
+                    <Toaster />
+                    <Sonner />
+                    <RateLimitIndicator />
+                    <PageTransition>
                     <Routes>
                       {/* Public routes - accessible to everyone */}
                       <Route path="/" element={<Index />} />
@@ -192,9 +196,10 @@ const App = () => {
                       {/* Catch-all route */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
-                  </PageTransition>
-                </NotificationProvider>
-              </AuthProvider>
+                    </PageTransition>
+                  </NotificationProvider>
+                </AuthProvider>
+              </RateLimitProvider>
             </ThemeProvider>
           </BrowserRouter>
         </TooltipProvider>

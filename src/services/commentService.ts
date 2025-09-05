@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from './core/apiClient';
 
 export interface Comment {
   _id: string;
@@ -30,37 +30,37 @@ export interface CommentsResponse {
 class CommentService {
   // Get comments for a post
   async getComments(postId: string, page = 1, limit = 20): Promise<CommentsResponse> {
-    const response = await api.get(`/blogs/comments/${postId}?page=${page}&limit=${limit}`);
+    const response = await apiClient.get(`/blogs/comments/${postId}?page=${page}&limit=${limit}`);
     return response.data.data;
   }
 
   // Add comment to post
   async addComment(postId: string, content: string): Promise<Comment> {
-    const response = await api.post(`/blogs/comments/${postId}`, { content });
+    const response = await apiClient.post(`/blogs/comments/${postId}`, { content });
     return response.data.data;
   }
 
   // Like/Unlike comment
   async toggleCommentLike(commentId: string): Promise<{ isLiked: boolean; likesCount: number }> {
-    const response = await api.post(`/blogs/comments/${commentId}/like`);
+    const response = await apiClient.post(`/blogs/comments/${commentId}/like`);
     return response.data.data;
   }
 
   // Reply to comment
   async replyToComment(commentId: string, content: string): Promise<Comment> {
-    const response = await api.post(`/blogs/comments/${commentId}/reply`, { content });
+    const response = await apiClient.post(`/blogs/comments/${commentId}/reply`, { content });
     return response.data.data;
   }
 
   // Update comment
   async updateComment(commentId: string, content: string): Promise<Comment> {
-    const response = await api.patch(`/blogs/comments/${commentId}`, { content });
+    const response = await apiClient.patch(`/blogs/comments/${commentId}`, { content });
     return response.data.data;
   }
 
   // Delete comment
   async deleteComment(commentId: string): Promise<void> {
-    await api.delete(`/blogs/comments/${commentId}`);
+    await apiClient.delete(`/blogs/comments/${commentId}`);
   }
 }
 

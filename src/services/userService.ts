@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from './core/apiClient';
 
 export interface User {
   _id: string;
@@ -53,32 +53,32 @@ export interface FeedResponse {
 class UserService {
   // Get current user profile
   async getCurrentProfile(): Promise<User> {
-    const response = await api.get('/users/profile');
-    return response.data.data;
+    const response = await apiClient.get('/users/profile/me');
+    return response.data;
   }
 
   // Update current user profile
   async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await api.put('/users/profile', data);
-    return response.data.data;
+    const response = await apiClient.put('/users/profile/me', data);
+    return response.data;
   }
 
   // Get user profile by username
   async getUserProfile(username: string): Promise<UserProfile> {
-    const response = await api.get(`/users/profile/${username}`);
-    return response.data.data;
+    const response = await apiClient.get(`/users/profile/${username}`);
+    return response.data;
   }
 
   // Get user by ID
   async getUserById(id: string): Promise<User> {
-    const response = await api.get(`/users/${id}`);
-    return response.data.data;
+    const response = await apiClient.get(`/users/${id}`);
+    return response.data;
   }
 
   // Search users
   async searchUsers(query: string, page = 1, limit = 10): Promise<UsersResponse> {
-    const response = await api.get(`/users/search?username=${query}&page=${page}&limit=${limit}`);
-    return response.data.data;
+    const response = await apiClient.get(`/users/search?username=${query}&page=${page}&limit=${limit}`);
+    return response.data;
   }
 
   // Get all users
@@ -88,43 +88,43 @@ class UserService {
       limit: limit.toString(),
       ...filters,
     });
-    const response = await api.get(`/users?${params}`);
-    return response.data.data;
+    const response = await apiClient.get(`/users?${params}`);
+    return response.data;
   }
 
   // Follow user
   async followUser(userId: string): Promise<{ isFollowing: boolean; followersCount: number }> {
-    const response = await api.post(`/users/follow/${userId}`);
-    return response.data.data;
+    const response = await apiClient.post(`/users/follow/${userId}`);
+    return response.data;
   }
 
   // Unfollow user
   async unfollowUser(userId: string): Promise<{ isFollowing: boolean; followersCount: number }> {
-    const response = await api.post(`/users/unfollow/${userId}`);
-    return response.data.data;
+    const response = await apiClient.post(`/users/unfollow/${userId}`);
+    return response.data;
   }
 
   // Get user followers
   async getUserFollowers(userId: string, page = 1, limit = 50): Promise<UsersResponse> {
-    const response = await api.get(`/users/followers/${userId}?page=${page}&limit=${limit}`);
-    return response.data.data;
+    const response = await apiClient.get(`/users/followers/${userId}?page=${page}&limit=${limit}`);
+    return response.data;
   }
 
   // Get user following
   async getUserFollowing(userId: string, page = 1, limit = 50): Promise<UsersResponse> {
-    const response = await api.get(`/users/following/${userId}?page=${page}&limit=${limit}`);
-    return response.data.data;
+    const response = await apiClient.get(`/users/following/${userId}?page=${page}&limit=${limit}`);
+    return response.data;
   }
 
   // Get user feed
   async getUserFeed(page = 1, limit = 20, sort = 'recent'): Promise<FeedResponse> {
-    const response = await api.get(`/users/feed?page=${page}&limit=${limit}&sort=${sort}`);
-    return response.data.data;
+    const response = await apiClient.get(`/users/feed?page=${page}&limit=${limit}&sort=${sort}`);
+    return response.data;
   }
 
   // Change password
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await api.post('/users/change-password', {
+    await apiClient.post('/auth/change-password', {
       currentPassword,
       newPassword,
     });
@@ -135,12 +135,8 @@ class UserService {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    const response = await api.post('/users/upload-avatar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data.data;
+    const response = await apiClient.uploadFile('/users/upload-avatar', file);
+    return response.data;
   }
 
   // Upload cover image
@@ -148,30 +144,26 @@ class UserService {
     const formData = new FormData();
     formData.append('cover', file);
 
-    const response = await api.post('/users/upload-cover', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data.data;
+    const response = await apiClient.uploadFile('/users/upload-cover', file);
+    return response.data;
   }
 
   // Update user (admin)
   async updateUser(id: string, data: Partial<User>): Promise<User> {
-    const response = await api.put(`/users/${id}`, data);
-    return response.data.data;
+    const response = await apiClient.put(`/users/${id}`, data);
+    return response.data;
   }
 
   // Delete user
   async deleteUser(id: string): Promise<void> {
-    await api.delete(`/users/${id}`);
+    await apiClient.delete(`/users/${id}`);
   }
 
   // Get user posts
   async getUserPosts(page = 1, limit = 20): Promise<any[]> {
     try {
-      const response = await api.get(`/users/posts?page=${page}&limit=${limit}`);
-      return response.data.data || [];
+      const response = await apiClient.get(`/users/posts?page=${page}&limit=${limit}`);
+      return response.data || [];
     } catch (error) {
       console.warn('getUserPosts API not available');
       return [];
@@ -181,8 +173,8 @@ class UserService {
   // Get user stats
   async getUserStats(): Promise<any> {
     try {
-      const response = await api.get('/users/stats');
-      return response.data.data || {
+      const response = await apiClient.get('/users/stats');
+      return response.data || {
         postsCount: 0,
         followersCount: 0,
         followingCount: 0,

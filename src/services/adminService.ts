@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from './core/apiClient';
 
 export interface AdminStats {
   users: {
@@ -65,19 +65,19 @@ export interface SecurityAnalysis {
 class AdminService {
   // Get admin dashboard
   async getDashboard(): Promise<AdminDashboard> {
-    const response = await api.get('/admin/dashboard');
+    const response = await apiClient.get('/admin/dashboard');
     return response.data.data;
   }
 
   // Get admin stats
   async getStats(): Promise<AdminStats> {
-    const response = await api.get('/admin/stats');
+    const response = await apiClient.get('/admin/stats');
     return response.data.data;
   }
 
   // Get live stats
   async getLiveStats(): Promise<AdminStats> {
-    const response = await api.get('/admin/stats/live');
+    const response = await apiClient.get('/admin/stats/live');
     return response.data.data;
   }
 
@@ -88,40 +88,40 @@ class AdminService {
       limit: limit.toString(),
       ...filters,
     });
-    const response = await api.get(`/admin/users?${params}`);
+    const response = await apiClient.get(`/admin/users?${params}`);
     return response.data.data;
   }
 
   // Get user by ID (admin)
   async getUserById(id: string): Promise<any> {
-    const response = await api.get(`/admin/users/${id}`);
+    const response = await apiClient.get(`/admin/users/${id}`);
     return response.data.data;
   }
 
   // Update user (admin)
   async updateUser(id: string, data: any): Promise<any> {
-    const response = await api.put(`/admin/users/${id}`, data);
+    const response = await apiClient.put(`/admin/users/${id}`, data);
     return response.data.data;
   }
 
   // Delete user (admin)
   async deleteUser(id: string): Promise<void> {
-    await api.delete(`/admin/users/${id}`);
+    await apiClient.delete(`/admin/users/${id}`);
   }
 
   // Suspend user
   async suspendUser(id: string, reason: string): Promise<void> {
-    await api.patch(`/admin/users/${id}/suspend`, { reason });
+    await apiClient.patch(`/admin/users/${id}/suspend`, { reason });
   }
 
   // Activate user
   async activateUser(id: string): Promise<void> {
-    await api.patch(`/admin/users/${id}/activate`);
+    await apiClient.patch(`/admin/users/${id}/activate`);
   }
 
   // Verify user account
   async verifyUser(id: string): Promise<void> {
-    await api.patch(`/admin/users/${id}/verify`);
+    await apiClient.patch(`/admin/users/${id}/verify`);
   }
 
   // Search users (admin)
@@ -133,13 +133,13 @@ class AdminService {
     });
     if (role) params.append('role', role);
 
-    const response = await api.get(`/admin/users/search?${params}`);
+    const response = await apiClient.get(`/admin/users/search?${params}`);
     return response.data.data;
   }
 
   // Bulk export users
   async exportUsers(format = 'csv', filters = 'active'): Promise<Blob> {
-    const response = await api.get(`/admin/users/export?format=${format}&filters=${filters}`, {
+    const response = await apiClient.get(`/admin/users/export?format=${format}&filters=${filters}`, {
       responseType: 'blob',
     });
     return response.data;
@@ -147,7 +147,7 @@ class AdminService {
 
   // Bulk actions on users
   async bulkActions(data: BulkActionData): Promise<void> {
-    await api.post('/admin/users/bulk-actions', data);
+    await apiClient.post('/admin/users/bulk-actions', data);
   }
 
   // Get user activity log
@@ -158,7 +158,7 @@ class AdminService {
     });
     if (type) params.append('type', type);
 
-    const response = await api.get(`/admin/users/${id}/activity-log?${params}`);
+    const response = await apiClient.get(`/admin/users/${id}/activity-log?${params}`);
     return response.data.data;
   }
 
@@ -169,89 +169,89 @@ class AdminService {
     message: string;
     channels: string[];
   }): Promise<void> {
-    await api.post(`/admin/users/${id}/notify`, data);
+    await apiClient.post(`/admin/users/${id}/notify`, data);
   }
 
   // Force password reset
   async forcePasswordReset(id: string, reason: string): Promise<void> {
-    await api.post(`/admin/users/${id}/force-password-reset`, { reason });
+    await apiClient.post(`/admin/users/${id}/force-password-reset`, { reason });
   }
 
   // Get user security analysis
   async getUserSecurityAnalysis(id: string): Promise<SecurityAnalysis> {
-    const response = await api.get(`/admin/users/${id}/security-analysis`);
+    const response = await apiClient.get(`/admin/users/${id}/security-analysis`);
     return response.data.data;
   }
 
   // Get all admins
   async getAllAdmins(): Promise<any> {
-    const response = await api.get('/admin/admins');
+    const response = await apiClient.get('/admin/admins');
     return response.data.data;
   }
 
   // Get admin by ID
   async getAdminById(adminId: string): Promise<any> {
-    const response = await api.get(`/admin/admins/${adminId}`);
+    const response = await apiClient.get(`/admin/admins/${adminId}`);
     return response.data.data;
   }
 
   // Analytics endpoints
   async getSessionAnalytics(timeRange = '30d'): Promise<any> {
-    const response = await api.get(`/admin/sessions/analytics?timeRange=${timeRange}`);
+    const response = await apiClient.get(`/admin/sessions/analytics?timeRange=${timeRange}`);
     return response.data.data;
   }
 
   async getAnalyticsOverview(timeRange = '30d'): Promise<any> {
-    const response = await api.get(`/admin/analytics/overview?timeRange=${timeRange}`);
+    const response = await apiClient.get(`/admin/analytics/overview?timeRange=${timeRange}`);
     return response.data.data;
   }
 
   async getUserGrowthAnalytics(period = 'daily', days = 30): Promise<any> {
-    const response = await api.get(`/admin/analytics/users/growth?period=${period}&days=${days}`);
+    const response = await apiClient.get(`/admin/analytics/users/growth?period=${period}&days=${days}`);
     return response.data.data;
   }
 
   async getUserRetentionAnalytics(period = 'weekly', weeks = 12): Promise<any> {
-    const response = await api.get(`/admin/analytics/users/retention?period=${period}&weeks=${weeks}`);
+    const response = await apiClient.get(`/admin/analytics/users/retention?period=${period}&weeks=${weeks}`);
     return response.data.data;
   }
 
   async getUserDemographics(): Promise<any> {
-    const response = await api.get('/admin/analytics/users/demographics');
+    const response = await apiClient.get('/admin/analytics/users/demographics');
     return response.data.data;
   }
 
   async getEngagementMetrics(timeRange = '30d', metric = 'all'): Promise<any> {
-    const response = await api.get(`/admin/analytics/engagement/metrics?timeRange=${timeRange}&metric=${metric}`);
+    const response = await apiClient.get(`/admin/analytics/engagement/metrics?timeRange=${timeRange}&metric=${metric}`);
     return response.data.data;
   }
 
   // Security endpoints
   async getSuspiciousAccounts(page = 1, limit = 20, riskLevel = 'high'): Promise<any> {
-    const response = await api.get(`/admin/security/suspicious-accounts?page=${page}&limit=${limit}&riskLevel=${riskLevel}`);
+    const response = await apiClient.get(`/admin/security/suspicious-accounts?page=${page}&limit=${limit}&riskLevel=${riskLevel}`);
     return response.data.data;
   }
 
   async getLoginAttempts(status = 'failed', timeRange = '24h'): Promise<any> {
-    const response = await api.get(`/admin/security/login-attempts?status=${status}&timeRange=${timeRange}`);
+    const response = await apiClient.get(`/admin/security/login-attempts?status=${status}&timeRange=${timeRange}`);
     return response.data.data;
   }
 
   async getBlockedIPs(page = 1, limit = 20): Promise<any> {
-    const response = await api.get(`/admin/security/blocked-ips?page=${page}&limit=${limit}`);
+    const response = await apiClient.get(`/admin/security/blocked-ips?page=${page}&limit=${limit}`);
     return response.data.data;
   }
 
   async blockIP(data: { ipAddress: string; reason: string; duration: string }): Promise<void> {
-    await api.post('/admin/security/blocked-ips', data);
+    await apiClient.post('/admin/security/blocked-ips', data);
   }
 
   async unblockIP(ipId: string, reason: string): Promise<void> {
-    await api.delete(`/admin/security/blocked-ips/${ipId}`, { data: { reason } });
+    await apiClient.delete(`/admin/security/blocked-ips/${ipId}`, { data: { reason } });
   }
 
   async getThreatDetection(): Promise<any> {
-    const response = await api.get('/admin/security/threat-detection');
+    const response = await apiClient.get('/admin/security/threat-detection');
     return response.data.data;
   }
 }

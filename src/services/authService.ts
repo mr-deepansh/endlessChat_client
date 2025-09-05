@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from './core/apiClient';
 
 export interface AuthResponse {
   success: boolean;
@@ -25,21 +25,21 @@ export interface UpdateProfileData {
 export const authService = {
   // Login
   login: async (email: string, password: string, rememberMe = false): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', { 
+    const response = await apiClient.post('/auth/login', { 
       identifier: email, 
       password,
       rememberMe 
     });
     
     // Store tokens
-    if (response.data.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.data.accessToken);
+    if (response.data?.accessToken) {
+      localStorage.setItem('accessToken', response.data.accessToken);
     }
-    if (response.data.data?.refreshToken) {
-      localStorage.setItem('refreshToken', response.data.data.refreshToken);
+    if (response.data?.refreshToken) {
+      localStorage.setItem('refreshToken', response.data.refreshToken);
     }
     
-    return response.data;
+    return response;
   },
 
   // Register
@@ -51,58 +51,58 @@ export const authService = {
     firstName: string;
     lastName: string;
   }): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', userData);
-    return response.data;
+    const response = await apiClient.post('/auth/register', userData);
+    return response;
   },
 
   // Logout
   logout: async () => {
-    const response = await api.post('/auth/logout');
+    const response = await apiClient.post('/auth/logout');
     
     // Clear tokens
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     
-    return response.data;
+    return response;
   },
 
   // Change Password
   changePassword: async (data: ChangePasswordData) => {
-    const response = await api.post('/users/change-password', data);
-    return response.data;
+    const response = await apiClient.post('/auth/change-password', data);
+    return response;
   },
 
   // Forgot Password
   forgotPassword: async (email: string) => {
-    const response = await api.post('/auth/forgot-password', { email });
-    return response.data;
+    const response = await apiClient.post('/auth/forgot-password', { email });
+    return response;
   },
 
   // Reset Password
   resetPassword: async (token: string, password: string, confirmPassword: string) => {
-    const response = await api.post(`/auth/reset-password/${token}`, { 
+    const response = await apiClient.post(`/auth/reset-password/${token}`, { 
       password, 
       confirmPassword 
     });
-    return response.data;
+    return response;
   },
 
   // Verify Email
   verifyEmail: async (token: string) => {
-    const response = await api.post(`/auth/verify-email/${token}`);
-    return response.data;
+    const response = await apiClient.post(`/auth/verify-email/${token}`);
+    return response;
   },
 
   // Resend Email Verification
   resendVerification: async () => {
-    const response = await api.post('/auth/resend-verification');
-    return response.data;
+    const response = await apiClient.post('/auth/resend-verification');
+    return response;
   },
 
   // Get Security Overview
   getSecurityOverview: async () => {
-    const response = await api.get('/auth/security-overview');
-    return response.data;
+    const response = await apiClient.get('/auth/security-overview');
+    return response;
   },
 
   // Get User Activity
@@ -113,49 +113,49 @@ export const authService = {
     });
     if (type) params.append('type', type);
     
-    const response = await api.get(`/auth/activity?${params}`);
-    return response.data;
+    const response = await apiClient.get(`/auth/activity?${params}`);
+    return response;
   },
 
   // Get Activity Stats
   getActivityStats: async () => {
-    const response = await api.get('/auth/activity/stats');
-    return response.data;
+    const response = await apiClient.get('/auth/activity/stats');
+    return response;
   },
 
   // Get Login Locations
   getLoginLocations: async () => {
-    const response = await api.get('/auth/activity/locations');
-    return response.data;
+    const response = await apiClient.get('/auth/activity/locations');
+    return response;
   },
 
   // Update Profile
   updateProfile: async (data: UpdateProfileData) => {
-    const response = await api.put('/users/profile', data);
-    return response.data;
+    const response = await apiClient.put('/users/profile/me', data);
+    return response;
   },
 
   // Get Current User
   getCurrentUser: async () => {
-    const response = await api.get('/users/profile');
-    return response.data;
+    const response = await apiClient.get('/users/profile/me');
+    return response;
   },
 
   // Upload Avatar
   uploadAvatar: async (avatarUrl: string) => {
-    const response = await api.post('/users/upload-avatar', { avatarUrl });
-    return response.data;
+    const response = await apiClient.post('/users/upload-avatar', { avatarUrl });
+    return response;
   },
 
   // Refresh Token
   refreshToken: async (refreshToken: string) => {
-    const response = await api.post('/auth/refresh-token', { refreshToken });
+    const response = await apiClient.post('/auth/refresh-token', { refreshToken });
     
     // Update stored token
-    if (response.data.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.data.accessToken);
+    if (response.data?.accessToken) {
+      localStorage.setItem('accessToken', response.data.accessToken);
     }
     
-    return response.data;
+    return response;
   },
 };
