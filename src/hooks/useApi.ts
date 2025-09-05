@@ -24,7 +24,7 @@ export function useApi<T = any>(options: UseApiOptions = {}) {
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await apiCall();
       setData(result);
 

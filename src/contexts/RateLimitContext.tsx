@@ -38,7 +38,7 @@ export const RateLimitProvider: React.FC<RateLimitProviderProps> = ({ children }
     };
 
     window.addEventListener('rateLimitExceeded', handleRateLimitExceeded as EventListener);
-    
+
     return () => {
       window.removeEventListener('rateLimitExceeded', handleRateLimitExceeded as EventListener);
     };
@@ -51,11 +51,7 @@ export const RateLimitProvider: React.FC<RateLimitProviderProps> = ({ children }
     setLastRateLimitTime,
   };
 
-  return (
-    <RateLimitContext.Provider value={value}>
-      {children}
-    </RateLimitContext.Provider>
-  );
+  return <RateLimitContext.Provider value={value}>{children}</RateLimitContext.Provider>;
 };
 
 export default RateLimitProvider;

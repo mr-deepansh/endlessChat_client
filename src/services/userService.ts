@@ -77,7 +77,9 @@ class UserService {
 
   // Search users
   async searchUsers(query: string, page = 1, limit = 10): Promise<UsersResponse> {
-    const response = await apiClient.get(`/users/search?username=${query}&page=${page}&limit=${limit}`);
+    const response = await apiClient.get(
+      `/users/search?username=${query}&page=${page}&limit=${limit}`
+    );
     return response.data;
   }
 
@@ -174,14 +176,16 @@ class UserService {
   async getUserStats(): Promise<any> {
     try {
       const response = await apiClient.get('/users/stats');
-      return response.data || {
-        postsCount: 0,
-        followersCount: 0,
-        followingCount: 0,
-        mutualFollowersCount: 0,
-        likesReceived: 0,
-        commentsReceived: 0
-      };
+      return (
+        response.data || {
+          postsCount: 0,
+          followersCount: 0,
+          followingCount: 0,
+          mutualFollowersCount: 0,
+          likesReceived: 0,
+          commentsReceived: 0,
+        }
+      );
     } catch (error) {
       console.warn('getUserStats API not available');
       return {
@@ -190,7 +194,7 @@ class UserService {
         followingCount: 0,
         mutualFollowersCount: 0,
         likesReceived: 0,
-        commentsReceived: 0
+        commentsReceived: 0,
       };
     }
   }

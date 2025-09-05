@@ -65,137 +65,137 @@ const App = () => {
                     <Sonner />
                     <RateLimitIndicator />
                     <PageTransition>
-                    <Routes>
-                      {/* Public routes - accessible to everyone */}
-                      <Route path="/" element={<Index />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/features" element={<Features />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/privacy" element={<Privacy />} />
-                      <Route path="/terms" element={<Terms />} />
-                      <Route path="/support" element={<Support />} />
+                      <Routes>
+                        {/* Public routes - accessible to everyone */}
+                        <Route path="/" element={<Index />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/features" element={<Features />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/privacy" element={<Privacy />} />
+                        <Route path="/terms" element={<Terms />} />
+                        <Route path="/support" element={<Support />} />
 
-                      {/* Authentication routes - only for non-authenticated users */}
-                      <Route
-                        path="/login"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute requireAuth={false}>
-                              <Login />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
-                      <Route
-                        path="/register"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute requireAuth={false}>
-                              <Register />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
-                      <Route
-                        path="/forgot-password"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute requireAuth={false}>
-                              <ForgotPassword />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
+                        {/* Authentication routes - only for non-authenticated users */}
+                        <Route
+                          path="/login"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute requireAuth={false}>
+                                <Login />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/register"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute requireAuth={false}>
+                                <Register />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/forgot-password"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute requireAuth={false}>
+                                <ForgotPassword />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      {/* Protected routes - require authentication */}
-                      <Route
-                        path="/feed"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute>
-                              <Feed />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
-                      <Route
-                        path="/profile/me"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute>
-                              <CurrentUserProfile />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
-                      <Route
-                        path="/:username"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute>
-                              <Profile />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
-                      <Route
-                        path="/settings"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute>
-                              <Settings />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
-                      <Route
-                        path="/messages"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute>
-                              <Messages />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
-                      <Route
-                        path="/notifications"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute>
-                              <Notifications />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
+                        {/* Protected routes - require authentication */}
+                        <Route
+                          path="/feed"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Feed />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/profile/me"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <CurrentUserProfile />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/:username"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Profile />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/settings"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Settings />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/messages"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Messages />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/notifications"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Notifications />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      {/* Admin only routes */}
-                      <Route
-                        path="/admin"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute adminOnly={true}>
-                              <AdminDashboard />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
+                        {/* Admin only routes */}
+                        <Route
+                          path="/admin"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute adminOnly={true}>
+                                <AdminDashboard />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      {/* Super Admin only routes */}
-                      <Route
-                        path="/super-admin"
-                        element={
-                          <ErrorBoundary>
-                            <ProtectedRoute superAdminOnly={true}>
-                              <SuperAdminDashboard />
-                            </ProtectedRoute>
-                          </ErrorBoundary>
-                        }
-                      />
+                        {/* Super Admin only routes */}
+                        <Route
+                          path="/super-admin"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute superAdminOnly={true}>
+                                <SuperAdminDashboard />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      {/* Catch-all route */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
+                        {/* Catch-all route */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
                     </PageTransition>
                   </NotificationProvider>
                 </AuthProvider>

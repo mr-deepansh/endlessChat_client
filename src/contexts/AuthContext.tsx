@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error: any) {
         console.error('Auth check failed:', error);
-        
+
         // Handle rate limiting gracefully
         if (error.code === 'RATE_LIMIT_ERROR') {
           console.warn('Rate limited during auth check, will retry later');
@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         } catch (error: any) {
           console.error('Failed to refresh user data:', error);
-          
+
           // Handle rate limiting gracefully - don't spam the server
           if (error.code === 'RATE_LIMIT_ERROR') {
             console.warn('Rate limited during user refresh, will retry later');

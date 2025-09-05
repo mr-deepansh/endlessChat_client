@@ -139,9 +139,12 @@ class AdminService {
 
   // Bulk export users
   async exportUsers(format = 'csv', filters = 'active'): Promise<Blob> {
-    const response = await apiClient.get(`/admin/users/export?format=${format}&filters=${filters}`, {
-      responseType: 'blob',
-    });
+    const response = await apiClient.get(
+      `/admin/users/export?format=${format}&filters=${filters}`,
+      {
+        responseType: 'blob',
+      }
+    );
     return response.data;
   }
 
@@ -163,12 +166,15 @@ class AdminService {
   }
 
   // Send notification to user
-  async sendNotificationToUser(id: string, data: {
-    type: string;
-    title: string;
-    message: string;
-    channels: string[];
-  }): Promise<void> {
+  async sendNotificationToUser(
+    id: string,
+    data: {
+      type: string;
+      title: string;
+      message: string;
+      channels: string[];
+    }
+  ): Promise<void> {
     await apiClient.post(`/admin/users/${id}/notify`, data);
   }
 
@@ -207,12 +213,16 @@ class AdminService {
   }
 
   async getUserGrowthAnalytics(period = 'daily', days = 30): Promise<any> {
-    const response = await apiClient.get(`/admin/analytics/users/growth?period=${period}&days=${days}`);
+    const response = await apiClient.get(
+      `/admin/analytics/users/growth?period=${period}&days=${days}`
+    );
     return response.data.data;
   }
 
   async getUserRetentionAnalytics(period = 'weekly', weeks = 12): Promise<any> {
-    const response = await apiClient.get(`/admin/analytics/users/retention?period=${period}&weeks=${weeks}`);
+    const response = await apiClient.get(
+      `/admin/analytics/users/retention?period=${period}&weeks=${weeks}`
+    );
     return response.data.data;
   }
 
@@ -222,18 +232,24 @@ class AdminService {
   }
 
   async getEngagementMetrics(timeRange = '30d', metric = 'all'): Promise<any> {
-    const response = await apiClient.get(`/admin/analytics/engagement/metrics?timeRange=${timeRange}&metric=${metric}`);
+    const response = await apiClient.get(
+      `/admin/analytics/engagement/metrics?timeRange=${timeRange}&metric=${metric}`
+    );
     return response.data.data;
   }
 
   // Security endpoints
   async getSuspiciousAccounts(page = 1, limit = 20, riskLevel = 'high'): Promise<any> {
-    const response = await apiClient.get(`/admin/security/suspicious-accounts?page=${page}&limit=${limit}&riskLevel=${riskLevel}`);
+    const response = await apiClient.get(
+      `/admin/security/suspicious-accounts?page=${page}&limit=${limit}&riskLevel=${riskLevel}`
+    );
     return response.data.data;
   }
 
   async getLoginAttempts(status = 'failed', timeRange = '24h'): Promise<any> {
-    const response = await apiClient.get(`/admin/security/login-attempts?status=${status}&timeRange=${timeRange}`);
+    const response = await apiClient.get(
+      `/admin/security/login-attempts?status=${status}&timeRange=${timeRange}`
+    );
     return response.data.data;
   }
 

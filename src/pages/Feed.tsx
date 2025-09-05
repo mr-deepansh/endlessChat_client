@@ -52,7 +52,7 @@ const Feed: React.FC = () => {
         }
       } catch (backendError) {
         console.warn('Backend feed failed, using mock data:', backendError);
-        
+
         // Fallback to mock data
         try {
           const mockResponse = await mockFeedService.getFeed(1, 20, 'recent');
@@ -72,12 +72,12 @@ const Feed: React.FC = () => {
     setLoading(true);
     try {
       let newPost;
-      
+
       // Try backend first
       try {
         newPost = await postService.createPost({
           content: postData.content,
-          files: postData.files
+          files: postData.files,
         });
       } catch (backendError) {
         console.warn('Backend post creation failed, using mock:', backendError);
@@ -125,7 +125,7 @@ const Feed: React.FC = () => {
 
     try {
       let response;
-      
+
       // Try backend first
       try {
         response = await postService.toggleLike(postId);
@@ -133,7 +133,7 @@ const Feed: React.FC = () => {
         console.warn('Backend like failed, using mock:', backendError);
         response = await mockFeedService.toggleLike(postId);
       }
-      
+
       setPosts(
         posts.map(p =>
           p._id === postId
@@ -160,7 +160,7 @@ const Feed: React.FC = () => {
 
     try {
       let repostedPost;
-      
+
       // Try backend first
       try {
         repostedPost = await postService.repost(postId, quoteText);
@@ -168,7 +168,7 @@ const Feed: React.FC = () => {
         console.warn('Backend repost failed, using mock:', backendError);
         repostedPost = await mockFeedService.repost(postId, quoteText);
       }
-      
+
       setPosts(
         posts.map(p =>
           p._id === postId

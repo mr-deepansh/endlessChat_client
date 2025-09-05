@@ -56,9 +56,9 @@ class PostService {
   async createPost(data: CreatePostData): Promise<Post> {
     const formData = new FormData();
     formData.append('content', data.content);
-    
+
     if (data.files) {
-      Array.from(data.files).forEach((file) => {
+      Array.from(data.files).forEach(file => {
         formData.append('files', file);
       });
     }
@@ -90,7 +90,9 @@ class PostService {
 
   // Get user posts by username
   async getUserPosts(username: string, page = 1, limit = 10): Promise<PostsResponse> {
-    const response = await apiClient.get(`/blogs/posts/user/${username}?page=${page}&limit=${limit}`);
+    const response = await apiClient.get(
+      `/blogs/posts/user/${username}?page=${page}&limit=${limit}`
+    );
     return response.data;
   }
 

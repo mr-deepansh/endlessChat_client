@@ -4,11 +4,7 @@ import { useAuth, useRoleAccess } from '../contexts/AuthContext';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { isSuperAdmin } from '../utils/roleUtils';
 import { adminService, superAdminService } from '../services';
-import {
-  AdminStats,
-  AuditLog,
-  User as AdminUser,
-} from '../types/api';
+import { AdminStats, AuditLog, User as AdminUser } from '../types/api';
 
 // Define missing types locally
 interface UserManagementParams {

@@ -35,7 +35,6 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 
-
 const NotificationSkeleton = () => (
   <div className="flex items-start space-x-4 p-6 animate-pulse">
     <Skeleton className="h-12 w-12 rounded-full" />
@@ -265,9 +264,7 @@ function Notifications() {
   const markAsRead = async (id: string) => {
     try {
       await notificationService.markAsRead(id);
-      setNotifications(prev => 
-        prev.map(n => n._id === id ? { ...n, isRead: true } : n)
-      );
+      setNotifications(prev => prev.map(n => (n._id === id ? { ...n, isRead: true } : n)));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Failed to mark as read:', error);
@@ -307,13 +304,9 @@ function Notifications() {
       case 'unread':
         return notifications.filter(n => !n.isRead);
       case 'interactions':
-        return notifications.filter(n => 
-          ['like', 'comment', 'repost', 'mention'].includes(n.type)
-        );
+        return notifications.filter(n => ['like', 'comment', 'repost', 'mention'].includes(n.type));
       case 'follows':
-        return notifications.filter(n => 
-          ['follow', 'unfollow'].includes(n.type)
-        );
+        return notifications.filter(n => ['follow', 'unfollow'].includes(n.type));
       default:
         return notifications;
     }

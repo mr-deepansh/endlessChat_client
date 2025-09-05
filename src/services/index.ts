@@ -15,7 +15,7 @@ export const superAdminService = {
   deleteAdmin: () => Promise.resolve({ success: true }),
   changeUserRole: () => Promise.resolve({ success: true }),
   createAdmin: () => Promise.resolve({ success: true }),
-  emergencyLockdown: () => Promise.resolve({ success: true })
+  emergencyLockdown: () => Promise.resolve({ success: true }),
 };
 
 // Export types
@@ -23,16 +23,16 @@ export type { AuthResponse, ChangePasswordData, UpdateProfileData } from './auth
 export type { Post, CreatePostData, PostsResponse } from './postService';
 export type { Comment, CommentsResponse } from './commentService';
 export type { User, UserProfile, UsersResponse, FeedResponse } from './userService';
-export type { 
-  Notification, 
-  NotificationsResponse, 
-  NotificationStats, 
-  NotificationPreferences 
+export type {
+  Notification,
+  NotificationsResponse,
+  NotificationStats,
+  NotificationPreferences,
 } from './notificationService';
-export type { 
-  AdminStats, 
-  AdminDashboard, 
-  BulkActionData, 
-  UserActivityLog, 
-  SecurityAnalysis 
+export type {
+  AdminStats,
+  AdminDashboard,
+  BulkActionData,
+  UserActivityLog,
+  SecurityAnalysis,
 } from './adminService';

@@ -25,12 +25,12 @@ export interface UpdateProfileData {
 export const authService = {
   // Login
   login: async (email: string, password: string, rememberMe = false): Promise<AuthResponse> => {
-    const response = await apiClient.post('/auth/login', { 
-      identifier: email, 
+    const response = await apiClient.post('/auth/login', {
+      identifier: email,
       password,
-      rememberMe 
+      rememberMe,
     });
-    
+
     // Store tokens
     if (response.data?.accessToken) {
       localStorage.setItem('accessToken', response.data.accessToken);
@@ -38,7 +38,7 @@ export const authService = {
     if (response.data?.refreshToken) {
       localStorage.setItem('refreshToken', response.data.refreshToken);
     }
-    
+
     return response;
   },
 
@@ -58,11 +58,11 @@ export const authService = {
   // Logout
   logout: async () => {
     const response = await apiClient.post('/auth/logout');
-    
+
     // Clear tokens
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    
+
     return response;
   },
 
@@ -80,9 +80,9 @@ export const authService = {
 
   // Reset Password
   resetPassword: async (token: string, password: string, confirmPassword: string) => {
-    const response = await apiClient.post(`/auth/reset-password/${token}`, { 
-      password, 
-      confirmPassword 
+    const response = await apiClient.post(`/auth/reset-password/${token}`, {
+      password,
+      confirmPassword,
     });
     return response;
   },
@@ -112,7 +112,7 @@ export const authService = {
       limit: limit.toString(),
     });
     if (type) params.append('type', type);
-    
+
     const response = await apiClient.get(`/auth/activity?${params}`);
     return response;
   },
@@ -150,12 +150,12 @@ export const authService = {
   // Refresh Token
   refreshToken: async (refreshToken: string) => {
     const response = await apiClient.post('/auth/refresh-token', { refreshToken });
-    
+
     // Update stored token
     if (response.data?.accessToken) {
       localStorage.setItem('accessToken', response.data.accessToken);
     }
-    
+
     return response;
   },
 };
