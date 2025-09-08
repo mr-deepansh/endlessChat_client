@@ -27,7 +27,7 @@ export interface Post {
 
 export interface CreatePostData {
   content: string;
-  files?: FileList;
+  files?: File[] | FileList;
 }
 
 export interface PostsResponse {
@@ -57,7 +57,7 @@ class PostService {
     const formData = new FormData();
     formData.append('content', data.content);
 
-    if (data.files) {
+    if (data.files && data.files.length > 0) {
       Array.from(data.files).forEach(file => {
         formData.append('files', file);
       });
@@ -72,14 +72,32 @@ class PostService {
   }
 
   // Update post
-  async updatePost(id: string, content: string): Promise<Post> {
-    const response = await apiClient.patch(`/blogs/posts/${id}`, { content });
+  async updatePost(
+    id: string,
+    data: { content?: string; title?: string; status?: string }
+  ): Promise<Post> {
+    const response = await apiClient.patch(`/blogs/posts/${id}`, data);
     return response.data;
   }
 
   // Delete post
   async deletePost(id: string): Promise<void> {
-    await apiClient.delete(`/blogs/posts/${id}`);
+    console.log('PostService: Deleting post', id);
+    const response = await apiClient.delete(`/blogs/posts/${id}`);
+    console.log('PostService: Delete response', response);
+    return response;
+  }
+
+  // Edit post content
+  async editPost(id: string, content: string): Promise<Post> {
+    const response = await apiClient.patch(`/blogs/posts/${id}`, { content });
+    return response.data;
+  }
+
+  // Bookmark post
+  async bookmarkPost(postId: string): Promise<{ isBookmarked: boolean }> {
+    const response = await apiClient.post(`/blogs/engagement/${postId}/bookmark`);
+    return response.data;
   }
 
   // Get my posts

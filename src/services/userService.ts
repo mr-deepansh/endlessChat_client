@@ -137,7 +137,11 @@ class UserService {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    const response = await apiClient.uploadFile('/users/upload-avatar', file);
+    const response = await apiClient.post('/users/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 
@@ -146,7 +150,11 @@ class UserService {
     const formData = new FormData();
     formData.append('cover', file);
 
-    const response = await apiClient.uploadFile('/users/upload-cover', file);
+    const response = await apiClient.post('/users/upload-cover', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 

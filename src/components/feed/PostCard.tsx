@@ -1,3 +1,4 @@
+// src/components/posts/PostCard.tsx
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -8,20 +9,39 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { Heart, MessageCircle, Repeat2, Share, Bookmark, MoreHorizontal } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  Share,
+  Bookmark,
+  MoreHorizontal,
+  Trash2,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+
+/**
+ * NOTE / FIX:
+ * Previously this component used a single `onInteraction(postId, action)` prop.
+ * Your Feed.tsx passes separate handlers: onLike, onDelete, onRepost, onShare, onEdit.
+ * That mismatch made `onInteraction` undefined => clicking delete only logged to console.
+ *
+ * FIX: Accept explicit handler props and call them directly.
+ */
+
+interface PostAuthor {
+  _id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+}
 
 interface PostCardProps {
   post: {
     _id: string;
     content: string;
-    author: {
-      _id: string;
-      username: string;
-      firstName: string;
-      lastName: string;
-      avatar?: string;
-    };
+    author: PostAuthor;
     likesCount: number;
     commentsCount: number;
     repostsCount: number;
@@ -29,33 +49,57 @@ interface PostCardProps {
     isBookmarked: boolean;
     isReposted: boolean;
     createdAt: string;
-    media?: string[];
+    images?: string[]; // matches Feed.tsx usage
+    // other optional fields allowed
+    [key: string]: any;
   };
-  onInteraction?: (postId: string, action: string, data?: any) => void;
+  currentUserId?: string;
+  onLike?: (postId: string) => void;
+  onRepost?: (postId: string, withQuote?: boolean, quoteText?: string) => void;
+  onShare?: (postId: string, platform?: string) => void;
+  onEdit?: (postId: string, content: string) => void;
+  onDelete?: (postId: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
+const PostCard: React.FC<PostCardProps> = ({
+  post,
+  currentUserId,
+  onLike,
+  onRepost,
+  onShare,
+  onEdit,
+  onDelete,
+}) => {
   const [isLiking, setIsLiking] = useState(false);
   const [isReposting, setIsReposting] = useState(false);
 
-  const handleLike = async () => {
+  const handleLikeClick = async () => {
     if (isLiking) return;
     setIsLiking(true);
     try {
-      await onInteraction?.(post._id, post.isLiked ? 'unlike' : 'like');
+      await onLike?.(post._id);
     } finally {
       setIsLiking(false);
     }
   };
 
-  const handleRepost = async () => {
+  const handleRepostClick = async () => {
     if (isReposting) return;
     setIsReposting(true);
     try {
-      await onInteraction?.(post._id, post.isReposted ? 'unrepost' : 'repost');
+      await onRepost?.(post._id);
     } finally {
       setIsReposting(false);
     }
+  };
+
+  const handleDeleteClick = () => {
+    // Let parent confirm/delete (Feed.tsx already has confirm)
+    onDelete?.(post._id);
+  };
+
+  const handleShareClick = () => {
+    onShare?.(post._id);
   };
 
   return (
@@ -85,24 +129,31 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
                   @{post.author.username}
                 </span>
               </div>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() =>
-                      onInteraction?.(post._id, post.isBookmarked ? 'unbookmark' : 'bookmark')
-                    }
-                  >
+                  <DropdownMenuItem onClick={() => onEdit?.(post._id, post.content)}>
                     <Bookmark className="w-4 h-4 mr-2" />
-                    {post.isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+                    Edit post
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={() => onShare?.(post._id)}>
                     <Share className="w-4 h-4 mr-2" />
                     Share post
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={handleDeleteClick}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete post
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -110,7 +161,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
 
             <div className="mt-2">
               <p className="text-foreground whitespace-pre-wrap break-words">
-                {post.content.split(/(@\w+|#\w+)/g).map((part, index) => {
+                {post.content.split(/(@\w+|#\w+)/g).map((part: string, index: number) => {
                   if (part.startsWith('@')) {
                     return (
                       <span key={index} className="text-primary cursor-pointer hover:underline">
@@ -124,14 +175,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
                       </span>
                     );
                   }
-                  return part;
+                  return <span key={index}>{part}</span>;
                 })}
               </p>
 
-              {post.media && post.media.length > 0 && (
+              {post.images && post.images.length > 0 && (
                 <div className="mt-3 rounded-lg overflow-hidden">
                   <img
-                    src={post.media[0]}
+                    src={post.images[0]}
                     alt="Post media"
                     className="w-full max-h-96 object-cover"
                   />
@@ -143,7 +194,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onInteraction?.(post._id, 'comment')}
+                onClick={() => onShare?.(post._id)}
                 className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center"
               >
                 <MessageCircle className="w-4 h-4" />
@@ -155,6 +206,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={handleRepostClick}
                     className={`flex items-center space-x-1 hover:text-green-500 hover:bg-green-50 flex-1 justify-center ${
                       post.isReposted ? 'text-green-500' : 'text-muted-foreground'
                     }`}
@@ -164,11 +216,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
-                  <DropdownMenuItem onClick={handleRepost}>
+                  <DropdownMenuItem onClick={handleRepostClick}>
                     <Repeat2 className="w-4 h-4 mr-2" />
                     Repost
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Quote repost')}>
+                  <DropdownMenuItem onClick={() => onRepost?.(post._id, true, 'Quote text')}>
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Quote repost
                   </DropdownMenuItem>
@@ -178,7 +230,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleLike}
+                onClick={handleLikeClick}
                 disabled={isLiking}
                 className={`flex items-center space-x-1 hover:text-red-500 hover:bg-red-50 flex-1 justify-center ${
                   post.isLiked ? 'text-red-500' : 'text-muted-foreground'
@@ -191,6 +243,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={handleShareClick}
                 className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center"
               >
                 <Share className="w-4 h-4" />

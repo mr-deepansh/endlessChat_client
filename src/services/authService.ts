@@ -142,8 +142,15 @@ export const authService = {
   },
 
   // Upload Avatar
-  uploadAvatar: async (avatarUrl: string) => {
-    const response = await apiClient.post('/users/upload-avatar', { avatarUrl });
+  updateAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await apiClient.post('/users/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response;
   },
 

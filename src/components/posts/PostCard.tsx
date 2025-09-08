@@ -40,6 +40,8 @@ import {
   Send,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
+import postService from '@/services/postService';
 
 interface User {
   _id: string;
@@ -84,6 +86,7 @@ interface PostCardProps {
   onRepost?: (postId: string, withQuote?: boolean, quoteText?: string) => void;
   onShare?: (postId: string) => void;
   onDelete?: (postId: string) => void;
+  onEdit?: (postId: string, content: string) => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -94,6 +97,7 @@ const PostCard: React.FC<PostCardProps> = ({
   onRepost,
   onShare,
   onDelete,
+  onEdit,
 }) => {
   const [isLiked, setIsLiked] = useState(post.isLiked || false);
   const [isReposted, setIsReposted] = useState(post.isReposted || false);
@@ -103,6 +107,8 @@ const PostCard: React.FC<PostCardProps> = ({
   const [quoteText, setQuoteText] = useState('');
   const [selectedPollOption, setSelectedPollOption] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
 
   const isOwnPost = currentUserId === post.author?._id;
 
@@ -127,8 +133,23 @@ const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
+  const handleBookmark = async () => {
+    try {
+      const response = await postService.bookmarkPost(post._id);
+      setIsBookmarked(response.isBookmarked);
+      toast({
+        title: response.isBookmarked ? 'Bookmarked' : 'Removed Bookmark',
+        description: response.isBookmarked
+          ? 'Post saved to bookmarks'
+          : 'Post removed from bookmarks',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to bookmark post',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handlePollVote = (optionIndex: number) => {
@@ -279,7 +300,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
               <DropdownMenuItem onClick={handleBookmark}>
                 <Bookmark className="w-4 h-4 mr-2" />
                 {isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
@@ -295,8 +316,16 @@ const PostCard: React.FC<PostCardProps> = ({
               {isOwnPost && (
                 <>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => onDelete?.(post._id)}
+                    onClick={e => {
+                      e.preventDefault();
+                      console.log('Delete clicked for post:', post._id);
+                      onDelete?.(post._id);
+                    }}
                     className="text-destructive focus:text-destructive"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
@@ -311,7 +340,38 @@ const PostCard: React.FC<PostCardProps> = ({
       <CardContent className="pt-0">
         <div className="space-y-4">
           {/* Post Content */}
-          <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
+          {isEditing ? (
+            <div className="space-y-3">
+              <Textarea
+                value={editContent}
+                onChange={e => setEditContent(e.target.value)}
+                className="min-h-[100px]"
+              />
+              <div className="flex space-x-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    onEdit?.(post._id, editContent);
+                    setIsEditing(false);
+                  }}
+                >
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setEditContent(post.content);
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
+          )}
 
           {/* Poll */}
           {renderPoll()}

@@ -25,7 +25,7 @@ import {
 
 const Settings: React.FC = () => {
   usePageTitle('Settings');
-  const { user, updateUser } = useAuth();
+  const { user, refreshUser, updateProfile, changePassword } = useAuth();
   const navigate = useNavigate();
 
   // Profile form state
@@ -57,17 +57,7 @@ const Settings: React.FC = () => {
     setLoading({ ...loading, profile: true });
 
     try {
-      const response = await authService.updateProfile(profileData);
-
-      if (response.success) {
-        updateUser(response.data);
-        toast({
-          title: 'Profile Updated',
-          description: 'Your profile has been updated successfully.',
-        });
-      } else {
-        throw new Error(response.message);
-      }
+      await updateProfile(profileData);
     } catch (error: any) {
       toast({
         title: 'Update Failed',
@@ -113,14 +103,11 @@ const Settings: React.FC = () => {
       };
       reader.readAsDataURL(file);
 
-      // Upload to server (you'll need to implement this API)
-      const formData = new FormData();
-      formData.append('avatar', file);
-
-      const response = await authService.updateAvatar(formData);
+      // Upload to server
+      const response = await authService.updateAvatar(file);
 
       if (response.success) {
-        updateUser({ ...user, avatar: response.data.avatar });
+        await refreshUser();
         toast({
           title: 'Profile Picture Updated',
           description: 'Your profile picture has been updated successfully.',
@@ -164,21 +151,12 @@ const Settings: React.FC = () => {
     setLoading({ ...loading, password: true });
 
     try {
-      const response = await authService.changePassword(passwordData);
-
-      if (response.success) {
-        toast({
-          title: 'Password Changed',
-          description: 'Your password has been changed successfully.',
-        });
-        setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
-        });
-      } else {
-        throw new Error(response.message);
-      }
+      await changePassword(passwordData);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
     } catch (error: any) {
       toast({
         title: 'Password Change Failed',

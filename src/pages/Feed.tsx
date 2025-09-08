@@ -51,15 +51,9 @@ const Feed: React.FC = () => {
           return;
         }
       } catch (backendError) {
-        console.warn('Backend feed failed, using mock data:', backendError);
-
-        // Fallback to mock data
-        try {
-          const mockResponse = await mockFeedService.getFeed(1, 20, 'recent');
-          setPosts(mockResponse.posts);
-        } catch (mockError) {
-          console.error('Failed to load posts:', mockError);
-        }
+        console.warn('Backend feed failed:', backendError);
+        // No fallback to mock data - show empty feed
+        setPosts([]);
       }
     };
 
@@ -80,8 +74,8 @@ const Feed: React.FC = () => {
           files: postData.files,
         });
       } catch (backendError) {
-        console.warn('Backend post creation failed, using mock:', backendError);
-        newPost = await mockFeedService.createPost(postData.content, postData.files);
+        console.warn('Backend post creation failed:', backendError);
+        throw backendError;
       }
 
       const newPostData: Post = {
@@ -90,9 +84,9 @@ const Feed: React.FC = () => {
         content: newPost.content,
         images: newPost.media?.map(m => m.url) || [],
         createdAt: newPost.createdAt,
-        likesCount: newPost.likes.length,
-        commentsCount: newPost.comments.length,
-        repostsCount: newPost.reposts.length,
+        likesCount: newPost.likes?.length || 0,
+        commentsCount: newPost.comments?.length || 0,
+        repostsCount: newPost.reposts?.length || 0,
         sharesCount: 0,
         isLiked: newPost.isLiked || false,
         isBookmarked: false,
@@ -119,6 +113,48 @@ const Feed: React.FC = () => {
     }
   };
 
+  const handleEditPost = async (postId: string, content: string) => {
+    try {
+      await postService.editPost(postId, content);
+      setPosts(posts.map(p => (p._id === postId ? { ...p, content } : p)));
+      toast({
+        title: 'Post Updated',
+        description: 'Your post has been updated successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update post',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+
+    try {
+      console.log('Deleting post:', postId);
+
+      // Handle real post deletion
+      const response = await postService.deletePost(postId);
+      console.log('Delete response:', response);
+
+      setPosts(posts.filter(p => p._id !== postId));
+      toast({
+        title: 'Post Deleted',
+        description: 'Your post has been deleted successfully.',
+      });
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete post',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleLike = async (postId: string) => {
     const post = posts.find(p => p._id === postId);
     if (!post) return;
@@ -130,8 +166,8 @@ const Feed: React.FC = () => {
       try {
         response = await postService.toggleLike(postId);
       } catch (backendError) {
-        console.warn('Backend like failed, using mock:', backendError);
-        response = await mockFeedService.toggleLike(postId);
+        console.warn('Backend like failed:', backendError);
+        throw backendError;
       }
 
       setPosts(
@@ -165,8 +201,8 @@ const Feed: React.FC = () => {
       try {
         repostedPost = await postService.repost(postId, quoteText);
       } catch (backendError) {
-        console.warn('Backend repost failed, using mock:', backendError);
-        repostedPost = await mockFeedService.repost(postId, quoteText);
+        console.warn('Backend repost failed:', backendError);
+        throw backendError;
       }
 
       setPosts(
@@ -319,6 +355,8 @@ const Feed: React.FC = () => {
                     onLike={() => handleLike(post._id)}
                     onRepost={handleRepost}
                     onShare={handleShare}
+                    onEdit={handleEditPost}
+                    onDelete={handleDeletePost}
                   />
                 ))
             )}

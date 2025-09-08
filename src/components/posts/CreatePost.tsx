@@ -87,7 +87,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
           postType === 'article'
             ? `${articleTitle}\n\n${content}`
             : content || (images.length > 0 ? '📷 Shared media' : 'New post'),
-        files: imageFiles.length > 0 ? imageFiles : undefined,
+        files: imageFiles && imageFiles.length > 0 ? imageFiles : undefined,
         type: postType,
         location: location.trim() || undefined,
         scheduledFor:
