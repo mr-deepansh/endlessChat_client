@@ -177,7 +177,7 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <LeftSidebar />
-      <div className="ml-20 lg:ml-64 transition-all duration-300">
+      <div className="ml-60 transition-all duration-300">
         <div className="max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto p-3 sm:p-4 lg:p-6 xl:p-8 2xl:p-10">
           {/* Profile Header */}
           <Card className="mb-4 sm:mb-6 xl:mb-8 2xl:mb-10">

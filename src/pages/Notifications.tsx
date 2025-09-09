@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Navbar from '../components/layout/Navbar';
+import LeftSidebar from '../components/layout/LeftSidebar';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { notificationService } from '../services';
 import type { Notification } from '../services/notificationService';
@@ -326,148 +327,152 @@ function Notifications() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-blue-950/30 dark:to-purple-950/30">
       <Navbar />
-
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        {/* Header */}
-        <div className="mb-4 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-3 sm:space-x-4">
-              <div className="relative">
-                <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg">
-                  <Bell className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+      <LeftSidebar />
+      <div className="ml-60 transition-all duration-300">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+          {/* Header */}
+          <div className="mb-4 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="relative">
+                  <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg">
+                    <Bell className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center p-0 text-xs bg-red-500 text-white border-2 border-background">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
                 </div>
-                {unreadCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center p-0 text-xs bg-red-500 text-white border-2 border-background">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Badge>
-                )}
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Notifications
+                  </h1>
+                  <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+                    Stay updated with your latest activity
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Notifications
-                </h1>
-                <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                  Stay updated with your latest activity
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center space-x-2 sm:space-x-3 justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refreshNotifications}
-                disabled={refreshing}
-                className="hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2 sm:px-3"
-              >
-                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''} sm:mr-2`} />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
-
-              {unreadCount > 0 && (
+              <div className="flex items-center space-x-2 sm:space-x-3 justify-end">
                 <Button
-                  onClick={markAllAsRead}
+                  variant="outline"
                   size="sm"
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-2 sm:px-3"
+                  onClick={refreshNotifications}
+                  disabled={refreshing}
+                  className="hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2 sm:px-3"
                 >
-                  <CheckCheck className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Mark all read</span>
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''} sm:mr-2`} />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
-              )}
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="px-2">
-                    <SlidersHorizontal className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <Button
+                    onClick={markAllAsRead}
+                    size="sm"
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-2 sm:px-3"
+                  >
+                    <CheckCheck className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Mark all read</span>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setActiveTab('all')}>
-                    <span className={activeTab === 'all' ? 'font-semibold' : ''}>All</span>
-                    {tabCounts.all > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs flex items-center justify-center"
-                      >
-                        {tabCounts.all > 99 ? '99+' : tabCounts.all}
-                      </Badge>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveTab('unread')}>
-                    <span className={activeTab === 'unread' ? 'font-semibold' : ''}>Unread</span>
-                    {tabCounts.unread > 0 && (
-                      <Badge className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs bg-red-500 flex items-center justify-center">
-                        {tabCounts.unread > 99 ? '99+' : tabCounts.unread}
-                      </Badge>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveTab('interactions')}>
-                    <span className={activeTab === 'interactions' ? 'font-semibold' : ''}>
-                      Activity
-                    </span>
-                    {tabCounts.interactions > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs flex items-center justify-center"
-                      >
-                        {tabCounts.interactions > 99 ? '99+' : tabCounts.interactions}
-                      </Badge>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveTab('follows')}>
-                    <span className={activeTab === 'follows' ? 'font-semibold' : ''}>Follows</span>
-                    {tabCounts.follows > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs flex items-center justify-center"
-                      >
-                        {tabCounts.follows > 99 ? '99+' : tabCounts.follows}
-                      </Badge>
-                    )}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                )}
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="px-2">
+                      <SlidersHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setActiveTab('all')}>
+                      <span className={activeTab === 'all' ? 'font-semibold' : ''}>All</span>
+                      {tabCounts.all > 0 && (
+                        <Badge
+                          variant="secondary"
+                          className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs flex items-center justify-center"
+                        >
+                          {tabCounts.all > 99 ? '99+' : tabCounts.all}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setActiveTab('unread')}>
+                      <span className={activeTab === 'unread' ? 'font-semibold' : ''}>Unread</span>
+                      {tabCounts.unread > 0 && (
+                        <Badge className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs bg-red-500 flex items-center justify-center">
+                          {tabCounts.unread > 99 ? '99+' : tabCounts.unread}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setActiveTab('interactions')}>
+                      <span className={activeTab === 'interactions' ? 'font-semibold' : ''}>
+                        Activity
+                      </span>
+                      {tabCounts.interactions > 0 && (
+                        <Badge
+                          variant="secondary"
+                          className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs flex items-center justify-center"
+                        >
+                          {tabCounts.interactions > 99 ? '99+' : tabCounts.interactions}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setActiveTab('follows')}>
+                      <span className={activeTab === 'follows' ? 'font-semibold' : ''}>
+                        Follows
+                      </span>
+                      {tabCounts.follows > 0 && (
+                        <Badge
+                          variant="secondary"
+                          className="ml-auto h-4 w-auto min-w-[16px] px-1 text-xs flex items-center justify-center"
+                        >
+                          {tabCounts.follows > 99 ? '99+' : tabCounts.follows}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="w-full">
-          <div className="mt-0">
-            <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-              {loading ? (
-                <CardContent className="p-0">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <NotificationSkeleton key={i} />
-                  ))}
-                </CardContent>
-              ) : filteredNotifications.length === 0 ? (
-                <CardContent className="p-16 text-center">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 rounded-full flex items-center justify-center">
-                    <Bell className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3">No notifications yet</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    {activeTab === 'all'
-                      ? "You're all caught up! When you get new notifications, they'll appear here."
-                      : `No ${activeTab} notifications found. Check back later for updates.`}
-                  </p>
-                </CardContent>
-              ) : (
-                <CardContent className="p-0">
-                  <div className="divide-y divide-border/50">
-                    {filteredNotifications.map((notification, index) => (
-                      <NotificationItem
-                        key={notification._id}
-                        notification={notification}
-                        onMarkRead={markAsRead}
-                        onDelete={deleteNotification}
-                      />
+          {/* Content */}
+          <div className="w-full">
+            <div className="mt-0">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+                {loading ? (
+                  <CardContent className="p-0">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <NotificationSkeleton key={i} />
                     ))}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+                  </CardContent>
+                ) : filteredNotifications.length === 0 ? (
+                  <CardContent className="p-16 text-center">
+                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 rounded-full flex items-center justify-center">
+                      <Bell className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-3">No notifications yet</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      {activeTab === 'all'
+                        ? "You're all caught up! When you get new notifications, they'll appear here."
+                        : `No ${activeTab} notifications found. Check back later for updates.`}
+                    </p>
+                  </CardContent>
+                ) : (
+                  <CardContent className="p-0">
+                    <div className="divide-y divide-border/50">
+                      {filteredNotifications.map((notification, index) => (
+                        <NotificationItem
+                          key={notification._id}
+                          notification={notification}
+                          onMarkRead={markAsRead}
+                          onDelete={deleteNotification}
+                        />
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            </div>
           </div>
         </div>
       </div>

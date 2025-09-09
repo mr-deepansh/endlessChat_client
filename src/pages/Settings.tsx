@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
+import LeftSidebar from '../components/layout/LeftSidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -171,8 +172,8 @@ const Settings: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-
-      <div className="">
+      <LeftSidebar />
+      <div className="ml-60 transition-all duration-300">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Settings</h1>

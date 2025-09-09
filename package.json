@@ -11,14 +11,21 @@
     "build:dev": "vite build --mode development",
     "serve": "npm run build && node server.js",
     "start:8080": "npm run build && node server.js",
-    "lint": "eslint . --max-warnings 50",
-    "lint:fix": "eslint . --max-warnings 50 --fix",
+    "lint": "eslint . --max-warnings 10",
+    "lint:fix": "eslint . --max-warnings 10 --fix",
     "lint:strict": "eslint . --max-warnings 0",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "lint:ci": "eslint . --max-warnings 0 --format json --output-file eslint-report.json",
+    "lint:report": "eslint . --format html --output-file eslint-report.html",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md,html}\" --config .prettierrc",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md,html}\" --config .prettierrc",
+    "format:all": "prettier --write . --config .prettierrc",
+    "format:staged": "prettier --write --config .prettierrc",
     "type-check": "tsc --noEmit",
     "quality": "npm run type-check && npm run lint && npm run format:check",
+    "quality:ci": "npm run type-check && npm run lint:strict && npm run format:check",
     "fix": "npm run lint:fix && npm run format",
+    "precommit": "npm run quality",
+    "prepush": "npm run quality:ci",
     "analyze": "vite build --mode production && npx vite-bundle-analyzer dist/stats.html"
   },
   "dependencies": {
@@ -99,6 +106,10 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^7.1.4"
+    "vite": "^7.1.4",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3"
   }
 }

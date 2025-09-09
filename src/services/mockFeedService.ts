@@ -161,7 +161,7 @@ export const mockFeedService = {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Sort posts based on sort parameter
-    let sortedPosts = [...mockPosts];
+    const sortedPosts = [...mockPosts];
     if (sort === 'recent') {
       sortedPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } else if (sort === 'popular') {

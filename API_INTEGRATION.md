@@ -5,6 +5,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 ## Backend Setup
 
 1. **Clone and setup the backend:**
+
    ```bash
    git clone https://github.com/mr-deepansh/social-media-blog-app.git
    cd social-media-blog-app
@@ -12,6 +13,7 @@ This document outlines the API integration between the EndlessChat frontend and 
    ```
 
 2. **Configure environment variables:**
+
    ```bash
    cp .env.example .env
    # Configure your MongoDB, Redis, and other services
@@ -26,11 +28,13 @@ This document outlines the API integration between the EndlessChat frontend and 
 ## Frontend Configuration
 
 1. **Set API base URL:**
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Update `.env.local`:
+
    ```env
    VITE_API_BASE_URL=http://localhost:5000/api/v1
    ```
@@ -44,6 +48,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 ## API Services Implemented
 
 ### 1. Authentication Service (`authService.ts`)
+
 - ✅ User registration
 - ✅ User login/logout
 - ✅ Token refresh
@@ -52,6 +57,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - ✅ Security overview
 
 ### 2. Post Service (`postService.ts`)
+
 - ✅ Create posts with media upload
 - ✅ Get posts (feed, user posts, my posts)
 - ✅ Like/unlike posts
@@ -60,6 +66,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - ✅ Post management (update, delete)
 
 ### 3. Comment Service (`commentService.ts`)
+
 - ✅ Add comments to posts
 - ✅ Get comments for posts
 - ✅ Like/unlike comments
@@ -67,6 +74,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - ✅ Comment management
 
 ### 4. User Service (`userService.ts`)
+
 - ✅ User profile management
 - ✅ Follow/unfollow users
 - ✅ User search
@@ -75,6 +83,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - ✅ Avatar/cover upload
 
 ### 5. Notification Service (`notificationService.ts`)
+
 - ✅ Get notifications
 - ✅ Mark as read/unread
 - ✅ Delete notifications
@@ -82,6 +91,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - ✅ Real-time notification count
 
 ### 6. Admin Service (`adminService.ts`)
+
 - ✅ Admin dashboard
 - ✅ User management
 - ✅ Analytics and reporting
@@ -91,6 +101,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 ## API Endpoints Used
 
 ### Authentication
+
 - `POST /users/register` - User registration
 - `POST /users/login` - User login
 - `POST /users/logout` - User logout
@@ -99,6 +110,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - `POST /auth/reset-password/:token` - Reset password
 
 ### Posts
+
 - `GET /blogs/posts` - Get all posts (feed)
 - `POST /blogs/posts` - Create new post
 - `GET /blogs/posts/my-posts` - Get current user's posts
@@ -107,15 +119,18 @@ This document outlines the API integration between the EndlessChat frontend and 
 - `DELETE /blogs/posts/:id` - Delete post
 
 ### Engagement
+
 - `POST /blogs/engagement/:postId/like` - Toggle like
 - `POST /blogs/engagement/:postId/view` - Track view
 - `POST /blogs/engagement/:postId/repost` - Repost
 
 ### Comments
+
 - `GET /blogs/comments/:postId` - Get comments
 - `POST /blogs/comments/:postId` - Add comment
 
 ### Users
+
 - `GET /users/profile` - Get current user profile
 - `PUT /users/profile` - Update profile
 - `GET /users/profile/:username` - Get user profile
@@ -125,6 +140,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - `GET /users/search` - Search users
 
 ### Notifications
+
 - `GET /notifications` - Get notifications
 - `PATCH /notifications/:id/read` - Mark as read
 - `PATCH /notifications/mark-all-read` - Mark all as read
@@ -133,6 +149,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 ## Features Implemented
 
 ### Social Media Features
+
 - ✅ Post creation with text, images, polls, articles
 - ✅ Like, comment, repost, share functionality
 - ✅ Real-time notifications
@@ -142,6 +159,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - ✅ Media upload support
 
 ### UI/UX Features
+
 - ✅ Responsive design (mobile-first)
 - ✅ Dark/light theme support
 - ✅ Instagram-like interface
@@ -151,6 +169,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 - ✅ Infinite scroll (ready for implementation)
 
 ### Admin Features
+
 - ✅ Admin dashboard with analytics
 - ✅ User management
 - ✅ Content moderation
@@ -160,6 +179,7 @@ This document outlines the API integration between the EndlessChat frontend and 
 ## Error Handling
 
 All API calls include proper error handling:
+
 - Network errors
 - Authentication errors (401)
 - Authorization errors (403)

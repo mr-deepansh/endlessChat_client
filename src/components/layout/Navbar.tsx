@@ -1,9 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '../ui/button';
+import {
+  Bell,
+  Home,
+  Loader2,
+  LogOut,
+  Menu,
+  MessageCircle,
+  Moon,
+  Search,
+  Settings,
+  Shield,
+  Sun,
+  User as UserIcon,
+} from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useDebounce } from '../../hooks/useDebounce';
+import { userService } from '../../services';
+import type { User } from '../../types/api';
+import NotificationBell from '../notifications/NotificationBell';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,27 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { userService } from '../../services';
-import { useDebounce } from '../../hooks/useDebounce';
-import NotificationBell from '../notifications/NotificationBell';
-import type { User } from '../../types/api';
-import {
-  Search,
-  Home,
-  User as UserIcon,
-  Settings,
-  LogOut,
-  Bell,
-  MessageCircle,
-  Shield,
-  Sun,
-  Moon,
-  Loader2,
-  Menu,
-} from 'lucide-react';
+import { Input } from '../ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 
 const Navbar = () => {
@@ -58,10 +57,12 @@ const Navbar = () => {
     if (query.trim().length > 2) {
       setIsSearching(true);
       try {
-        const response = await userService.searchUsers({ username: query.trim(), limit: 5 });
+        const response = await userService.searchUsers({
+          username: query.trim(),
+          limit: 5,
+        });
         if (response.success && response.data) {
           let users: User[] = [];
-
           // Handle different response formats
           if (Array.isArray(response.data)) {
             users = response.data;
@@ -103,7 +104,7 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl shadow-sm">
       <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-        <div className="flex items-center justify-between h-16 xl:h-18 2xl:h-20">
+        <div className="flex items-center justify-between h-12 xl:h-14 2xl:h-16">
           {/* Logo */}
           <Link to={user ? '/feed' : '/'} className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
@@ -213,43 +214,47 @@ const Navbar = () => {
                 <nav className="hidden min-[631px]:flex items-center space-x-1 lg:space-x-2 xl:space-x-3 2xl:space-x-4">
                   <NavLink
                     to="/feed"
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
                   >
-                    <Home className="w-5 h-5" />
+                    <Home className="w-4 h-4" />
                   </NavLink>
                   <NotificationBell />
                   <NavLink
                     to="/messages"
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
                   >
-                    <MessageCircle className="w-5 h-5" />
+                    <MessageCircle className="w-4 h-4" />
                   </NavLink>
                   <NavLink
                     to="/discover"
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
                   >
-                    <UserIcon className="w-5 h-5" />
+                    <UserIcon className="w-4 h-4" />
                   </NavLink>
                   {(user.role === 'admin' || user.role === 'super_admin') && (
                     <NavLink
                       to={user.role === 'super_admin' ? '/super-admin' : '/admin'}
-                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
                     >
-                      <Shield className="w-5 h-5" />
+                      <Shield className="w-4 h-4" />
                     </NavLink>
                   )}
 
                   {/* Theme Toggle */}
-                  <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                    {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                  <Button
+                    variant="ghost"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                    onClick={toggleTheme}
+                  >
+                    {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
                   </Button>
                 </nav>
 
                 {/* Mobile Menu */}
                 <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="min-[631px]:hidden">
-                      <Menu className="w-5 h-5" />
+                    <Button variant="ghost" className="h-8 w-8 min-[631px]:hidden">
+                      <Menu className="w-4 h-4" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent
@@ -358,11 +363,11 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="relative h-10 w-10 rounded-full hidden min-[631px]:flex"
+                      className="inline-flex items-center justify-center rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 hidden min-[631px]:flex"
                     >
-                      <Avatar className="h-10 w-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
+                      <Avatar className="h-8 w-8">
                         <AvatarImage src={user.avatar} alt={user.username} />
-                        <AvatarFallback className="bg-gradient-primary text-white font-semibold">
+                        <AvatarFallback className="bg-gradient-primary text-white font-semibold text-sm">
                           {user.firstName?.[0] || user.username?.[0] || 'U'}
                           {user.lastName?.[0] || ''}
                         </AvatarFallback>
@@ -371,9 +376,9 @@ const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-64" align="end" forceMount>
                     <div className="flex items-center space-x-3 p-3">
-                      <Avatar className="h-12 w-12">
+                      <Avatar className="h-10 w-10">
                         <AvatarImage src={user.avatar} alt={user.username} />
-                        <AvatarFallback className="bg-gradient-primary text-white">
+                        <AvatarFallback className="bg-gradient-primary text-white text-sm">
                           {user.firstName?.[0] || user.username?.[0] || 'U'}
                           {user.lastName?.[0] || ''}
                         </AvatarFallback>
@@ -439,13 +444,17 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 {/* Theme Toggle for non-authenticated users */}
-                <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                  {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                <Button
+                  variant="ghost"
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                  onClick={toggleTheme}
+                >
+                  {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
                 </Button>
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="lg:hidden">
-                      <Menu className="w-5 h-5" />
+                    <Button variant="ghost" className="h-8 w-8 lg:hidden">
+                      <Menu className="w-4 h-4" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent

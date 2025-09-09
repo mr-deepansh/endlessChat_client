@@ -40,7 +40,7 @@ endlessChat_client/
 │   ├── hooks/                     # Custom React hooks
 │   │   ├── user-mobile.tsx
 │   │   └── use-toast.ts
-│   ├── lib/                     # 
+│   ├── lib/                     #
 │   │   ├── axios.tsx
 │   │   └── utils.ts
 │   ├── services/                  # API and external services

@@ -151,14 +151,8 @@ const Discover: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar />
       <LeftSidebar />
-      <div className="ml-20 lg:ml-64 transition-all duration-300">
+      <div className="ml-60 transition-all duration-300">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Discover People</h1>
-            <p className="text-muted-foreground">Find and connect with interesting people</p>
-          </div>
-
           {/* Search and Filters */}
           <Card className="border-none shadow-soft bg-gradient-card mb-6">
             <CardContent className="p-6">

@@ -19,7 +19,7 @@ const Bookmarks: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar />
       <LeftSidebar />
-      <div className="ml-20 lg:ml-64 transition-all duration-300">
+      <div className="ml-60 transition-all duration-300">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-foreground flex items-center">

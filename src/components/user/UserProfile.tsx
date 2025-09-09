@@ -198,8 +198,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
             <Avatar className="w-24 h-24 ring-4 ring-primary/20">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback className="bg-gradient-primary text-white text-2xl">
-                {user.firstName[0]}
-                {user.lastName[0]}
+                {user.firstName?.[0] || user.username?.[0] || 'U'}
+                {user.lastName?.[0] || ''}
               </AvatarFallback>
             </Avatar>
 
@@ -261,7 +261,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
                   <span>
-                    Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                    Joined{' '}
+                    {user.createdAt && !isNaN(new Date(user.createdAt).getTime())
+                      ? formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })
+                      : 'recently'}
                   </span>
                 </div>
               </div>

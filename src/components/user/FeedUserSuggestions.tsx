@@ -123,8 +123,8 @@ const FeedUserSuggestions: React.FC<FeedUserSuggestionsProps> = ({
                 <Avatar className="w-16 h-16 ring-2 ring-primary/20 hover:ring-primary/40 transition-smooth mb-3">
                   <AvatarImage src={user.avatar} alt={user.username} />
                   <AvatarFallback className="bg-gradient-primary text-white">
-                    {user.firstName[0]}
-                    {user.lastName[0]}
+                    {user.firstName?.[0] || user.username?.[0] || 'U'}
+                    {user.lastName?.[0] || ''}
                   </AvatarFallback>
                 </Avatar>
               </Link>

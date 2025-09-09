@@ -63,8 +63,8 @@ const UserCard: React.FC<UserCardProps> = ({
             <Avatar className="w-16 h-16 ring-2 ring-primary/20 hover:ring-primary/40 transition-smooth">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback className="bg-gradient-primary text-white text-lg">
-                {user.firstName[0]}
-                {user.lastName[0]}
+                {user.firstName?.[0] || user.username?.[0] || 'U'}
+                {user.lastName?.[0] || ''}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -123,7 +123,10 @@ const UserCard: React.FC<UserCardProps> = ({
               <div className="flex items-center space-x-1">
                 <Calendar className="w-4 h-4" />
                 <span>
-                  Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                  Joined{' '}
+                  {user.createdAt && !isNaN(new Date(user.createdAt).getTime())
+                    ? formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })
+                    : 'recently'}
                 </span>
               </div>
             </div>
