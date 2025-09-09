@@ -224,6 +224,12 @@ const Navbar = () => {
                   >
                     <MessageCircle className="w-5 h-5" />
                   </NavLink>
+                  <NavLink
+                    to="/discover"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                  >
+                    <UserIcon className="w-5 h-5" />
+                  </NavLink>
                   {(user.role === 'admin' || user.role === 'super_admin') && (
                     <NavLink
                       to={user.role === 'super_admin' ? '/super-admin' : '/admin'}
@@ -290,6 +296,12 @@ const Navbar = () => {
                           <Link to="/messages" onClick={() => setMobileMenuOpen(false)}>
                             <MessageCircle className="w-5 h-5 mr-3" />
                             Messages
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" asChild className="justify-start">
+                          <Link to="/discover" onClick={() => setMobileMenuOpen(false)}>
+                            <UserIcon className="w-5 h-5 mr-3" />
+                            Discover
                           </Link>
                         </Button>
                         <Button variant="ghost" asChild className="justify-start">

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
+import LeftSidebar from '../components/layout/LeftSidebar';
 import CreatePost from '../components/posts/CreatePost';
 import PostCard from '../components/posts/PostCard';
+import FeedSidebar from '../components/feed/FeedSidebar';
+import FeedUserSuggestions from '../components/user/FeedUserSuggestions';
 import { useAuth } from '../contexts/AuthContext';
 import { postService, userService } from '../services';
 import { toast } from '../hooks/use-toast';
@@ -38,6 +41,7 @@ const Feed: React.FC = () => {
   usePageTitle('Feed');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -285,6 +289,21 @@ const Feed: React.FC = () => {
     });
   };
 
+  const handleUserFollow = (userId: string) => {
+    // Refresh feed when user follows someone new
+    const loadPosts = async () => {
+      try {
+        const response = await userService.getUserFeed();
+        if (response.posts) {
+          setPosts(response.posts);
+        }
+      } catch (error) {
+        console.warn('Failed to refresh feed after follow:', error);
+      }
+    };
+    loadPosts();
+  };
+
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
@@ -292,74 +311,97 @@ const Feed: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar />
-      <div>
-        <div className="max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
-          <div className="mb-6">
-            <CreatePost
-              onSubmit={handleCreatePost}
-              placeholder="What's happening? 🚀 Share your thoughts, polls, media, or schedule a post!"
-            />
+      <LeftSidebar />
+      <div className="ml-20 lg:ml-64 transition-all duration-300">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Feed */}
+            <div className="lg:col-span-2">
+            <div className="mb-6">
+              <CreatePost
+                onSubmit={handleCreatePost}
+                placeholder="What's happening? 🚀 Share your thoughts, polls, media, or schedule a post!"
+              />
+            </div>
+
+            <div className="space-y-6">
+              {loading && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-muted-foreground mt-2">Creating post...</p>
+                </div>
+              )}
+
+              {/* User Suggestions - Show after create post and before posts */}
+              {showSuggestions && posts.length >= 0 && (
+                <FeedUserSuggestions 
+                  currentUserId={user?._id}
+                  onUserFollow={handleUserFollow}
+                  onDismiss={() => setShowSuggestions(false)}
+                />
+              )}
+
+              {posts.length === 0 && !loading ? (
+                <Card className="border-none shadow-soft bg-gradient-card">
+                  <CardContent className="p-8 text-center">
+                    <div className="space-y-4">
+                      <div className="text-6xl">👋</div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-foreground mb-2">
+                          Welcome to your feed!
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Follow some users to see their posts here, or create your first post to get started.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                posts
+                  .filter(post => post && post.author)
+                  .map((post, index) => (
+                    <PostCard
+                      key={post._id || `post-${index}`}
+                      post={{
+                        _id: post._id || `post-${index}`,
+                        content: post.content || '',
+                        author: {
+                          _id: post.author?._id || '',
+                          username: post.author?.username || 'unknown',
+                          firstName: post.author?.firstName || 'Unknown',
+                          lastName: post.author?.lastName || 'User',
+                          avatar: post.author?.avatar,
+                        },
+                        createdAt: post.createdAt || new Date().toISOString(),
+                        likesCount: post.likesCount || 0,
+                        commentsCount: post.commentsCount || 0,
+                        repostsCount: post.repostsCount || 0,
+                        sharesCount: post.sharesCount || 0,
+                        viewsCount: 0,
+                        isLiked: post.isLiked || false,
+                        isReposted: post.isReposted || false,
+                        isBookmarked: post.isBookmarked || false,
+                        images: post.images || [],
+                        type: 'text',
+                      }}
+                      currentUserId={user?._id}
+                      onLike={() => handleLike(post._id)}
+                      onRepost={handleRepost}
+                      onShare={handleShare}
+                      onEdit={handleEditPost}
+                      onDelete={handleDeletePost}
+                    />
+                  ))
+              )}
+            </div>
           </div>
 
-          <div className="space-y-6">
-            {loading && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground mt-2">Creating post...</p>
-              </div>
-            )}
-
-            {posts.length === 0 && !loading ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <div className="text-6xl mb-4">🚀</div>
-                  <h3 className="text-xl font-semibold mb-2">Welcome to EndlessChat!</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Start sharing your thoughts, create polls, upload media, or schedule posts.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Use hashtags (#), mentions (@), emojis 😎, and location 📍 to make your posts
-                    engaging!
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              posts
-                .filter(post => post && post.author)
-                .map((post, index) => (
-                  <PostCard
-                    key={post._id || `post-${index}`}
-                    post={{
-                      _id: post._id || `post-${index}`,
-                      content: post.content || '',
-                      author: {
-                        _id: post.author?._id || '',
-                        username: post.author?.username || 'unknown',
-                        firstName: post.author?.firstName || 'Unknown',
-                        lastName: post.author?.lastName || 'User',
-                        avatar: post.author?.avatar,
-                      },
-                      createdAt: post.createdAt || new Date().toISOString(),
-                      likesCount: post.likesCount || 0,
-                      commentsCount: post.commentsCount || 0,
-                      repostsCount: post.repostsCount || 0,
-                      sharesCount: post.sharesCount || 0,
-                      viewsCount: 0,
-                      isLiked: post.isLiked || false,
-                      isReposted: post.isReposted || false,
-                      isBookmarked: post.isBookmarked || false,
-                      images: post.images || [],
-                      type: 'text',
-                    }}
-                    currentUserId={user?._id}
-                    onLike={() => handleLike(post._id)}
-                    onRepost={handleRepost}
-                    onShare={handleShare}
-                    onEdit={handleEditPost}
-                    onDelete={handleDeletePost}
-                  />
-                ))
-            )}
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-20">
+              <FeedSidebar onUserFollow={handleUserFollow} />
+            </div>
           </div>
         </div>
       </div>

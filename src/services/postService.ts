@@ -114,6 +114,19 @@ class PostService {
     return response.data;
   }
 
+  // Get user posts by user ID
+  async getUserPostsById(userId: string, page = 1, limit = 10): Promise<any[]> {
+    try {
+      const response = await apiClient.get(
+        `/blogs/posts/user-id/${userId}?page=${page}&limit=${limit}`
+      );
+      return response.data?.posts || [];
+    } catch (error) {
+      console.warn('getUserPostsById API not available');
+      return [];
+    }
+  }
+
   // Like/Unlike post
   async toggleLike(postId: string): Promise<{ isLiked: boolean; likesCount: number }> {
     const response = await apiClient.post(`/blogs/engagement/${postId}/like`);

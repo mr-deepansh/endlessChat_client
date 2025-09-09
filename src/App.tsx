@@ -16,8 +16,10 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 // Import pages
 import About from './pages/About';
 import AdminDashboard from './pages/AdminDashboard';
+import Bookmarks from './pages/Bookmarks';
 import Contact from './pages/Contact';
 import CurrentUserProfile from './pages/CurrentUserProfile';
+import Discover from './pages/Discover';
 import Features from './pages/Features';
 import Feed from './pages/Feed';
 import ForgotPassword from './pages/ForgotPassword';
@@ -129,7 +131,17 @@ const App = () => {
                           }
                         />
                         <Route
-                          path="/:username"
+                          path="/profile/:userId"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Profile />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/@:username"
                           element={
                             <ErrorBoundary>
                               <ProtectedRoute>
@@ -164,6 +176,26 @@ const App = () => {
                             <ErrorBoundary>
                               <ProtectedRoute>
                                 <Notifications />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/discover"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Discover />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/bookmarks"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Bookmarks />
                               </ProtectedRoute>
                             </ErrorBoundary>
                           }
