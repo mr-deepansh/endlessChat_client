@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Button } from '../components/ui/button';
+import { Calendar, Filter, Grid3X3, Link as LinkIcon, List, MapPin, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { FollowButton } from '../components/common/FollowButton';
+import LeftSidebar from '../components/layout/LeftSidebar';
+import Navbar from '../components/layout/Navbar';
+import PostCard from '../components/posts/PostCard';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Badge } from '../components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -12,19 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import Navbar from '../components/layout/Navbar';
-import LeftSidebar from '../components/layout/LeftSidebar';
-import PostCard from '../components/posts/PostCard';
-import { userService, postService } from '../services';
-import type { User } from '../services/userService';
-import type { Post } from '../services/postService';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useAuth } from '../contexts/AuthContext';
 import { useApi } from '../hooks/useApi';
-import { Calendar, MapPin, Link as LinkIcon, Settings, Filter, Grid3X3, List } from 'lucide-react';
-import { FollowButton } from '../components/common/FollowButton';
+import { postService, userService } from '../services';
+import type { Post } from '../services/postService';
+import type { User } from '../services/userService';
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
+  const location = useLocation();
   const { user: currentUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -35,8 +35,8 @@ const Profile = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
 
-  // Clean username helper
-  const cleanUsername = username?.replace(/^@+/, '') || '';
+  // Clean username from /u/:username route
+  const cleanUsername = username || '';
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -64,7 +64,7 @@ const Profile = () => {
           }
         } else {
           // Find other user by username
-          const usersResponse = await userService.searchUsers(cleanUsername);
+          const usersResponse = await userService.searchUsers(cleanUsername, 1, 10);
           const foundUser = usersResponse.users?.find(u => u.username === cleanUsername);
 
           if (foundUser) {
@@ -127,9 +127,10 @@ const Profile = () => {
     if (!user) return;
 
     try {
+      const userId = user.id || user._id;
       const response = isFollowing
-        ? await userService.unfollowUser(user._id)
-        : await userService.followUser(user._id);
+        ? await userService.unfollowUser(userId)
+        : await userService.followUser(userId);
 
       setIsFollowing(response.isFollowing);
       setUser(prev =>
@@ -171,7 +172,7 @@ const Profile = () => {
     );
   }
 
-  const isOwnProfile = currentUser?._id === user._id;
+  const isOwnProfile = currentUser?.id === user.id || currentUser?._id === user._id;
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,7 +211,7 @@ const Profile = () => {
                         </Button>
                       ) : (
                         <FollowButton
-                          userId={user._id}
+                          userId={user.id || user._id}
                           isFollowing={isFollowing}
                           onFollowChange={(newIsFollowing, newFollowersCount) => {
                             setIsFollowing(newIsFollowing);
@@ -363,7 +364,8 @@ const Profile = () => {
                         _id: post._id || `post-${index}`,
                         content: post.content || '',
                         author: {
-                          _id: post.author?._id || user._id,
+                          _id: post.author?._id || post.author?.id || user._id || user.id,
+                          id: post.author?.id || post.author?._id || user.id || user._id,
                           username: post.author?.username || user.username,
                           firstName: post.author?.firstName || user.firstName,
                           lastName: post.author?.lastName || user.lastName,
@@ -383,7 +385,7 @@ const Profile = () => {
                         location: post.location,
                         type: post.type || 'text',
                       }}
-                      currentUserId={currentUser?._id}
+                      currentUserId={currentUser?.id || currentUser?._id}
                     />
                   ))
                 ) : (

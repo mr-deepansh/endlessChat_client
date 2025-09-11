@@ -1,5 +1,6 @@
 // src/components/posts/PostCard.tsx
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
@@ -117,17 +118,17 @@ const PostCard: React.FC<PostCardProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <div className="flex items-center space-x-2">
-                  <h3 className="font-semibold text-sm cursor-pointer hover:underline">
+                  <Link to={`/u/${post.author.username}`} className="font-semibold text-sm cursor-pointer hover:underline">
                     {post.author.firstName} {post.author.lastName}
-                  </h3>
+                  </Link>
                   <span className="text-muted-foreground text-sm">·</span>
                   <span className="text-muted-foreground text-sm">
                     {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                   </span>
                 </div>
-                <span className="text-muted-foreground text-xs cursor-pointer hover:underline">
+                <Link to={`/u/${post.author.username}`} className="text-muted-foreground text-xs cursor-pointer hover:underline">
                   @{post.author.username}
-                </span>
+                </Link>
               </div>
 
               <DropdownMenu>
@@ -163,10 +164,11 @@ const PostCard: React.FC<PostCardProps> = ({
               <p className="text-foreground whitespace-pre-wrap break-words">
                 {post.content.split(/(@\w+|#\w+)/g).map((part: string, index: number) => {
                   if (part.startsWith('@')) {
+                    const username = part.substring(1);
                     return (
-                      <span key={index} className="text-primary cursor-pointer hover:underline">
+                      <Link key={index} to={`/u/${username}`} className="text-primary cursor-pointer hover:underline">
                         {part}
-                      </span>
+                      </Link>
                     );
                   } else if (part.startsWith('#')) {
                     return (
@@ -176,7 +178,7 @@ const PostCard: React.FC<PostCardProps> = ({
                     );
                   }
                   return <span key={index}>{part}</span>;
-                })}
+                })
               </p>
 
               {post.images && post.images.length > 0 && (

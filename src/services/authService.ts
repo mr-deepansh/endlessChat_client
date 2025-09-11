@@ -165,4 +165,10 @@ export const authService = {
 
     return response;
   },
+
+  // Check if user is authenticated
+  isAuthenticated: (): boolean => {
+    const token = localStorage.getItem('accessToken') || localStorage.getItem('auth_token');
+    return !!token;
+  },
 };

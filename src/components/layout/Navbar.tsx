@@ -57,25 +57,10 @@ const Navbar = () => {
     if (query.trim().length > 2) {
       setIsSearching(true);
       try {
-        const response = await userService.searchUsers({
-          username: query.trim(),
-          limit: 5,
-        });
-        if (response.success && response.data) {
-          let users: User[] = [];
-          // Handle different response formats
-          if (Array.isArray(response.data)) {
-            users = response.data;
-          } else if (response.data.users && Array.isArray(response.data.users)) {
-            users = response.data.users;
-          } else if (response.data.data && Array.isArray(response.data.data)) {
-            users = response.data.data;
-          } else {
-            // If it's an object, try to extract user-like properties
-            users = [response.data].filter(item => item && item._id);
-          }
-
-          setSearchResults(users.slice(0, 5));
+        const response = await userService.searchUsers(query.trim(), 1, 5);
+        if (response && response.users) {
+          const users = response.users.slice(0, 5);
+          setSearchResults(users);
           setShowSearchResults(users.length > 0);
         }
       } catch (error) {
@@ -137,10 +122,10 @@ const Navbar = () => {
                 <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
                   {searchResults.map((result: User) => (
                     <div
-                      key={result._id}
+                      key={result.id || result._id}
                       className="flex items-center p-3 hover:bg-primary/5 cursor-pointer transition-all duration-200 first:rounded-t-xl last:rounded-b-xl border-b border-border/30 last:border-b-0"
                       onClick={() => {
-                        navigate(`/@${result.username}`);
+                        navigate(`/u/${result.username}`);
                         setShowSearchResults(false);
                         setSearchQuery('');
                       }}
@@ -311,7 +296,7 @@ const Navbar = () => {
                         </Button>
                         <Button variant="ghost" asChild className="justify-start">
                           <Link
-                            to={user.username ? `/@${user.username}` : '/profile/me'}
+                            to={user.username ? `/u/${user.username}` : '/profile/me'}
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             <UserIcon className="w-5 h-5 mr-3" />
@@ -409,7 +394,7 @@ const Navbar = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link
-                        to={user.username ? `/@${user.username}` : '/profile/me'}
+                        to={user.username ? `/u/${user.username}` : '/profile/me'}
                         className="cursor-pointer"
                       >
                         <UserIcon className="mr-2 h-4 w-4" />

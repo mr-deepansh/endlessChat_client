@@ -1,7 +1,8 @@
 import { apiClient } from './core/apiClient';
 
 export interface User {
-  _id: string;
+  _id?: string;
+  id?: string;
   username: string;
   email: string;
   firstName: string;
@@ -9,6 +10,8 @@ export interface User {
   bio?: string;
   avatar?: string;
   coverImage?: string;
+  location?: string;
+  website?: string;
   followers: string[];
   following: string[];
   postsCount: number;

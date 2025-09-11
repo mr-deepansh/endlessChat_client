@@ -76,7 +76,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className = '' }) => {
     {
       name: 'Profile',
       icon: User,
-      path: user?.username ? `/@${user.username}` : '/profile/me',
+      path: user?.username ? `/u/${user.username}` : '/profile/me',
       tooltip: 'My Profile',
     },
   ];
@@ -86,8 +86,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className = '' }) => {
       <NavLink
         to={item.path}
         className={({ isActive }) =>
-          `flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 hover:bg-primary/10 group ${
-            isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:text-primary'
+          `flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 hover:bg-muted/50 group ${
+            isActive ? 'bg-muted text-primary' : 'text-foreground hover:text-primary'
           }`
         }
       >
@@ -99,7 +99,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className = '' }) => {
 
   return (
     <div
-      className={`fixed left-0 top-12 h-[calc(100vh-3rem)] w-60 bg-background/95 backdrop-blur-xl border-r border-border/50 z-40 overflow-y-hidden ${className}`}
+      className={`fixed left-0 top-12 h-[calc(100vh-3rem)] w-60 bg-card/95 backdrop-blur-xl border-r border-border/50 z-40 overflow-y-hidden ${className}`}
     >
       <div className="flex flex-col h-full px-4 overflow-y-hidden">
         {/* Navigation Items */}
@@ -122,8 +122,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className = '' }) => {
         <div className="py-4 space-y-3 border-t border-border/50">
           {/* User Profile */}
           <div
-            className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-primary/5 cursor-pointer transition-all duration-200"
-            onClick={() => navigate(user?.username ? `/@${user.username}` : '/profile/me')}
+            className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-muted/30 cursor-pointer transition-all duration-200"
+            onClick={() => navigate(user?.username ? `/u/${user.username}` : '/profile/me')}
           >
             <Avatar className="w-8 h-8 ring-1 ring-primary/20 hover:ring-primary/30 transition-all">
               <AvatarImage src={user?.avatar} alt={user?.username} />

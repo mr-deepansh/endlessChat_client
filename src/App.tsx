@@ -131,7 +131,7 @@ const App = () => {
                           }
                         />
                         <Route
-                          path="/profile/:userId"
+                          path="/u/:username"
                           element={
                             <ErrorBoundary>
                               <ProtectedRoute>
@@ -141,7 +141,7 @@ const App = () => {
                           }
                         />
                         <Route
-                          path="/@:username"
+                          path="/profile/:userId"
                           element={
                             <ErrorBoundary>
                               <ProtectedRoute>

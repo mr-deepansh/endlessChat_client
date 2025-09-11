@@ -8,16 +8,10 @@ import React, {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../hooks/use-toast';
-import { authService } from '../services/modules/auth.service';
-import { userService } from '../services/modules/user.service';
+import { authService } from '../services';
+import { userService } from '../services';
 import LoadingScreen from '../components/ui/loading-screen';
-import {
-  User,
-  LoginRequest,
-  RegisterRequest,
-  ChangePasswordRequest,
-  UpdateProfileRequest,
-} from '../types/api';
+import { User, LoginRequest, RegisterRequest, ChangePasswordRequest } from '../types/api';
 
 interface AuthContextType {
   user: User | null;
@@ -27,7 +21,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (userData: UpdateProfileRequest) => Promise<void>;
+  updateProfile: (userData: any) => Promise<void>;
   changePassword: (passwordData: ChangePasswordRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
   clearRegistrationError: () => void;
@@ -67,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         if (authService.isAuthenticated()) {
           const response = await authService.getCurrentUser();
-          if (response.success && response.data) {
+          if (response.data) {
             setUser(response.data);
           }
         }
@@ -97,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       async () => {
         try {
           const response = await authService.getCurrentUser();
-          if (response.success && response.data) {
+          if (response.data) {
             setUser(response.data);
           }
         } catch (error: any) {
@@ -118,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshUser = useCallback(async () => {
     try {
       const response = await authService.getCurrentUser();
-      if (response.success && response.data) {
+      if (response.data) {
         setUser(response.data);
       } else {
         throw new Error('Failed to get user data');
@@ -133,9 +127,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      const response = await authService.login(credentials);
+      const response = await authService.login(
+        credentials.identifier,
+        credentials.password,
+        credentials.rememberMe
+      );
 
-      if (response.success && response.data) {
+      if (response.data?.user) {
         setUser(response.data.user);
 
         toast({
@@ -165,9 +163,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       setRegistrationError(null);
 
-      const response = await authService.register(userData);
+      const response = await authService.register({
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        confirmPassword: userData.confirmPassword,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      });
 
-      if (response.success && response.data) {
+      if (response.data?.user) {
         setUser(response.data.user);
 
         toast({
@@ -218,11 +223,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updateProfile = async (userData: UpdateProfileRequest) => {
+  const updateProfile = async (userData: any) => {
     try {
       const response = await authService.updateProfile(userData);
 
-      if (response.success && response.data) {
+      if (response.data) {
         setUser(response.data);
 
         toast({
@@ -244,15 +249,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const changePassword = async (passwordData: ChangePasswordRequest) => {
     try {
-      const response = await authService.changePassword(passwordData);
+      const response = await authService.changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
 
-      if (response.success) {
+      if (response.data || response.message) {
         toast({
           title: 'Password Changed',
           description: 'Your password has been changed successfully.',
         });
       } else {
-        throw new Error(response.message || 'Failed to change password');
+        throw new Error('Failed to change password');
       }
     } catch (error: any) {
       toast({
