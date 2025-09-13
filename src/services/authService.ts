@@ -25,7 +25,7 @@ export interface UpdateProfileData {
 export const authService = {
   // Login
   login: async (email: string, password: string, rememberMe = false): Promise<AuthResponse> => {
-    const response = await apiClient.post('/auth/login', {
+    const response = await apiClient.post('/users/login', {
       identifier: email,
       password,
       rememberMe,
@@ -51,13 +51,13 @@ export const authService = {
     firstName: string;
     lastName: string;
   }): Promise<AuthResponse> => {
-    const response = await apiClient.post('/auth/register', userData);
+    const response = await apiClient.post('/users/register', userData);
     return response;
   },
 
   // Logout
   logout: async () => {
-    const response = await apiClient.post('/auth/logout');
+    const response = await apiClient.post('/users/logout');
 
     // Clear tokens
     localStorage.removeItem('accessToken');
@@ -68,7 +68,7 @@ export const authService = {
 
   // Change Password
   changePassword: async (data: ChangePasswordData) => {
-    const response = await apiClient.post('/auth/change-password', data);
+    const response = await apiClient.post('/users/change-password', data);
     return response;
   },
 

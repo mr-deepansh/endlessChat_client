@@ -1,1721 +1,2104 @@
 {
-  "info": {
-    "_postman_id": "7737bd1e-1cc8-46bd-8708-8c89ca5c1ff2",
-    "name": "social-medial-app",
-    "description": "StartFragmentSocial Media Blog App: Backend application enabling user-driven content creation and sharing. Built with MongoDB, Express, Node.js, Jwt, Rate limiting, Role based access featuring secure authentication and blog management functionalities.EndFragment",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "31311755"
-  },
-  "item": [
-    {
-      "name": "🔐 01 - Authentication",
-      "item": [
-        {
-          "name": "Logout User",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/auth/logout",
-              "host": ["{{server}}"],
-              "path": ["auth", "logout"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Register User",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"user_name.in\",\r\n    \"email\": \"user6@example.com\",\r\n    \"password\": \"Strong@123\",\r\n    \"confirmPassword\": \"Strong@123\",\r\n    \"firstName\": \"user5\",\r\n    \"lastName\": \"Kumar\",\r\n    \"role\":\"user\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/auth/register",
-              "host": ["{{server}}"],
-              "path": ["auth", "register"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login User",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"identifier\": \"mr_deepansh\",\r\n    \"password\": \"Strong@123\",\r\n    \"rememberMe\": true\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/auth/login",
-              "host": ["{{server}}"],
-              "path": ["auth", "login"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "👤 02 - Profile Management",
-      "item": [
-        {
-          "name": "Change Password - Auth Required",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"currentPassword\": \"Strong@123\",\r\n  \"newPassword\": \"Strong@12345\",\r\n  \"confirmNewPassword\": \"Strong@12345\"\r\n}\r\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/auth/change-password",
-              "host": ["{{server}}"],
-              "path": ["auth", "change-password"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Current User Profile",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/profile/me",
-              "host": ["{{server}}"],
-              "path": ["users", "profile", "me"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Upload Avatar - Auth Required",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"avatarUrl\": \"https://example.com/avatar.jpg\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/upload-avatar",
-              "host": ["{{server}}"],
-              "path": ["users", "upload-avatar"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update My Profile - Auth Required",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"firstName\": \"Deep\",\r\n    \"lastName\": \"Gang\",\r\n    \"bio\": \"Tech enthusiast and MERN stack dev.\",\r\n    \"avatar\": \"https://example.com/new-avatar.png\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/profile/me",
-              "host": ["{{server}}"],
-              "path": ["users", "profile", "me"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🔍 03 - Discovery & Search",
-      "item": [
-        {
-          "name": "GET Search Users (with query parameters)",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/search?username=admin",
-              "host": ["{{server}}"],
-              "path": ["users", "search"],
-              "query": [
-                {
-                  "key": "username",
-                  "value": "admin"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET Feed Management",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/feed",
-              "host": ["{{server}}"],
-              "path": ["users", "feed"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "👥 04 - Social Features",
-      "item": [
-        {
-          "name": "UnFollow User ( USER_ID )",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/unfollow/USER_ID",
-              "host": ["{{server}}"],
-              "path": ["users", "unfollow", "USER_ID"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Follow User ( USER_ID )",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/follow/USER_ID",
-              "host": ["{{server}}"],
-              "path": ["users", "follow", "USER_ID"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Followers Query Parameters",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/users/followers/USER_ID?limit=50&page=1",
-              "host": ["{{server}}"],
-              "path": ["users", "followers", "USER_ID"],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "50"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Following Query Parameters",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/users/following/687bf16b2d53b53b0369ebc2?limit=50&page=1",
-              "host": ["{{server}}"],
-              "path": ["users", "following", "687bf16b2d53b53b0369ebc2"],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "50"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User Feed (with pagination and filtering)",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/users/feed?limit=20&page=1&sort=recent",
-              "host": ["{{server}}"],
-              "path": ["users", "feed"],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "20"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "sort",
-                  "value": "recent"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🛡️ 05 - Admin Routes (Admin Only)",
-      "item": [
-        {
-          "name": "Get Admin Stats",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/stats",
-              "host": ["{{server}}"],
-              "path": ["admin", "stats"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Admin Stats Live",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/stats/live",
-              "host": ["{{server}}"],
-              "path": ["admin", "stats", "live"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Users",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/users",
-              "host": ["{{server}}"],
-              "path": ["admin", "users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete User",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"reason\": \"Account violation - spam activity detected\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/users/user-Id",
-              "host": ["{{server}}"],
-              "path": ["admin", "users", "user-Id"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update User",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/users/USER-ID",
-              "host": ["{{server}}"],
-              "path": ["admin", "users", "USER-ID"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User By ID",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/users/USER-ID",
-              "host": ["{{server}}"],
-              "path": ["admin", "users", "USER-ID"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Activate User",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/users/USER-ID/activate",
-              "host": ["{{server}}"],
-              "path": ["admin", "users", "USER-ID", "activate"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Suspend User",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"reason\": \"illegal activity\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/users/USER-ID/suspend",
-              "host": ["{{server}}"],
-              "path": ["admin", "users", "USER-ID", "suspend"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Admins ",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/admins",
-              "host": ["{{server}}"],
-              "path": ["admin", "admins"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Admins by Admin ID",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/admins/:adminID",
-              "host": ["{{server}}"],
-              "path": ["admin", "admins", ":adminID"],
-              "variable": [
-                {
-                  "key": "adminID",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Admin Dashboard",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/dashboard",
-              "host": ["{{server}}"],
-              "path": ["admin", "dashboard"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Session Analytics",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/sessions/analytics?timeRange=30d",
-              "host": ["{{server}}"],
-              "path": ["admin", "sessions", "analytics"],
-              "query": [
-                {
-                  "key": "timeRange",
-                  "value": "30d"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Specific Admin Sessions",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/sessions/admin-Id",
-              "host": ["{{server}}"],
-              "path": ["admin", "sessions", "admin-Id"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Analytics Overview",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/analytics/overview?timeRange=30d",
-              "host": ["{{server}}"],
-              "path": ["admin", "analytics", "overview"],
-              "query": [
-                {
-                  "key": "timeRange",
-                  "value": "30d"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User Growth Analytics",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/analytics/users/growth?period=daily&days=30",
-              "host": ["{{server}}"],
-              "path": ["admin", "analytics", "users", "growth"],
-              "query": [
-                {
-                  "key": "period",
-                  "value": "daily"
-                },
-                {
-                  "key": "days",
-                  "value": "30"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User Demographics",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{server}}/admin/analytics/users/demographics",
-              "host": ["{{server}}"],
-              "path": ["admin", "analytics", "users", "demographics"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🛡️ 06 - SECURITY & MODERATION",
-      "item": [
-        {
-          "name": "Get Suspicious Accounts",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/security/suspicious-accounts?page=1&limit=20&riskLevel=high",
-              "host": ["{{server}}"],
-              "path": ["admin", "security", "suspicious-accounts"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                },
-                {
-                  "key": "riskLevel",
-                  "value": "high"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Block IP Address",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"ipAddress\": \"192.168.1.100\",\r\n  \"reason\": \"Multiple failed login attempts\",\r\n  \"duration\": \"24h\"\r\n}\r\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/security/blocked-ips",
-              "host": ["{{server}}"],
-              "path": ["admin", "security", "blocked-ips"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Login Attempts",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/security/login-attempts?status=failed&timeRange=24h",
-              "host": ["{{server}}"],
-              "path": ["admin", "security", "login-attempts"],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "failed"
-                },
-                {
-                  "key": "timeRange",
-                  "value": "24h"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Blocked IPs",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"ipAddress\": \"192.168.1.100\",\r\n  \"reason\": \"Multiple failed login attempts\",\r\n  \"duration\": \"24h\"\r\n}\r\n"
-            },
-            "url": {
-              "raw": "{{server}}/admin/security/blocked-ips?page=1&limit=20",
-              "host": ["{{server}}"],
-              "path": ["admin", "security", "blocked-ips"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Unblock IP Address",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"reason\": \"Issue resolved\"\r\n}\r\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/security/blocked-ips/{{ipId}}",
-              "host": ["{{server}}"],
-              "path": ["admin", "security", "blocked-ips", "{{ipId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Threat Detection",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/security/threat-detection",
-              "host": ["{{server}}"],
-              "path": ["admin", "security", "threat-detection"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🚨 06 - CONTENT MANAGEMENT",
-      "item": [
-        {
-          "name": "Toggle Post Visibility",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"action\": \"hide\",\r\n  \"reason\": \"Inappropriate content\"\r\n}\r\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/content/posts/{{postId}}/toggle-visibility",
-              "host": ["{{server}}"],
-              "path": ["admin", "content", "posts", "{{postId}}", "toggle-visibility"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Posts",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/content/posts?page=1&limit=20&status=published",
-              "host": ["{{server}}"],
-              "path": ["admin", "content", "posts"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                },
-                {
-                  "key": "status",
-                  "value": "published"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🎛️ 07 - SYSTEM CONFIGURATION",
-      "item": [
-        {
-          "name": " Get App Settings",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/config/app-settings",
-              "host": ["{{server}}"],
-              "path": ["admin", "config", "app-settings"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update App Settings",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"category\": \"security\",\r\n    \"settings\": {\r\n        \"maxLoginAttempts\": 5,\r\n        \"lockoutDuration\": 1800\r\n    }\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/config/app-settings",
-              "host": ["{{server}}"],
-              "path": ["admin", "config", "app-settings"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "📢08 -  NOTIFICATIONS",
-      "item": [
-        {
-          "name": "Get Notification Templates",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/notifications/templates?type=email",
-              "host": ["{{server}}"],
-              "path": ["admin", "notifications", "templates"],
-              "query": [
-                {
-                  "key": "type",
-                  "value": "email"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Send Bulk Notification",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"recipients\": \"active\",\r\n    \"template\": \"system_update\",\r\n    \"channels\": [\r\n        \"email\",\r\n        \"in-app\"\r\n    ],\r\n    \"priority\": \"normal\",\r\n    \"customMessage\": {\r\n        \"title\": \"System Maintenance\",\r\n        \"content\": \"Scheduled maintenance on Sunday 2AM-4AM UTC\"\r\n    }\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/notifications/send-bulk",
-              "host": ["{{server}}"],
-              "path": ["admin", "notifications", "send-bulk"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "📈 09 - MONITORING",
-      "item": [
-        {
-          "name": "Get Server Health",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/monitoring/database-stats",
-              "host": ["{{server}}"],
-              "path": ["admin", "monitoring", "database-stats"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Database Stats",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/monitoring/database-stats",
-              "host": ["{{server}}"],
-              "path": ["admin", "monitoring", "database-stats"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User Retention Analytics",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/analytics/users/retention?period=weekly&weeks=12",
-              "host": ["{{server}}"],
-              "path": ["admin", "analytics", "users", "retention"],
-              "query": [
-                {
-                  "key": "period",
-                  "value": "weekly"
-                },
-                {
-                  "key": "weeks",
-                  "value": "12"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🔄 10 -  AUTOMATION",
-      "item": [
-        {
-          "name": "Get Automation Rules",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/automation/rules?status=active",
-              "host": ["{{server}}"],
-              "path": ["admin", "automation", "rules"],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "active"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Automation Rule",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Welcome New Users\",\r\n    \"description\": \"Send welcome email to new registrations\",\r\n    \"trigger\": \"user_created\",\r\n    \"conditions\": {\r\n        \"isEmailVerified\": true\r\n    },\r\n    \"actions\": [\r\n        {\r\n            \"type\": \"send_email\",\r\n            \"template\": \"welcome\",\r\n            \"delay\": 0\r\n        }\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/automation/rules",
-              "host": ["{{server}}"],
-              "path": ["admin", "automation", "rules"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Experiments",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/experiments?status=running",
-              "host": ["{{server}}"],
-              "path": ["admin", "experiments"],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "running"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Experiment",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"New Onboarding Flow\",\r\n    \"description\": \"Testing simplified onboarding process\",\r\n    \"variants\": [\r\n        {\r\n            \"name\": \"control\",\r\n            \"description\": \"Current flow\"\r\n        },\r\n        {\r\n            \"name\": \"simplified\",\r\n            \"description\": \"New simplified flow\"\r\n        }\r\n    ],\r\n    \"trafficSplit\": [\r\n        50,\r\n        50\r\n    ],\r\n    \"duration\": 14\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/experiments",
-              "host": ["{{server}}"],
-              "path": ["admin", "experiments"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🌟 11 -  BUSINESS INTELLIGENCE",
-      "item": [
-        {
-          "name": "Get Revenue Analytics",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/bi/revenue-analytics?period=30d",
-              "host": ["{{server}}"],
-              "path": ["admin", "bi", "revenue-analytics"],
-              "query": [
-                {
-                  "key": "period",
-                  "value": "30d"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User Lifetime Value",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/bi/user-lifetime-value?segment=premium",
-              "host": ["{{server}}"],
-              "path": ["admin", "bi", "user-lifetime-value"],
-              "query": [
-                {
-                  "key": "segment",
-                  "value": "premium"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Engagement Metrics",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/analytics/engagement/metrics?timeRange=30d&metric=all",
-              "host": ["{{server}}"],
-              "path": ["admin", "analytics", "engagement", "metrics"],
-              "query": [
-                {
-                  "key": "timeRange",
-                  "value": "30d"
-                },
-                {
-                  "key": "metric",
-                  "value": "all"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "👑 12 - SUPER ADMIN ONLY ROUTES",
-      "item": [
-        {
-          "name": "Create Admin",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin7\",\r\n    \"email\": \"admin7@company.com\",\r\n    \"password\": \"Strong@123!\",\r\n    \"role\": \"admin\",\r\n    \"permissions\": [\r\n        \"user_management\",\r\n        \"content_moderation\"\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/super-admin/create-admin",
-              "host": ["{{server}}"],
-              "path": ["admin", "super-admin", "create-admin"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Admin",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"confirmPassword\": \"Strong@123\",\r\n    \"reason\": \"Admin role no longer required\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/super-admin/delete-admin/{{adminId}}",
-              "host": ["{{server}}"],
-              "path": ["admin", "super-admin", "delete-admin", "{{adminId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update  Role by Super Admin",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"newRole\": \"admin\", // \"user\", \"admin\", or \"super_admin\"\r\n    \"reason\": \"Promoting user to admin for content management responsibilities\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/super-admin/change-role/USER_ID",
-              "host": ["{{server}}"],
-              "path": ["admin", "super-admin", "change-role", "USER_ID"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get System Config",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/super-admin/system-config",
-              "host": ["{{server}}"],
-              "path": ["admin", "super-admin", "system-config"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Audit Logs",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/admin/super-admin/audit-logs?page=1&limit=50&action=CREATE_ADMIN&criticality=HIGH",
-              "host": ["{{server}}"],
-              "path": ["admin", "super-admin", "audit-logs"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "50"
-                },
-                {
-                  "key": "action",
-                  "value": "CREATE_ADMIN"
-                },
-                {
-                  "key": "criticality",
-                  "value": "HIGH"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Emergency Lockdown",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"reason\": \"Security breach detected\",\r\n    \"duration\": \"1h\",\r\n    \"confirmPassword\": \"Strong@123\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/admin/super-admin/emergency-lockdown",
-              "host": ["{{server}}"],
-              "path": ["admin", "super-admin", "emergency-lockdown"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🔍 13 -  Health Check & System",
-      "item": [
-        {
-          "name": "API Version Check",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}",
-              "host": ["{{server}}"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "📌 14 - Locations",
-      "item": [
-        {
-          "name": "Get Activity Stats",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/auth/activity/stats?days=30",
-              "host": ["{{server}}"],
-              "path": ["auth", "activity", "stats"],
-              "query": [
-                {
-                  "key": "days",
-                  "value": "30"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Activity logs",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/auth/activity?page=1&limit=5",
-              "host": ["{{server}}"],
-              "path": ["auth", "activity"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "5"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Location analytics ",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/auth/activity/location-analytics?days=7",
-              "host": ["{{server}}"],
-              "path": ["auth", "activity", "location-analytics"],
-              "query": [
-                {
-                  "key": "days",
-                  "value": "7"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Login locations retrieved ",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{server}}/auth/activity/locations?limit=5&days=30",
-              "host": ["{{server}}"],
-              "path": ["auth", "activity", "locations"],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "5"
-                },
-                {
-                  "key": "days",
-                  "value": "30"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "👤 15 - User Actions",
-      "item": [
-        {
-          "name": "GET All Users with follow or following",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users",
-              "host": ["{{server}}"],
-              "path": ["users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get a User Profile by ID",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users/USER_ID",
-              "host": ["{{server}}"],
-              "path": ["users", "USER_ID"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Users (with pagination and filtering)",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{server}}/users?page=1&limit=10&search=code&role=user&isActive=true&sortBy=createdAt&sortOrder=desc",
-              "host": ["{{server}}"],
-              "path": ["users"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                },
-                {
-                  "key": "search",
-                  "value": "code"
-                },
-                {
-                  "key": "role",
-                  "value": "user"
-                },
-                {
-                  "key": "isActive",
-                  "value": "true"
-                },
-                {
-                  "key": "sortBy",
-                  "value": "createdAt"
-                },
-                {
-                  "key": "sortOrder",
-                  "value": "desc"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "7737bd1e-1cc8-46bd-8708-8c89ca5c1ff2",
+		"name": "social-medial-app",
+		"description": "StartFragmentSocial Media Blog App: Backend application enabling user-driven content creation and sharing. Built with MongoDB, Express, Node.js, Jwt, Rate limiting, Role based access featuring secure authentication and blog management functionalities.EndFragment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31311755"
+	},
+	"item": [
+		{
+			"name": "🔐 01 - Authentication",
+			"item": [
+				{
+					"name": "Logout User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/logout",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"user_name.in\",\r\n    \"email\": \"user6@example.com\",\r\n    \"password\": \"Strong@123\",\r\n    \"confirmPassword\": \"Strong@123\",\r\n    \"firstName\": \"user5\",\r\n    \"lastName\": \"Kumar\",\r\n    \"role\":\"user\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/register",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"identifier\": \"mr_deepansh\",\r\n    \"password\": \"Strong@123\",\r\n    \"rememberMe\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/login",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👤 02 - Profile Management",
+			"item": [
+				{
+					"name": "Change Password - Auth Required",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"currentPassword\": \"Strong@123\",\r\n  \"newPassword\": \"Strong@12345\",\r\n  \"confirmNewPassword\": \"Strong@12345\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/change-password",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"change-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User Profile",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/profile/me",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Avatar - Auth Required",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"avatarUrl\": \"https://example.com/avatar.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/upload-avatar",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"upload-avatar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile - Auth Required",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Deep\",\r\n    \"lastName\": \"Gang\",\r\n    \"bio\": \"Tech enthusiast and MERN stack dev.\",\r\n    \"avatar\": \"https://example.com/new-avatar.png\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/profile/me",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🔍 03 - Discovery & Search",
+			"item": [
+				{
+					"name": "GET Search Users (with query parameters)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/search?username=admin",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"search"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "admin"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Feed Management",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/feed",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"feed"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👥 04 - Social Features",
+			"item": [
+				{
+					"name": "UnFollow User ( USER_ID )",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/unfollow/USER_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"unfollow",
+								"USER_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Follow User ( USER_ID )",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/follow/USER_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"follow",
+								"USER_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Followers Query Parameters",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/users/followers/USER_ID?limit=50&page=1",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"followers",
+								"USER_ID"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Following Query Parameters",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/users/following/687bf16b2d53b53b0369ebc2?limit=50&page=1",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"following",
+								"687bf16b2d53b53b0369ebc2"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Feed (with pagination and filtering)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/users/feed?limit=20&page=1&sort=recent",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"feed"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "sort",
+									"value": "recent"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🛡️ 05 - Admin Routes (Admin Only)",
+			"item": [
+				{
+					"name": "Get Admin Stats",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/stats",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Admin Stats Live",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/stats/live",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"stats",
+								"live"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/users",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"reason\": \"Account violation - spam activity detected\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/users/user-Id",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"user-Id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/users/USER-ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User By ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/users/USER-ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activate User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/users/USER-ID/activate",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Suspend User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"reason\": \"illegal activity\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/users/USER-ID/suspend",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"USER-ID",
+								"suspend"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Admins ",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/admins",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"admins"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Admins by Admin ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/admins/:adminID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"admins",
+								":adminID"
+							],
+							"variable": [
+								{
+									"key": "adminID",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Admin Dashboard",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/dashboard",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Session Analytics",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/sessions/analytics?timeRange=30d",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"sessions",
+								"analytics"
+							],
+							"query": [
+								{
+									"key": "timeRange",
+									"value": "30d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific Admin Sessions",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/sessions/admin-Id",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"sessions",
+								"admin-Id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Analytics Overview",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/analytics/overview?timeRange=30d",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"overview"
+							],
+							"query": [
+								{
+									"key": "timeRange",
+									"value": "30d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Growth Analytics",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/analytics/users/growth?period=daily&days=30",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"users",
+								"growth"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "daily"
+								},
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Demographics",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server}}/admin/analytics/users/demographics",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"users",
+								"demographics"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🛡️ 06 - SECURITY & MODERATION",
+			"item": [
+				{
+					"name": "Get Suspicious Accounts",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/security/suspicious-accounts?page=1&limit=20&riskLevel=high",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"suspicious-accounts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "riskLevel",
+									"value": "high"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Block IP Address",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"ipAddress\": \"192.168.1.100\",\r\n  \"reason\": \"Multiple failed login attempts\",\r\n  \"duration\": \"24h\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/security/blocked-ips",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"blocked-ips"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Login Attempts",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/security/login-attempts?status=failed&timeRange=24h",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"login-attempts"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "failed"
+								},
+								{
+									"key": "timeRange",
+									"value": "24h"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Blocked IPs",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"ipAddress\": \"192.168.1.100\",\r\n  \"reason\": \"Multiple failed login attempts\",\r\n  \"duration\": \"24h\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{server}}/admin/security/blocked-ips?page=1&limit=20",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"blocked-ips"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unblock IP Address",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"reason\": \"Issue resolved\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/security/blocked-ips/{{ipId}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"blocked-ips",
+								"{{ipId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Threat Detection",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/security/threat-detection",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"security",
+								"threat-detection"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🚨 06 - CONTENT MANAGEMENT",
+			"item": [
+				{
+					"name": "Toggle Post Visibility",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"action\": \"hide\",\r\n  \"reason\": \"Inappropriate content\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/content/posts/{{postId}}/toggle-visibility",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"content",
+								"posts",
+								"{{postId}}",
+								"toggle-visibility"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Posts",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/content/posts?page=1&limit=20&status=published",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"content",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "status",
+									"value": "published"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🎛️ 07 - SYSTEM CONFIGURATION",
+			"item": [
+				{
+					"name": " Get App Settings",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/config/app-settings",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"config",
+								"app-settings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update App Settings",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"category\": \"security\",\r\n    \"settings\": {\r\n        \"maxLoginAttempts\": 5,\r\n        \"lockoutDuration\": 1800\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/config/app-settings",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"config",
+								"app-settings"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📢08 -  NOTIFICATIONS",
+			"item": [
+				{
+					"name": "Get Notification Templates",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/notifications/templates?type=email",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"notifications",
+								"templates"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "email"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Bulk Notification",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"recipients\": \"active\",\r\n    \"template\": \"system_update\",\r\n    \"channels\": [\r\n        \"email\",\r\n        \"in-app\"\r\n    ],\r\n    \"priority\": \"normal\",\r\n    \"customMessage\": {\r\n        \"title\": \"System Maintenance\",\r\n        \"content\": \"Scheduled maintenance on Sunday 2AM-4AM UTC\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/notifications/send-bulk",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"notifications",
+								"send-bulk"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📈 09 - MONITORING",
+			"item": [
+				{
+					"name": "Get Server Health",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/monitoring/database-stats",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"monitoring",
+								"database-stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Database Stats",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/monitoring/database-stats",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"monitoring",
+								"database-stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Retention Analytics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/analytics/users/retention?period=weekly&weeks=12",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"users",
+								"retention"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "weekly"
+								},
+								{
+									"key": "weeks",
+									"value": "12"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🔄 10 -  AUTOMATION",
+			"item": [
+				{
+					"name": "Get Automation Rules",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/automation/rules?status=active",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"automation",
+								"rules"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "active"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Automation Rule",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Welcome New Users\",\r\n    \"description\": \"Send welcome email to new registrations\",\r\n    \"trigger\": \"user_created\",\r\n    \"conditions\": {\r\n        \"isEmailVerified\": true\r\n    },\r\n    \"actions\": [\r\n        {\r\n            \"type\": \"send_email\",\r\n            \"template\": \"welcome\",\r\n            \"delay\": 0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/automation/rules",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"automation",
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Experiments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/experiments?status=running",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"experiments"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "running"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Experiment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"New Onboarding Flow\",\r\n    \"description\": \"Testing simplified onboarding process\",\r\n    \"variants\": [\r\n        {\r\n            \"name\": \"control\",\r\n            \"description\": \"Current flow\"\r\n        },\r\n        {\r\n            \"name\": \"simplified\",\r\n            \"description\": \"New simplified flow\"\r\n        }\r\n    ],\r\n    \"trafficSplit\": [\r\n        50,\r\n        50\r\n    ],\r\n    \"duration\": 14\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/experiments",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"experiments"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🌟 11 -  BUSINESS INTELLIGENCE",
+			"item": [
+				{
+					"name": "Get Revenue Analytics",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/bi/revenue-analytics?period=30d",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"bi",
+								"revenue-analytics"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "30d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Lifetime Value",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/bi/user-lifetime-value?segment=premium",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"bi",
+								"user-lifetime-value"
+							],
+							"query": [
+								{
+									"key": "segment",
+									"value": "premium"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Engagement Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/analytics/engagement/metrics?timeRange=30d&metric=all",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"engagement",
+								"metrics"
+							],
+							"query": [
+								{
+									"key": "timeRange",
+									"value": "30d"
+								},
+								{
+									"key": "metric",
+									"value": "all"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👑 12 - SUPER ADMIN ONLY ROUTES",
+			"item": [
+				{
+					"name": "Create Admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin7\",\r\n    \"email\": \"admin7@company.com\",\r\n    \"password\": \"Strong@123!\",\r\n    \"role\": \"admin\",\r\n    \"permissions\": [\r\n        \"user_management\",\r\n        \"content_moderation\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/super-admin/create-admin",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"create-admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Admin",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"confirmPassword\": \"Strong@123\",\r\n    \"reason\": \"Admin role no longer required\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/super-admin/delete-admin/{{adminId}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"delete-admin",
+								"{{adminId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update  Role by Super Admin",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"newRole\": \"admin\", // \"user\", \"admin\", or \"super_admin\"\r\n    \"reason\": \"Promoting user to admin for content management responsibilities\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/super-admin/change-role/USER_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"change-role",
+								"USER_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get System Config",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/super-admin/system-config",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"system-config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/admin/super-admin/audit-logs?page=1&limit=50&action=CREATE_ADMIN&criticality=HIGH",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "action",
+									"value": "CREATE_ADMIN"
+								},
+								{
+									"key": "criticality",
+									"value": "HIGH"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Emergency Lockdown",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"reason\": \"Security breach detected\",\r\n    \"duration\": \"1h\",\r\n    \"confirmPassword\": \"Strong@123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/admin/super-admin/emergency-lockdown",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"admin",
+								"super-admin",
+								"emergency-lockdown"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🔍 13 -  Health Check & System",
+			"item": [
+				{
+					"name": "API Version Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}",
+							"host": [
+								"{{server}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📌 14 - Locations",
+			"item": [
+				{
+					"name": "Get Activity Stats",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/auth/activity/stats?days=30",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity",
+								"stats"
+							],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Activity logs",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/auth/activity?page=1&limit=5",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Location analytics ",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/auth/activity/location-analytics?days=7",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity",
+								"location-analytics"
+							],
+							"query": [
+								{
+									"key": "days",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Login locations retrieved ",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/auth/activity/locations?limit=5&days=30",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"auth",
+								"activity",
+								"locations"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5"
+								},
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👤 15 - User Actions",
+			"item": [
+				{
+					"name": "GET All Users with follow or following",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a User Profile by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users/USER_ID",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"USER_ID"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users (with pagination and filtering)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/users?page=1&limit=10&search=code&role=user&isActive=true&sortBy=createdAt&sortOrder=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "code"
+								},
+								{
+									"key": "role",
+									"value": "user"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
 }
