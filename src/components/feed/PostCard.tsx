@@ -118,7 +118,10 @@ const PostCard: React.FC<PostCardProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <div className="flex items-center space-x-2">
-                  <Link to={`/u/${post.author.username}`} className="font-semibold text-sm cursor-pointer hover:underline">
+                  <Link
+                    to={`/u/${post.author.username}`}
+                    className="font-semibold text-sm cursor-pointer hover:underline"
+                  >
                     {post.author.firstName} {post.author.lastName}
                   </Link>
                   <span className="text-muted-foreground text-sm">·</span>
@@ -126,7 +129,10 @@ const PostCard: React.FC<PostCardProps> = ({
                     {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                   </span>
                 </div>
-                <Link to={`/u/${post.author.username}`} className="text-muted-foreground text-xs cursor-pointer hover:underline">
+                <Link
+                  to={`/u/${post.author.username}`}
+                  className="text-muted-foreground text-xs cursor-pointer hover:underline"
+                >
                   @{post.author.username}
                 </Link>
               </div>
@@ -166,7 +172,11 @@ const PostCard: React.FC<PostCardProps> = ({
                   if (part.startsWith('@')) {
                     const username = part.substring(1);
                     return (
-                      <Link key={index} to={`/u/${username}`} className="text-primary cursor-pointer hover:underline">
+                      <Link
+                        key={index}
+                        to={`/u/${username}`}
+                        className="text-primary cursor-pointer hover:underline"
+                      >
                         {part}
                       </Link>
                     );
@@ -178,7 +188,7 @@ const PostCard: React.FC<PostCardProps> = ({
                     );
                   }
                   return <span key={index}>{part}</span>;
-                })
+                })}
               </p>
 
               {post.images && post.images.length > 0 && (

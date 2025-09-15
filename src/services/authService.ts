@@ -50,20 +50,35 @@ export const authService = {
     confirmPassword: string;
     firstName: string;
     lastName: string;
+    rememberMe: boolean;
   }): Promise<AuthResponse> => {
     const response = await apiClient.post('/users/register', userData);
-    return response;
   },
 
   // Logout
   logout: async () => {
-    const response = await apiClient.post('/users/logout');
+    try {
+      await apiClient.post('/users/logout');
+    } catch (error) {
+      console.warn('Logout API call failed, clearing local data anyway');
+    }
 
-    // Clear tokens
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    // Clear all authentication data
+    localStorage.clear();
+    sessionStorage.clear();
 
-    return response;
+    // Clear API client auth
+    apiClient.clearAuth();
+
+    // Clear all cookies
+    document.cookie.split(';').forEach(cookie => {
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=localhost`;
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    });
+
+    return { success: true };
   },
 
   // Change Password
@@ -80,11 +95,26 @@ export const authService = {
 
   // Reset Password
   resetPassword: async (token: string, password: string, confirmPassword: string) => {
-    const response = await apiClient.post(`/auth/reset-password/${token}`, {
-      password,
-      confirmPassword,
-    });
-    return response;
+    const instance = apiClient.getInstance();
+    const response = await instance.post(
+      `/auth/reset-password/${token}`,
+      {
+        password,
+        confirmPassword,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        transformRequest: [
+          (data, headers) => {
+            delete headers.Authorization;
+            return JSON.stringify(data);
+          },
+        ],
+      }
+    );
+    return response.data;
   },
 
   // Verify Email

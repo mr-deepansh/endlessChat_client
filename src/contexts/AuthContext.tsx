@@ -211,15 +211,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Force clear all state
       setUser(null);
+      setIsLoading(false);
 
-      toast({
-        title: 'Logged out',
-        description: 'You have been successfully logged out.',
-      });
-
-      // Redirect to home page after logout
-      navigate('/');
+      // Force page reload to clear any cached state
+      window.location.href = '/';
     }
   };
 

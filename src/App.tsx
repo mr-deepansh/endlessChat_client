@@ -31,6 +31,7 @@ import Notifications from './pages/Notifications';
 import Privacy from './pages/Privacy';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
 import Settings from './pages/Settings';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Support from './pages/Support';
@@ -104,6 +105,16 @@ const App = () => {
                             <ErrorBoundary>
                               <ProtectedRoute requireAuth={false}>
                                 <ForgotPassword />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/reset-password"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute requireAuth={false}>
+                                <ResetPassword />
                               </ProtectedRoute>
                             </ErrorBoundary>
                           }
