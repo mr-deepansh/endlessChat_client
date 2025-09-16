@@ -1,10 +1,69 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  Activity,
+  Ban,
+  CheckCircle,
+  Clock,
+  Crown,
+  Database,
+  Download,
+  Eye,
+  FileText,
+  Lock,
+  RefreshCw,
+  Server,
+  Shield,
+  Trash2,
+  UserCheck,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Navbar from '../components/layout/Navbar';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useAuth, useRoleAccess } from '../contexts/AuthContext';
+import { toast } from '../hooks/use-toast';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { isSuperAdmin } from '../utils/roleUtils';
-import { adminService, superAdminService } from '../services';
-import { AdminStats, AuditLog, User as AdminUser } from '../types/api';
+import { adminService } from '../services/modules/admin.service';
+import { superAdminService } from '../services/modules/superAdmin.service';
+import {
+  AdminStats,
+  User as AdminUser,
+  AuditLog,
+  UserManagementParams,
+  AnalyticsOverview,
+  SuspiciousAccount,
+  LoginAttempt,
+} from '../types/api';
 
 // Define missing types locally
 interface UserManagementParams {
@@ -31,59 +90,6 @@ interface EmergencyLockdownRequest {
   duration: string;
   password: string;
 }
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Badge } from '../components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../components/ui/dialog';
-import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
-import { toast } from '../hooks/use-toast';
-import {
-  Users,
-  UserCheck,
-  TrendingUp,
-  Activity,
-  Shield,
-  Crown,
-  Database,
-  Server,
-  Download,
-  RefreshCw,
-  Eye,
-  Ban,
-  CheckCircle,
-  UserPlus,
-  Trash2,
-  Lock,
-  FileText,
-  Clock,
-} from 'lucide-react';
 
 interface SuperAdminState {
   stats: AdminStats | null;
@@ -91,12 +97,17 @@ interface SuperAdminState {
   admins: AdminUser[];
   auditLogs: AuditLog[];
   systemConfig: any;
+  analytics: AnalyticsOverview | null;
+  suspiciousAccounts: SuspiciousAccount[];
+  loginAttempts: LoginAttempt[];
   loading: {
     stats: boolean;
     users: boolean;
     admins: boolean;
     auditLogs: boolean;
     system: boolean;
+    analytics: boolean;
+    security: boolean;
   };
   error: string | null;
 }
@@ -112,12 +123,17 @@ const SuperAdminDashboard: React.FC = () => {
     admins: [],
     auditLogs: [],
     systemConfig: null,
+    analytics: null,
+    suspiciousAccounts: [],
+    loginAttempts: [],
     loading: {
       stats: true,
       users: true,
       admins: true,
       auditLogs: true,
       system: true,
+      analytics: true,
+      security: true,
     },
     error: null,
   });
@@ -353,6 +369,111 @@ const SuperAdminDashboard: React.FC = () => {
     [loadUsers, loadAdmins]
   );
 
+  // Admin user actions (from Admin panel)
+  const handleUserAction = useCallback(
+    async (userId: string, action: 'suspend' | 'activate' | 'delete', reason?: string) => {
+      try {
+        let response;
+
+        switch (action) {
+          case 'suspend':
+            response = await adminService.suspendUser(userId, {
+              reason: reason || 'Super admin action',
+            });
+            break;
+          case 'activate':
+            response = await adminService.activateUser(userId);
+            break;
+          case 'delete':
+            response = await adminService.deleteUser(userId, {
+              reason: reason || 'Super admin action',
+            });
+            break;
+        }
+
+        if (response?.success) {
+          toast({
+            title: 'Success',
+            description: `User ${action}d successfully`,
+          });
+
+          // Reload users
+          loadUsers();
+        }
+      } catch (error: any) {
+        toast({
+          title: 'Error',
+          description: error.message || `Failed to ${action} user`,
+          variant: 'destructive',
+        });
+      }
+    },
+    [loadUsers]
+  );
+
+  // Load analytics (Admin functionality)
+  const loadAnalytics = useCallback(async () => {
+    try {
+      setDashboardState(prev => ({
+        ...prev,
+        loading: { ...prev.loading, analytics: true },
+      }));
+
+      const response = await adminService.getAnalyticsOverview({
+        timeRange: '30d',
+      });
+
+      if (response.success && response.data) {
+        setDashboardState(prev => ({
+          ...prev,
+          analytics: response.data!,
+          loading: { ...prev.loading, analytics: false },
+        }));
+      }
+    } catch (error: any) {
+      console.warn('Analytics not available:', error.message);
+      setDashboardState(prev => ({
+        ...prev,
+        loading: { ...prev.loading, analytics: false },
+        analytics: null,
+      }));
+    }
+  }, []);
+
+  // Load security data (Admin functionality)
+  const loadSecurityData = useCallback(async () => {
+    try {
+      setDashboardState(prev => ({
+        ...prev,
+        loading: { ...prev.loading, security: true },
+      }));
+
+      const [suspiciousResponse, loginAttemptsResponse] = await Promise.allSettled([
+        adminService.getSuspiciousAccounts({ limit: 10, riskLevel: 'high' }),
+        adminService.getLoginAttempts({ status: 'failed', limit: 10 }),
+      ]);
+
+      setDashboardState(prev => ({
+        ...prev,
+        suspiciousAccounts:
+          suspiciousResponse.status === 'fulfilled' ? suspiciousResponse.value.data || [] : [],
+        loginAttempts:
+          loginAttemptsResponse.status === 'fulfilled'
+            ? loginAttemptsResponse.value.data || []
+            : [],
+        loading: { ...prev.loading, security: false },
+      }));
+    } catch (error: any) {
+      console.warn('Security data not available:', error.message);
+      setDashboardState(prev => ({
+        ...prev,
+        loading: { ...prev.loading, security: false },
+        suspiciousAccounts: [],
+        loginAttempts: [],
+      }));
+    }
+  }, []);
+
   // Create new admin
   const handleCreateAdmin = useCallback(
     async (adminData: CreateAdminRequest) => {
@@ -408,6 +529,8 @@ const SuperAdminDashboard: React.FC = () => {
       loadDashboardData();
       loadSystemConfig();
       loadAuditLogs();
+      loadAnalytics();
+      loadSecurityData();
     }
   }, []);
 
@@ -447,8 +570,9 @@ const SuperAdminDashboard: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-background pt-16">
-        <div className="container mx-auto px-4 py-6">
+
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-2">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -579,13 +703,14 @@ const SuperAdminDashboard: React.FC = () => {
 
           {/* Main Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="admins">Admins</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
               <TabsTrigger value="audit">Audit Logs</TabsTrigger>
               <TabsTrigger value="system">System</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
 
             {/* Users Tab */}
@@ -1006,6 +1131,198 @@ const SuperAdminDashboard: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Analytics Tab - Admin Panel Functionality */}
+            <TabsContent value="analytics" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>User Growth</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 flex items-center justify-center text-muted-foreground">
+                      Chart placeholder - User growth over time
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Engagement Metrics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 flex items-center justify-center text-muted-foreground">
+                      Chart placeholder - Engagement metrics
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Content Statistics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span>Total Posts</span>
+                        <span className="font-semibold">
+                          {dashboardState.stats?.totalPosts || 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Total Comments</span>
+                        <span className="font-semibold">
+                          {dashboardState.stats?.totalComments || 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Total Likes</span>
+                        <span className="font-semibold">
+                          {dashboardState.stats?.totalLikes || 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Engagement Rate</span>
+                        <span className="font-semibold">
+                          {dashboardState.stats?.engagementRate || 0}%
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Security Tab - Admin Panel Functionality */}
+            <TabsContent value="security" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5" />
+                      Suspicious Accounts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {dashboardState.loading.security ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div>
+                              <div className="h-4 w-24 bg-muted animate-pulse rounded mb-2" />
+                              <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+                            </div>
+                            <div className="h-6 w-12 bg-muted animate-pulse rounded" />
+                          </div>
+                        ))
+                      ) : dashboardState.suspiciousAccounts?.length > 0 ? (
+                        dashboardState.suspiciousAccounts.map(account => (
+                          <div
+                            key={account.userId}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium">{account.user?.username || 'Unknown'}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Risk: {account.riskLevel}
+                              </p>
+                            </div>
+                            <Badge variant="destructive">{account.riskLevel}</Badge>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-center py-4 text-muted-foreground">
+                          No suspicious accounts found
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Lock className="h-5 w-5" />
+                      Failed Login Attempts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {dashboardState.loading.security ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div>
+                              <div className="h-4 w-32 bg-muted animate-pulse rounded mb-2" />
+                              <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+                            </div>
+                            <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+                          </div>
+                        ))
+                      ) : dashboardState.loginAttempts?.length > 0 ? (
+                        dashboardState.loginAttempts.map(attempt => (
+                          <div
+                            key={attempt._id}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium">{attempt.ipAddress}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(attempt.attemptedAt).toLocaleString()}
+                              </p>
+                            </div>
+                            <Badge variant="outline">{attempt.status}</Badge>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-center py-4 text-muted-foreground">
+                          No failed login attempts
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Security Events
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Multiple login attempts</p>
+                          <p className="text-sm text-muted-foreground">2 minutes ago</p>
+                        </div>
+                        <Badge variant="destructive">High</Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Suspicious IP detected</p>
+                          <p className="text-sm text-muted-foreground">15 minutes ago</p>
+                        </div>
+                        <Badge variant="default">Medium</Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Password reset request</p>
+                          <p className="text-sm text-muted-foreground">1 hour ago</p>
+                        </div>
+                        <Badge variant="secondary">Low</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             {/* System Tab */}

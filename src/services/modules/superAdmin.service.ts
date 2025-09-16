@@ -93,7 +93,7 @@ class SuperAdminService {
     });
   }
 
-  async updateAdminRole(
+  async changeUserRole(
     userId: string,
     data: {
       newRole: 'user' | 'admin' | 'super_admin';
@@ -102,6 +102,10 @@ class SuperAdminService {
     }
   ): Promise<ApiResponse<{ message: string }>> {
     return apiClient.put(`${this.baseUrl}/change-role/${userId}`, data);
+  }
+
+  async getAllAdmins(): Promise<ApiResponse<User[]>> {
+    return apiClient.get<User[]>(`${this.baseUrl}/admins`);
   }
 
   async suspendAdmin(

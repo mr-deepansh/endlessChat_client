@@ -34,6 +34,7 @@ import Register from './pages/Register';
 import ResetPassword from './pages/ResetPassword';
 import Settings from './pages/Settings';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import VerifyEmail from './pages/VerifyEmail';
 import Support from './pages/Support';
 import Terms from './pages/Terms';
 
@@ -115,6 +116,26 @@ const App = () => {
                             <ErrorBoundary>
                               <ProtectedRoute requireAuth={false}>
                                 <ResetPassword />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/verify-email/:token"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute requireAuth={false}>
+                                <VerifyEmail />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/verify-email"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute requireAuth={false}>
+                                <VerifyEmail />
                               </ProtectedRoute>
                             </ErrorBoundary>
                           }

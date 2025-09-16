@@ -51,7 +51,7 @@ class AdminService {
   private readonly baseUrl = '/admin';
 
   // Dashboard & Statistics
-  async getAdminStats(): Promise<ApiResponse<AdminStats>> {
+  async getStats(): Promise<ApiResponse<AdminStats>> {
     return apiClient.get<AdminStats>(`${this.baseUrl}/stats`);
   }
 
@@ -87,21 +87,20 @@ class AdminService {
     return apiClient.put<User>(`${this.baseUrl}/users/${userId}`, userData);
   }
 
-  async deleteUser(userId: string, reason: string): Promise<ApiResponse<{ message: string }>> {
+  async deleteUser(
+    userId: string,
+    data: { reason: string }
+  ): Promise<ApiResponse<{ message: string }>> {
     return apiClient.delete(`${this.baseUrl}/users/${userId}`, {
-      data: { reason },
+      data,
     });
   }
 
   async suspendUser(
     userId: string,
-    reason: string,
-    duration?: string
+    data: { reason: string; duration?: string }
   ): Promise<ApiResponse<{ message: string }>> {
-    return apiClient.patch(`${this.baseUrl}/users/${userId}/suspend`, {
-      reason,
-      duration,
-    });
+    return apiClient.patch(`${this.baseUrl}/users/${userId}/suspend`, data);
   }
 
   async activateUser(userId: string): Promise<ApiResponse<{ message: string }>> {

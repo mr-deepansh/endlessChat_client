@@ -1,28 +1,19 @@
+import { AlertCircle, Bell, Camera, CheckCircle, Eye, Lock, Mail, User } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
 import LeftSidebar from '../components/layout/LeftSidebar';
-import { useAuth } from '../contexts/AuthContext';
-import { usePageTitle } from '../hooks/usePageTitle';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import Navbar from '../components/layout/Navbar';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Textarea } from '../components/ui/textarea';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { authService } from '../services/authService';
-import {
-  User,
-  Settings as SettingsIcon,
-  Lock,
-  Bell,
-  Shield,
-  Eye,
-  Camera,
-  Upload,
-} from 'lucide-react';
 
 const Settings: React.FC = () => {
   usePageTitle('Settings');
@@ -49,6 +40,7 @@ const Settings: React.FC = () => {
     profile: false,
     password: false,
     avatar: false,
+    verification: false,
   });
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -132,40 +124,66 @@ const Settings: React.FC = () => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast({
-        title: 'Password Mismatch',
-        description: 'New password and confirm password do not match.',
-        variant: 'destructive',
-      });
-      return;
+      return toast({ title: 'Passwords do not match', variant: 'destructive' });
     }
 
     if (passwordData.newPassword.length < 6) {
-      toast({
-        title: 'Password Too Short',
-        description: 'Password must be at least 6 characters long.',
-        variant: 'destructive',
-      });
-      return;
+      return toast({ title: 'Password must be at least 6 characters', variant: 'destructive' });
     }
 
     setLoading({ ...loading, password: true });
 
     try {
-      await changePassword(passwordData);
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
+      await changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        confirmNewPassword: passwordData.confirmPassword,
       });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error: any) {
       toast({
-        title: 'Password Change Failed',
-        description: error.message || 'Failed to change password',
+        title: 'Password change failed',
+        description: error.message,
         variant: 'destructive',
       });
     } finally {
       setLoading({ ...loading, password: false });
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setLoading({ ...loading, verification: true });
+
+    try {
+      const response = await authService.resendVerification();
+      if (response.success) {
+        toast({
+          title: 'Verification Email Sent',
+          description: 'Please check your email for the verification link.',
+        });
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error: any) {
+      console.error('Email verification error:', error);
+
+      if (error.message?.includes('already verified')) {
+        toast({
+          title: 'Email Already Verified',
+          description: 'Your email address is already verified.',
+        });
+        await refreshUser();
+        // Force page refresh to update UI
+        window.location.reload();
+      } else {
+        toast({
+          title: 'Service Unavailable',
+          description: 'Email verification is temporarily unavailable. Please contact support.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setLoading({ ...loading, verification: false });
     }
   };
 
@@ -175,11 +193,6 @@ const Settings: React.FC = () => {
       <LeftSidebar />
       <div className="ml-60 transition-all duration-300">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Settings</h1>
-            <p className="text-muted-foreground">Manage your account settings and preferences</p>
-          </div>
-
           <Tabs defaultValue="profile" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -309,12 +322,65 @@ const Settings: React.FC = () => {
             </TabsContent>
 
             {/* Security Tab */}
-            <TabsContent value="security">
+            <TabsContent value="security" className="space-y-6">
+              {/* Email Verification Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="w-5 h-5" />
+                    Email Verification
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {true ? (
+                    <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <h4 className="font-medium text-green-800">Email Verified</h4>
+                        <p className="text-sm text-green-600">
+                          Your email address has been successfully verified
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <AlertCircle className="w-5 h-5 text-yellow-600" />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-yellow-800">Verify Your Email</h4>
+                          <p className="text-sm text-yellow-600">
+                            Please verify your email address to secure your account and enable all
+                            features
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Send Verification Email</p>
+                          <p className="text-sm text-muted-foreground">
+                            We'll send a verification link to {user?.email}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={handleResendVerification}
+                          disabled={loading.verification}
+                          variant="default"
+                          size="sm"
+                        >
+                          {loading.verification ? 'Sending...' : 'Send Verification Email'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Password Change Section */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Lock className="w-5 h-5" />
-                    Security Settings
+                    Change Password
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

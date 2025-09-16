@@ -246,23 +246,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const changePassword = async (passwordData: ChangePasswordRequest) => {
     try {
-      const response = await authService.changePassword({
+      await authService.changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
+        confirmNewPassword: passwordData.confirmNewPassword,
       });
 
-      if (response.data || response.message) {
-        toast({
-          title: 'Password Changed',
-          description: 'Your password has been changed successfully.',
-        });
-      } else {
-        throw new Error('Failed to change password');
-      }
+      toast({
+        title: 'Password Changed Successfully',
+        description: 'Logging out for security...',
+      });
+
+      // Immediate logout for security
+      setTimeout(() => logout(), 1500);
     } catch (error: any) {
       toast({
         title: 'Password Change Failed',
-        description: error.message || 'Failed to change password. Please try again.',
+        description: error.message || 'Failed to change password.',
         variant: 'destructive',
       });
       throw error;

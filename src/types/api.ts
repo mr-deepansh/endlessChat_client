@@ -103,6 +103,7 @@ export interface User {
   role: 'user' | 'admin' | 'super_admin';
   status: 'active' | 'inactive' | 'suspended' | 'banned';
   isVerified: boolean;
+  emailVerified: boolean;
   isPrivate: boolean;
   isOnline: boolean;
   lastSeen: string;
