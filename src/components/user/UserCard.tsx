@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { MapPin, Calendar, Users, UserCheck } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { FollowButton } from '../common/FollowButton';
 
 interface User {
   _id: string;
@@ -26,16 +26,14 @@ interface User {
 interface UserCardProps {
   user: User;
   currentUserId?: string;
-  onFollow?: (userId: string) => void;
-  onUnfollow?: (userId: string) => void;
+  onFollowChange?: (userId: string, isFollowing: boolean, followersCount?: number) => void;
   showFullProfile?: boolean;
 }
 
 const UserCard: React.FC<UserCardProps> = ({
   user,
   currentUserId,
-  onFollow,
-  onUnfollow,
+  onFollowChange,
   showFullProfile = false,
 }) => {
   const [isFollowing, setIsFollowing] = useState(user.isFollowing || false);
@@ -43,16 +41,12 @@ const UserCard: React.FC<UserCardProps> = ({
 
   const isOwnProfile = currentUserId === user._id;
 
-  const handleFollowToggle = () => {
-    const newIsFollowing = !isFollowing;
+  const handleFollowChange = (newIsFollowing: boolean, newFollowersCount?: number) => {
     setIsFollowing(newIsFollowing);
-    setFollowersCount(prev => (newIsFollowing ? prev + 1 : prev - 1));
-
-    if (newIsFollowing) {
-      onFollow?.(user._id);
-    } else {
-      onUnfollow?.(user._id);
+    if (newFollowersCount !== undefined) {
+      setFollowersCount(newFollowersCount);
     }
+    onFollowChange?.(user._id, newIsFollowing, newFollowersCount);
   };
 
   return (
@@ -90,24 +84,13 @@ const UserCard: React.FC<UserCardProps> = ({
               </div>
 
               {!isOwnProfile && (
-                <Button
-                  variant={isFollowing ? 'unfollow' : 'follow'}
+                <FollowButton
+                  userId={user._id}
+                  isFollowing={isFollowing}
+                  onFollowChange={handleFollowChange}
                   size="sm"
-                  onClick={handleFollowToggle}
                   className="ml-4"
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserCheck className="w-4 h-4 mr-1" />
-                      Following
-                    </>
-                  ) : (
-                    <>
-                      <Users className="w-4 h-4 mr-1" />
-                      Follow
-                    </>
-                  )}
-                </Button>
+                />
               )}
             </div>
 

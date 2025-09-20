@@ -1,42 +1,56 @@
 // src/App.tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import RateLimitIndicator from './components/common/RateLimitIndicator';
 import PageTransition from './components/layout/PageTransition';
 import { Toaster as Sonner } from './components/ui/sonner';
 import { Toaster } from './components/ui/toaster';
 import { TooltipProvider } from './components/ui/tooltip';
 import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { RateLimitProvider } from './contexts/RateLimitContext';
-import RateLimitIndicator from './components/common/RateLimitIndicator';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
 
-// Import pages
-import About from './pages/About';
-import AdminDashboard from './pages/AdminDashboard';
-import Bookmarks from './pages/Bookmarks';
-import Contact from './pages/Contact';
-import CurrentUserProfile from './pages/CurrentUserProfile';
-import Discover from './pages/Discover';
-import Features from './pages/Features';
-import Feed from './pages/Feed';
-import ForgotPassword from './pages/ForgotPassword';
-import Index from './pages/Index';
-import Login from './pages/Login';
-import Messages from './pages/Messages';
-import NotFound from './pages/NotFound';
-import Notifications from './pages/Notifications';
-import Privacy from './pages/Privacy';
-import Profile from './pages/Profile';
-import Register from './pages/Register';
-import ResetPassword from './pages/ResetPassword';
-import Settings from './pages/Settings';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
-import VerifyEmail from './pages/VerifyEmail';
-import Support from './pages/Support';
-import Terms from './pages/Terms';
+// Import pages from organized folders
+import {
+    ForgotPassword,
+    Login,
+    Register,
+    ResetPassword,
+    VerifyEmail,
+} from './pages/auth';
+
+import {
+    AdminDashboard,
+    SuperAdminDashboard,
+} from './pages/admin';
+
+import {
+    Bookmarks,
+    CurrentUserProfile,
+    Messages,
+    Notifications,
+    Profile,
+    Settings,
+} from './pages/user';
+
+import {
+    About,
+    Contact,
+    Features,
+    Privacy,
+    Support,
+    Terms,
+} from './pages/public';
+
+import {
+    Discover,
+    Feed,
+    Index,
+    NotFound,
+} from './pages/app/app';
 
 // Configure React Query
 const queryClient = new QueryClient({

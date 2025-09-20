@@ -24,6 +24,8 @@ interface AuthContextType {
   updateProfile: (userData: any) => Promise<void>;
   changePassword: (passwordData: ChangePasswordRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUserStats: (stats: { followingCount?: number; followersCount?: number }) => void;
+  refreshUserAfterFollow: () => Promise<void>;
   clearRegistrationError: () => void;
   checkPermission: (permission: string) => boolean;
   hasRole: (role: string | string[]) => boolean;
@@ -120,6 +122,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Failed to refresh user:', error);
       throw error;
+    }
+  }, []);
+
+  const updateUserStats = useCallback((stats: { followingCount?: number; followersCount?: number }) => {
+    setUser(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        followingCount: stats.followingCount !== undefined ? stats.followingCount : prev.followingCount,
+        followersCount: stats.followersCount !== undefined ? stats.followersCount : prev.followersCount,
+      };
+    });
+  }, []);
+
+  const refreshUserAfterFollow = useCallback(async () => {
+    try {
+      const response = await authService.getCurrentUser();
+      if (response.data) {
+        setUser(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to refresh user after follow:', error);
     }
   }, []);
 
@@ -320,6 +344,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateProfile,
     changePassword,
     refreshUser,
+    updateUserStats,
+    refreshUserAfterFollow,
     clearRegistrationError,
     checkPermission,
     hasRole,

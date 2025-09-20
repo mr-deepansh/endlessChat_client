@@ -12,15 +12,16 @@ export interface FollowResponse {
 }
 
 export const followService = {
-  // Follow a user
+  // Follow/Unfollow toggle (backend now handles both)
   followUser: async (userId: string): Promise<FollowResponse> => {
-    const response = await apiClient.post(`/users/follow/${userId}`);
+    const response = await apiClient.post(`/users/follow/${userId}`, {});
     return response;
   },
 
-  // Unfollow a user
+  // Unfollow a user (kept for compatibility)
   unfollowUser: async (userId: string): Promise<FollowResponse> => {
-    const response = await apiClient.post(`/users/unfollow/${userId}`);
+    // Use same endpoint as follow since backend handles toggle
+    const response = await apiClient.post(`/users/follow/${userId}`, {});
     return response;
   },
 

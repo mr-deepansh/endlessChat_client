@@ -68,5 +68,31 @@ export interface ApiResponse<T = any> {
   data?: T;
 }
 
+// Follow/Unfollow API methods
+export const followUser = async (userId: string): Promise<ApiResponse> => {
+  const response = await api.post(`/users/${userId}/follow`);
+  return response.data;
+};
+
+export const unfollowUser = async (userId: string): Promise<ApiResponse> => {
+  const response = await api.delete(`/users/${userId}/follow`);
+  return response.data;
+};
+
+export const getFollowers = async (userId: string): Promise<ApiResponse> => {
+  const response = await api.get(`/users/${userId}/followers`);
+  return response.data;
+};
+
+export const getFollowing = async (userId: string): Promise<ApiResponse> => {
+  const response = await api.get(`/users/${userId}/following`);
+  return response.data;
+};
+
+export const getUserProfile = async (userId: string): Promise<ApiResponse> => {
+  const response = await api.get(`/users/${userId}`);
+  return response.data;
+};
+
 export { api };
 export default api;

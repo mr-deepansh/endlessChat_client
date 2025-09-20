@@ -1,8 +1,9 @@
+import { Loader2, UserMinus, UserPlus } from 'lucide-react';
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
-import { UserPlus, UserMinus, Loader2 } from 'lucide-react';
-import { followService } from '../../services/followService';
+import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../hooks/use-toast';
+import { followService } from '../../services/followService';
+import { Button } from '../ui/button';
 
 interface FollowButtonProps {
   userId: string;
@@ -22,26 +23,36 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
   className = '',
 }) => {
   const [loading, setLoading] = useState(false);
+  const { user: currentUser, refreshUserAfterFollow } = useAuth();
 
   const handleFollow = async () => {
+    if (loading) return; // Prevent multiple clicks
+    
     setLoading(true);
 
     try {
-      const response = isFollowing
-        ? await followService.unfollowUser(userId)
-        : await followService.followUser(userId);
+      // Backend now handles toggle, so always use followUser
+      const response = await followService.followUser(userId);
 
       if (response.success) {
-        onFollowChange?.(!isFollowing, response.data?.followersCount);
+        // Backend returns the new state in response.data.isFollowing
+        const newFollowingState = response.data?.isFollowing ?? !isFollowing;
+        
+        // Refresh current user data to get updated following count
+        await refreshUserAfterFollow();
+        
+        // Call the callback to update parent component
+        onFollowChange?.(newFollowingState, response.data?.followersCount);
 
         toast({
-          title: isFollowing ? 'Unfollowed' : 'Following',
+          title: newFollowingState ? 'Following' : 'Unfollowed',
           description: response.message,
         });
       } else {
         throw new Error(response.message);
       }
     } catch (error: any) {
+      console.error('Follow action failed:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to update follow status',

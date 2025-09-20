@@ -64,13 +64,6 @@ class ApiClient {
             console.warn('Invalid JSON string detected, attempting to fix:', config.data);
           }
         }
-
-        // Debug logging (disabled for cleaner console)
-        // if (config.isDevelopment && config.features.enableDebug) {
-        //   console.log('🌐 API Request:', config.method?.toUpperCase(), config.url);
-        //   console.log('🔑 Authorization header:', config.headers.Authorization);
-        // }
-
         return config;
       },
       error => Promise.reject(error)
@@ -209,6 +202,17 @@ class ApiClient {
     return requestQueue.add(async () => {
       const serializedData = data && typeof data === 'object' ? data : data;
       const response = await this.instance.post(url, serializedData, config);
+
+      // Clear related cache for follow/unfollow actions
+      if (url.includes('/follow/')) {
+        const userId = url.split('/follow/')[1];
+        requestQueue.clearCache(`GET_/users/${userId}/follow-status_{}`);
+        requestQueue.clearCache(`GET_/users/${userId}_{}`);
+        requestQueue.clearCache(`GET_/users/profile/me_{}`);
+        // Clear all cache to ensure fresh data
+        requestQueue.clearCache();
+      }
+
       return response.data;
     });
   }
@@ -232,8 +236,21 @@ class ApiClient {
   }
 
   public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.delete(url, config);
-    return response.data;
+    return requestQueue.add(async () => {
+      const response = await this.instance.delete(url, config);
+
+      // Clear related cache for follow/unfollow actions
+      if (url.includes('/follow/')) {
+        const userId = url.split('/follow/')[1];
+        requestQueue.clearCache(`GET_/users/${userId}/follow-status_{}`);
+        requestQueue.clearCache(`GET_/users/${userId}_{}`);
+        requestQueue.clearCache(`GET_/users/profile/me_{}`);
+        // Clear all cache to ensure fresh data
+        requestQueue.clearCache();
+      }
+
+      return response.data;
+    });
   }
 
   // Utility methods for query parameters

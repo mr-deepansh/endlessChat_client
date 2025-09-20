@@ -5,15 +5,16 @@ Based on your frontend requirements, here are the API endpoints you need to impl
 ## 📊 **Admin Analytics APIs** (Missing)
 
 ### 1. Analytics Overview
+
 ```
-GET /api/v1/admin/analytics/overview?timeRange=30d
+GET /api/v2/admin/analytics/overview?timeRange=30d
 ```
+
 **Response:**
+
 ```json
 {
-  "userGrowth": [
-    { "date": "2024-01-01", "newUsers": 25, "totalUsers": 1250 }
-  ],
+  "userGrowth": [{ "date": "2024-01-01", "newUsers": 25, "totalUsers": 1250 }],
   "engagementMetrics": {
     "dailyActiveUsers": 450,
     "weeklyActiveUsers": 1200,
@@ -33,27 +34,33 @@ GET /api/v1/admin/analytics/overview?timeRange=30d
 ```
 
 ### 2. User Growth Analytics
+
 ```
-GET /api/v1/admin/analytics/users/growth?period=daily&days=30
+GET /api/v2/admin/analytics/users/growth?period=daily&days=30
 ```
 
 ### 3. User Demographics
+
 ```
-GET /api/v1/admin/analytics/users/demographics
+GET /api/v2/admin/analytics/users/demographics
 ```
 
 ### 4. Engagement Metrics
+
 ```
-GET /api/v1/admin/analytics/engagement/metrics?timeRange=30d
+GET /api/v2/admin/analytics/engagement/metrics?timeRange=30d
 ```
 
 ## 🔒 **Security & Monitoring APIs** (Missing)
 
 ### 5. Suspicious Accounts
+
 ```
-GET /api/v1/admin/security/suspicious-accounts?page=1&limit=10&riskLevel=high
+GET /api/v2/admin/security/suspicious-accounts?page=1&limit=10&riskLevel=high
 ```
+
 **Response:**
+
 ```json
 {
   "data": [
@@ -73,10 +80,13 @@ GET /api/v1/admin/security/suspicious-accounts?page=1&limit=10&riskLevel=high
 ```
 
 ### 6. Login Attempts
+
 ```
-GET /api/v1/admin/security/login-attempts?status=failed&limit=10
+GET /api/v2/admin/security/login-attempts?status=failed&limit=10
 ```
+
 **Response:**
+
 ```json
 {
   "data": [
@@ -93,19 +103,23 @@ GET /api/v1/admin/security/login-attempts?status=failed&limit=10
 ```
 
 ### 7. Blocked IPs
+
 ```
-GET /api/v1/admin/security/blocked-ips?page=1&limit=20
-POST /api/v1/admin/security/blocked-ips
-DELETE /api/v1/admin/security/blocked-ips/:ipId
+GET /api/v2/admin/security/blocked-ips?page=1&limit=20
+POST /api/v2/admin/security/blocked-ips
+DELETE /api/v2/admin/security/blocked-ips/:ipId
 ```
 
 ## 👑 **Super Admin APIs** (Missing)
 
 ### 8. Get All Admins
+
 ```
-GET /api/v1/admin/super-admin/admins
+GET /api/v2/admin/super-admin/admins
 ```
+
 **Response:**
+
 ```json
 {
   "data": [
@@ -127,10 +141,13 @@ GET /api/v1/admin/super-admin/admins
 ```
 
 ### 9. Audit Logs
+
 ```
-GET /api/v1/admin/super-admin/audit-logs?page=1&limit=50
+GET /api/v2/admin/super-admin/audit-logs?page=1&limit=50
 ```
+
 **Response:**
+
 ```json
 {
   "data": [
@@ -157,16 +174,20 @@ GET /api/v1/admin/super-admin/audit-logs?page=1&limit=50
 ```
 
 ### 10. System Configuration
+
 ```
-GET /api/v1/admin/super-admin/system-config
-PUT /api/v1/admin/super-admin/system-config
+GET /api/v2/admin/super-admin/system-config
+PUT /api/v2/admin/super-admin/system-config
 ```
 
 ### 11. Emergency Lockdown
+
 ```
-POST /api/v1/admin/super-admin/emergency-lockdown
+POST /api/v2/admin/super-admin/emergency-lockdown
 ```
+
 **Request:**
+
 ```json
 {
   "reason": "Security breach detected",
@@ -178,10 +199,13 @@ POST /api/v1/admin/super-admin/emergency-lockdown
 ## 📈 **Enhanced Admin Stats** (Update Existing)
 
 ### 12. Update Admin Stats Response
+
 ```
-GET /api/v1/admin/stats
+GET /api/v2/admin/stats
 ```
+
 **Enhanced Response:**
+
 ```json
 {
   "totalUsers": 5420,
@@ -202,35 +226,41 @@ GET /api/v1/admin/stats
 ## 🔧 **System Monitoring APIs** (Missing)
 
 ### 13. Server Health
+
 ```
-GET /api/v1/admin/monitoring/server-health
+GET /api/v2/admin/monitoring/server-health
 ```
 
 ### 14. Database Stats
+
 ```
-GET /api/v1/admin/monitoring/database-stats
+GET /api/v2/admin/monitoring/database-stats
 ```
 
 ### 15. System Health (Super Admin)
+
 ```
-GET /api/v1/admin/super-admin/system-health
+GET /api/v2/admin/super-admin/system-health
 ```
 
 ## 📊 **Real-time APIs** (Missing)
 
 ### 16. Live Stats WebSocket
+
 ```
-WS /api/v1/admin/live-stats
+WS /api/v2/admin/live-stats
 ```
 
 ### 17. Live Dashboard Updates
+
 ```
-GET /api/v1/admin/stats/live
+GET /api/v2/admin/stats/live
 ```
 
 ## 🚀 **Implementation Priority**
 
 ### **High Priority (Core Functionality)**
+
 1. ✅ Admin Stats (Update existing)
 2. ❌ Get All Admins (Super Admin)
 3. ❌ Suspicious Accounts
@@ -238,12 +268,14 @@ GET /api/v1/admin/stats/live
 5. ❌ Audit Logs
 
 ### **Medium Priority (Analytics)**
+
 6. ❌ Analytics Overview
 7. ❌ User Growth Analytics
 8. ❌ Engagement Metrics
 9. ❌ User Demographics
 
 ### **Low Priority (Advanced Features)**
+
 10. ❌ System Configuration
 11. ❌ Emergency Lockdown
 12. ❌ Server Health Monitoring
@@ -252,6 +284,7 @@ GET /api/v1/admin/stats/live
 ## 📝 **Backend Implementation Guide**
 
 ### **File Locations in Your Backend:**
+
 ```
 D:/Backend/social-media-blog-app/src/modules/admin/
 ├── controllers/
@@ -269,6 +302,7 @@ D:/Backend/social-media-blog-app/src/modules/admin/
 ### **Quick Implementation Steps:**
 
 1. **Update Admin Stats Controller:**
+
 ```javascript
 // In admin.controller.js
 exports.getStats = async (req, res) => {
@@ -276,24 +310,25 @@ exports.getStats = async (req, res) => {
     totalUsers: await User.countDocuments(),
     activeUsers: await User.countDocuments({ isActive: true }),
     newUsersToday: await User.countDocuments({
-      createdAt: { $gte: new Date().setHours(0,0,0,0) }
+      createdAt: { $gte: new Date().setHours(0, 0, 0, 0) },
     }),
     userGrowth: 12.5, // Calculate based on previous period
     totalPosts: await Post.countDocuments(),
     totalComments: await Comment.countDocuments(),
     totalLikes: await Like.countDocuments(),
     engagementRate: 68.5, // Calculate engagement
-    serverHealth: "healthy",
+    serverHealth: 'healthy',
     systemLoad: process.cpuUsage(),
-    memoryUsage: process.memoryUsage().heapUsed / process.memoryUsage().heapTotal * 100,
-    diskUsage: 78.3 // Calculate disk usage
+    memoryUsage: (process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100,
+    diskUsage: 78.3, // Calculate disk usage
   };
-  
+
   res.json({ success: true, data: stats });
 };
 ```
 
 2. **Add Super Admin Routes:**
+
 ```javascript
 // In super-admin.routes.js
 router.get('/admins', getAllAdmins);
@@ -303,6 +338,7 @@ router.post('/emergency-lockdown', emergencyLockdown);
 ```
 
 3. **Add Security Routes:**
+
 ```javascript
 // In admin.routes.js
 router.get('/security/suspicious-accounts', getSuspiciousAccounts);
