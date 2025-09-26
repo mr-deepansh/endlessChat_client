@@ -104,12 +104,12 @@ const PostCard: React.FC<PostCardProps> = ({
   };
 
   return (
-    <Card className="mb-3 sm:mb-4 lg:mb-6 xl:mb-8 2xl:mb-10 hover:shadow-md transition-all duration-300 bg-gradient-card backdrop-blur-sm border-border/50">
-      <CardContent className="p-3 sm:p-4 lg:p-5 xl:p-6 2xl:p-8">
-        <div className="flex space-x-2 sm:space-x-3 lg:space-x-4 xl:space-x-5 2xl:space-x-6">
-          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 xl:h-14 xl:w-14 2xl:h-16 2xl:w-16 ring-2 ring-primary/10 flex-shrink-0">
+    <Card className="mb-4 xl:mb-6 2xl:mb-8 hover:shadow-md transition-shadow">
+      <CardContent className="p-4 xl:p-6 2xl:p-8">
+        <div className="flex space-x-3 xl:space-x-4 2xl:space-x-6">
+          <Avatar className="h-10 w-10 xl:h-12 xl:w-12 2xl:h-14 2xl:w-14">
             <AvatarImage src={post.author.avatar} alt={post.author.username} />
-            <AvatarFallback className="bg-gradient-primary text-white text-xs sm:text-sm lg:text-base xl:text-lg 2xl:text-xl">
+            <AvatarFallback className="bg-gradient-primary text-white">
               {post.author.firstName?.[0] || post.author.username?.[0] || 'U'}
             </AvatarFallback>
           </Avatar>
@@ -117,21 +117,21 @@ const PostCard: React.FC<PostCardProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <div className="flex items-center space-x-1 sm:space-x-2">
+                <div className="flex items-center space-x-2">
                   <Link
                     to={`/u/${post.author.username}`}
-                    className="font-semibold text-xs sm:text-sm lg:text-base xl:text-lg 2xl:text-xl cursor-pointer hover:underline transition-colors"
+                    className="font-semibold text-sm cursor-pointer hover:underline"
                   >
                     {post.author.firstName} {post.author.lastName}
                   </Link>
-                  <span className="text-muted-foreground text-xs sm:text-sm">·</span>
-                  <span className="text-muted-foreground text-xs sm:text-sm lg:text-base">
+                  <span className="text-muted-foreground text-sm">·</span>
+                  <span className="text-muted-foreground text-sm">
                     {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                   </span>
                 </div>
                 <Link
                   to={`/u/${post.author.username}`}
-                  className="text-muted-foreground text-xs sm:text-sm cursor-pointer hover:underline transition-colors"
+                  className="text-muted-foreground text-xs cursor-pointer hover:underline"
                 >
                   @{post.author.username}
                 </Link>
@@ -139,35 +139,35 @@ const PostCard: React.FC<PostCardProps> = ({
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0">
-                    <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onEdit?.(post._id, post.content)}>
-                    <Bookmark className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    <span className="text-xs sm:text-sm">Edit post</span>
+                    <Bookmark className="w-4 h-4 mr-2" />
+                    Edit post
                   </DropdownMenuItem>
 
                   <DropdownMenuItem onClick={() => onShare?.(post._id)}>
-                    <Share className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    <span className="text-xs sm:text-sm">Share post</span>
+                    <Share className="w-4 h-4 mr-2" />
+                    Share post
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
                     onClick={handleDeleteClick}
                     className="text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    <span className="text-xs sm:text-sm">Delete post</span>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete post
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
-            <div className="mt-2 sm:mt-3 lg:mt-4">
-              <p className="text-foreground whitespace-pre-wrap break-words text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl leading-relaxed">
+            <div className="mt-2">
+              <p className="text-foreground whitespace-pre-wrap break-words">
                 {post.content.split(/(@\w+|#\w+)/g).map((part: string, index: number) => {
                   if (part.startsWith('@')) {
                     const username = part.substring(1);
@@ -192,25 +192,25 @@ const PostCard: React.FC<PostCardProps> = ({
               </p>
 
               {post.images && post.images.length > 0 && (
-                <div className="mt-3 sm:mt-4 lg:mt-5 rounded-lg overflow-hidden">
+                <div className="mt-3 rounded-lg overflow-hidden">
                   <img
                     src={post.images[0]}
                     alt="Post media"
-                    className="w-full max-h-64 sm:max-h-80 lg:max-h-96 xl:max-h-[28rem] 2xl:max-h-[32rem] object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                    className="w-full max-h-96 object-cover"
                   />
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between mt-3 sm:mt-4 lg:mt-5 xl:mt-6 2xl:mt-8">
+            <div className="flex items-center justify-between mt-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onShare?.(post._id)}
-                className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center h-8 sm:h-9 lg:h-10 text-xs sm:text-sm lg:text-base"
+                className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center"
               >
-                <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-                <span className="text-xs sm:text-sm lg:text-base">{post.commentsCount}</span>
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm">{post.commentsCount}</span>
               </Button>
 
               <DropdownMenu>
@@ -219,22 +219,22 @@ const PostCard: React.FC<PostCardProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={handleRepostClick}
-                    className={`flex items-center space-x-1 hover:text-green-500 hover:bg-green-50 flex-1 justify-center h-8 sm:h-9 lg:h-10 text-xs sm:text-sm lg:text-base ${
+                    className={`flex items-center space-x-1 hover:text-green-500 hover:bg-green-50 flex-1 justify-center ${
                       post.isReposted ? 'text-green-500' : 'text-muted-foreground'
                     }`}
                   >
-                    <Repeat2 className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-                    <span className="text-xs sm:text-sm lg:text-base">{post.repostsCount}</span>
+                    <Repeat2 className="w-4 h-4" />
+                    <span className="text-sm">{post.repostsCount}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem onClick={handleRepostClick}>
-                    <Repeat2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    <span className="text-xs sm:text-sm">Repost</span>
+                    <Repeat2 className="w-4 h-4 mr-2" />
+                    Repost
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onRepost?.(post._id, true, 'Quote text')}>
-                    <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    <span className="text-xs sm:text-sm">Quote repost</span>
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Quote repost
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -244,22 +244,22 @@ const PostCard: React.FC<PostCardProps> = ({
                 size="sm"
                 onClick={handleLikeClick}
                 disabled={isLiking}
-                className={`flex items-center space-x-1 hover:text-red-500 hover:bg-red-50 flex-1 justify-center h-8 sm:h-9 lg:h-10 text-xs sm:text-sm lg:text-base ${
+                className={`flex items-center space-x-1 hover:text-red-500 hover:bg-red-50 flex-1 justify-center ${
                   post.isLiked ? 'text-red-500' : 'text-muted-foreground'
                 }`}
               >
-                <Heart className={`w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 ${post.isLiked ? 'fill-current' : ''}`} />
-                <span className="text-xs sm:text-sm lg:text-base">{post.likesCount}</span>
+                <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                <span className="text-sm">{post.likesCount}</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleShareClick}
-                className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center h-8 sm:h-9 lg:h-10 text-xs sm:text-sm lg:text-base"
+                className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center"
               >
-                <Share className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-                <span className="text-xs sm:text-sm lg:text-base hidden sm:inline">Share</span>
+                <Share className="w-4 h-4" />
+                <span className="text-sm">Share</span>
               </Button>
             </div>
           </div>

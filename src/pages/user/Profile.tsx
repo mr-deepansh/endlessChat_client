@@ -40,6 +40,9 @@ const Profile = () => {
   const identifier = userId || username || '';
   const isUsernameRoute = !!username;
 
+  // Utility to show username or userId in error
+  const cleanUsername = username || userId || 'unknown';
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (!identifier) return;
