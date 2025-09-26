@@ -1,6 +1,6 @@
 export class DataFormatter {
-  static formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+  static formatBytes(bytes: number | undefined | null): string {
+    if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -14,22 +14,28 @@ export class DataFormatter {
     }).format(amount);
   }
 
-  static formatPercentage(value: number, decimals = 1): string {
+  static formatPercentage(value: number | undefined | null, decimals = 1): string {
+    if (value === undefined || value === null || isNaN(value)) {
+      return '0%';
+    }
     return `${value.toFixed(decimals)}%`;
   }
 
-  static formatNumber(num: number): string {
+  static formatNumber(num: number | undefined | null): string {
+    if (num === undefined || num === null || isNaN(num)) {
+      return '0';
+    }
     return new Intl.NumberFormat('en-US').format(num);
   }
 
   static formatDate(date: string | Date, format: 'short' | 'long' | 'relative' = 'short'): string {
     const d = new Date(date);
-    
+
     if (format === 'relative') {
       const now = new Date();
       const diff = now.getTime() - d.getTime();
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      
+
       if (days === 0) return 'Today';
       if (days === 1) return 'Yesterday';
       if (days < 7) return `${days} days ago`;
@@ -44,7 +50,10 @@ export class DataFormatter {
     });
   }
 
-  static formatDuration(seconds: number): string {
+  static formatDuration(seconds: number | undefined | null): string {
+    if (seconds === undefined || seconds === null || isNaN(seconds)) {
+      return '0s';
+    }
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
@@ -58,7 +67,10 @@ export class DataFormatter {
     return `${secs}s`;
   }
 
-  static calculateGrowth(current: number, previous: number): {
+  static calculateGrowth(
+    current: number,
+    previous: number
+  ): {
     value: number;
     percentage: string;
     trend: 'up' | 'down' | 'stable';
@@ -69,7 +81,7 @@ export class DataFormatter {
 
     const growth = ((current - previous) / previous) * 100;
     const trend = growth > 0 ? 'up' : growth < 0 ? 'down' : 'stable';
-    
+
     return {
       value: growth,
       percentage: `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`,

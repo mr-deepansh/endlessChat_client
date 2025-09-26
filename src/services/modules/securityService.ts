@@ -39,13 +39,15 @@ class SecurityService {
     await apiClient.post('/auth/2fa/disable', { password });
   }
 
-  async getLoginHistory(limit = 10): Promise<Array<{
-    timestamp: string;
-    ipAddress: string;
-    location: string;
-    device: string;
-    success: boolean;
-  }>> {
+  async getLoginHistory(limit = 10): Promise<
+    Array<{
+      timestamp: string;
+      ipAddress: string;
+      location: string;
+      device: string;
+      success: boolean;
+    }>
+  > {
     const response = await apiClient.get(`/auth/login-history?limit=${limit}`);
     return response.data;
   }

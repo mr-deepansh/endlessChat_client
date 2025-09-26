@@ -25,37 +25,51 @@ export const RevenueAnalyticsCard: React.FC<RevenueAnalyticsProps> = ({ revenue,
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold">{DataFormatter.formatCurrency(revenue.revenue.total)}</p>
+                <p className="text-2xl font-bold">
+                  {DataFormatter.formatCurrency(revenue.revenue.total)}
+                </p>
                 <Badge variant="default" className="mt-1">
                   {revenue.revenue.growth}
                 </Badge>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Recurring Revenue</p>
-                <p className="text-lg font-semibold">{DataFormatter.formatCurrency(revenue.revenue.recurring)}</p>
+                <p className="text-lg font-semibold">
+                  {DataFormatter.formatCurrency(revenue.revenue.recurring)}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">One-time Revenue</p>
-                <p className="text-lg font-semibold">{DataFormatter.formatCurrency(revenue.revenue.oneTime)}</p>
+                <p className="text-lg font-semibold">
+                  {DataFormatter.formatCurrency(revenue.revenue.oneTime)}
+                </p>
               </div>
             </div>
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600">MRR</p>
-                <p className="text-xl font-bold">{DataFormatter.formatCurrency(revenue.metrics.mrr)}</p>
+                <p className="text-xl font-bold">
+                  {DataFormatter.formatCurrency(revenue.metrics.mrr)}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">ARR</p>
-                <p className="text-lg font-semibold">{DataFormatter.formatCurrency(revenue.metrics.arr)}</p>
+                <p className="text-lg font-semibold">
+                  {DataFormatter.formatCurrency(revenue.metrics.arr)}
+                </p>
               </div>
               <div className="flex justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Churn Rate</p>
-                  <p className="font-semibold">{DataFormatter.formatPercentage(revenue.metrics.churn)}</p>
+                  <p className="font-semibold">
+                    {DataFormatter.formatPercentage(revenue.metrics.churn)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">LTV</p>
-                  <p className="font-semibold">{DataFormatter.formatCurrency(revenue.metrics.ltv)}</p>
+                  <p className="font-semibold">
+                    {DataFormatter.formatCurrency(revenue.metrics.ltv)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -74,16 +88,28 @@ export const RevenueAnalyticsCard: React.FC<RevenueAnalyticsProps> = ({ revenue,
           <CardContent>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <p className="text-lg font-bold">{DataFormatter.formatCurrency(ltv.segments.premium.ltv)}</p>
-                <p className="text-sm text-gray-600">Premium ({DataFormatter.formatNumber(ltv.segments.premium.count)})</p>
+                <p className="text-lg font-bold">
+                  {DataFormatter.formatCurrency(ltv.segments.premium.ltv)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Premium ({DataFormatter.formatNumber(ltv.segments.premium.count)})
+                </p>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-lg font-bold">{DataFormatter.formatCurrency(ltv.segments.standard.ltv)}</p>
-                <p className="text-sm text-gray-600">Standard ({DataFormatter.formatNumber(ltv.segments.standard.count)})</p>
+                <p className="text-lg font-bold">
+                  {DataFormatter.formatCurrency(ltv.segments.standard.ltv)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Standard ({DataFormatter.formatNumber(ltv.segments.standard.count)})
+                </p>
               </div>
               <div className="text-center p-3 bg-gray-50 rounded-lg">
-                <p className="text-lg font-bold">{DataFormatter.formatCurrency(ltv.segments.basic.ltv)}</p>
-                <p className="text-sm text-gray-600">Basic ({DataFormatter.formatNumber(ltv.segments.basic.count)})</p>
+                <p className="text-lg font-bold">
+                  {DataFormatter.formatCurrency(ltv.segments.basic.ltv)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Basic ({DataFormatter.formatNumber(ltv.segments.basic.count)})
+                </p>
               </div>
             </div>
             <div className="space-y-2 text-sm">

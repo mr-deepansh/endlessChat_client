@@ -48,10 +48,8 @@ const Feed: React.FC = () => {
     const loadPosts = async () => {
       try {
         const response = await userService.getUserFeed();
-        if (response.posts) {
-          setPosts(response.posts);
-          return;
-        }
+        console.log('Feed response:', response);
+        setPosts(response.posts || []);
       } catch (backendError) {
         console.warn('Backend feed failed:', backendError);
         setPosts([]);
@@ -132,9 +130,7 @@ const Feed: React.FC = () => {
     const loadPosts = async () => {
       try {
         const response = await userService.getUserFeed();
-        if (response.posts) {
-          setPosts(response.posts);
-        }
+        setPosts(response.posts || []);
       } catch (error) {
         console.warn('Failed to refresh feed after follow:', error);
       }

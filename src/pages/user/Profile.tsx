@@ -9,11 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar'
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '../../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { useAuth } from '../../contexts/AuthContext';
@@ -49,10 +49,11 @@ const Profile = () => {
         // cleanUsername is now defined at component level
 
         // Check if this is the current user's profile
-        const isCurrentUser = currentUser && (
-          (isUsernameRoute && currentUser.username === identifier) ||
-          (!isUsernameRoute && (currentUser._id === identifier || currentUser.id === identifier))
-        );
+        const isCurrentUser =
+          currentUser &&
+          ((isUsernameRoute && currentUser.username === identifier) ||
+            (!isUsernameRoute &&
+              (currentUser._id === identifier || currentUser.id === identifier)));
 
         if (isCurrentUser) {
           setUser(currentUser);
@@ -84,10 +85,12 @@ const Profile = () => {
 
             if (foundUser) {
               setUser(foundUser);
-              
+
               // Check follow status using the new endpoint
               try {
-                const followStatus = await followService.checkFollowStatus(foundUser._id || foundUser.id);
+                const followStatus = await followService.checkFollowStatus(
+                  foundUser._id || foundUser.id
+                );
                 setIsFollowing(followStatus.data?.isFollowing || false);
               } catch (error) {
                 console.warn('Failed to check follow status:', error);
@@ -163,7 +166,7 @@ const Profile = () => {
       if (response.success) {
         const newIsFollowing = response.data?.isFollowing ?? !isFollowing;
         setIsFollowing(newIsFollowing);
-        
+
         // Update the target user's follower count
         setUser(prev =>
           prev
@@ -208,12 +211,13 @@ const Profile = () => {
     );
   }
 
-  const isOwnProfile = user && currentUser && (
-    (currentUser.id && user.id && currentUser.id === user.id) || 
-    (currentUser._id && user._id && currentUser._id === user._id) ||
-    (currentUser.id && user._id && currentUser.id === user._id) ||
-    (currentUser._id && user.id && currentUser._id === user.id)
-  );
+  const isOwnProfile =
+    user &&
+    currentUser &&
+    ((currentUser.id && user.id && currentUser.id === user.id) ||
+      (currentUser._id && user._id && currentUser._id === user._id) ||
+      (currentUser.id && user._id && currentUser.id === user._id) ||
+      (currentUser._id && user.id && currentUser._id === user.id));
 
   // Debug logging to help identify the issue
   console.log('Profile Debug:', {
@@ -230,8 +234,8 @@ const Profile = () => {
       'currentUser.id === user.id': currentUser?.id === user?.id,
       'currentUser._id === user._id': currentUser?._id === user?._id,
       'currentUser.id === user._id': currentUser?.id === user?._id,
-      'currentUser._id === user.id': currentUser?._id === user?.id
-    }
+      'currentUser._id === user.id': currentUser?._id === user?.id,
+    },
   });
 
   return (

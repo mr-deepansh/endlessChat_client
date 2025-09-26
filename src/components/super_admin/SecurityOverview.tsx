@@ -53,11 +53,15 @@ export const SecurityOverviewCard: React.FC<SecurityOverviewProps> = ({ data }) 
             </div>
             <div>
               <span className="text-sm text-gray-600">Last Password Change</span>
-              <p className="text-sm">{DataFormatter.formatDate(data.accountSecurity.lastPasswordChange, 'relative')}</p>
+              <p className="text-sm">
+                {DataFormatter.formatDate(data.accountSecurity.lastPasswordChange, 'relative')}
+              </p>
             </div>
             <div>
               <span className="text-sm text-gray-600">Last Active</span>
-              <p className="text-sm">{DataFormatter.formatDate(data.recentActivity.lastActive, 'relative')}</p>
+              <p className="text-sm">
+                {DataFormatter.formatDate(data.recentActivity.lastActive, 'relative')}
+              </p>
             </div>
           </div>
         </div>

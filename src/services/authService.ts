@@ -51,9 +51,19 @@ export const authService = {
     confirmPassword: string;
     firstName: string;
     lastName: string;
-    rememberMe: boolean;
+    rememberMe?: boolean;
   }): Promise<AuthResponse> => {
     const response = await apiClient.post('/users/register', userData);
+
+    // Store tokens if provided
+    if (response.data?.accessToken) {
+      localStorage.setItem('accessToken', response.data.accessToken);
+    }
+    if (response.data?.refreshToken) {
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+
+    return response;
   },
 
   // Logout

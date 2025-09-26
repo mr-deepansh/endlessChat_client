@@ -127,10 +127,10 @@ const NotificationItem: React.FC<{
       {/* Avatar with notification icon */}
       <div className="relative flex-shrink-0">
         <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-background shadow-sm">
-          <AvatarImage src={notification.from.avatar} />
+          <AvatarImage src={notification.from?.avatar} />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm sm:text-base">
-            {notification.from.firstName?.[0]}
-            {notification.from.lastName?.[0]}
+            {notification.from?.firstName?.[0] || 'U'}
+            {notification.from?.lastName?.[0] || 'N'}
           </AvatarFallback>
         </Avatar>
         <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 bg-background rounded-full p-0.5 sm:p-1 shadow-sm border">
@@ -143,7 +143,7 @@ const NotificationItem: React.FC<{
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
             <span className="font-semibold text-foreground text-sm sm:text-base">
-              {notification.from.firstName} {notification.from.lastName}
+              {notification.from?.firstName || 'Unknown'} {notification.from?.lastName || 'User'}
             </span>
             <span className="text-muted-foreground text-xs sm:text-sm">
               {getNotificationMessage(notification)}

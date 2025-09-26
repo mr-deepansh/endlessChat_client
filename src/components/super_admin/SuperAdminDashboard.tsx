@@ -9,13 +9,13 @@ import { RetentionAnalyticsCard } from './RetentionAnalytics';
 import { RevenueAnalyticsCard } from './RevenueAnalytics';
 import { EngagementMetricsCard } from './EngagementMetrics';
 import { serviceManager } from '../../services';
-import type { 
-  SecurityOverview, 
-  DatabaseStats, 
-  RetentionAnalytics, 
-  RevenueAnalytics, 
+import type {
+  SecurityOverview,
+  DatabaseStats,
+  RetentionAnalytics,
+  RevenueAnalytics,
   UserLifetimeValue,
-  EngagementMetrics 
+  EngagementMetrics,
 } from '../../services/modules';
 
 export const SuperAdminDashboard: React.FC = () => {

@@ -27,7 +27,7 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
 
   const handleFollow = async () => {
     if (loading) return; // Prevent multiple clicks
-    
+
     setLoading(true);
 
     try {
@@ -37,10 +37,10 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
       if (response.success) {
         // Backend returns the new state in response.data.isFollowing
         const newFollowingState = response.data?.isFollowing ?? !isFollowing;
-        
+
         // Refresh current user data to get updated following count
         await refreshUserAfterFollow();
-        
+
         // Call the callback to update parent component
         onFollowChange?.(newFollowingState, response.data?.followersCount);
 

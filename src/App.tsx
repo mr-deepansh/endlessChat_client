@@ -1,5 +1,6 @@
 // src/App.tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -14,43 +15,22 @@ import { RateLimitProvider } from './contexts/RateLimitContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Import pages from organized folders
-import {
-    ForgotPassword,
-    Login,
-    Register,
-    ResetPassword,
-    VerifyEmail,
-} from './pages/auth';
+import { ForgotPassword, Login, Register, ResetPassword, VerifyEmail } from './pages/auth';
+
+import { AdminDashboard, SuperAdminDashboard } from './pages/admin';
 
 import {
-    AdminDashboard,
-    SuperAdminDashboard,
-} from './pages/admin';
-
-import {
-    Bookmarks,
-    CurrentUserProfile,
-    Messages,
-    Notifications,
-    Profile,
-    Settings,
+  Bookmarks,
+  CurrentUserProfile,
+  Messages,
+  Notifications,
+  Profile,
+  Settings,
 } from './pages/user';
 
-import {
-    About,
-    Contact,
-    Features,
-    Privacy,
-    Support,
-    Terms,
-} from './pages/public';
+import { About, Contact, Features, Privacy, Support, Terms } from './pages/public';
 
-import {
-    Discover,
-    Feed,
-    Index,
-    NotFound,
-} from './pages/app/app';
+import { Discover, Feed, Index, NotFound } from './pages/app/app';
 
 // Configure React Query
 const queryClient = new QueryClient({
@@ -70,6 +50,28 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  // Global error handler for debugging
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Global error caught:', event.error);
+      console.error('Error message:', event.message);
+      console.error('Error filename:', event.filename);
+      console.error('Error line:', event.lineno);
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

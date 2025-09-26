@@ -125,16 +125,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const updateUserStats = useCallback((stats: { followingCount?: number; followersCount?: number }) => {
-    setUser(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        followingCount: stats.followingCount !== undefined ? stats.followingCount : prev.followingCount,
-        followersCount: stats.followersCount !== undefined ? stats.followersCount : prev.followersCount,
-      };
-    });
-  }, []);
+  const updateUserStats = useCallback(
+    (stats: { followingCount?: number; followersCount?: number }) => {
+      setUser(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          followingCount:
+            stats.followingCount !== undefined ? stats.followingCount : prev.followingCount,
+          followersCount:
+            stats.followersCount !== undefined ? stats.followersCount : prev.followersCount,
+        };
+      });
+    },
+    []
+  );
 
   const refreshUserAfterFollow = useCallback(async () => {
     try {
@@ -187,6 +192,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       setRegistrationError(null);
 
+      console.log('Registering user with data:', {
+        username: userData.username,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      });
+
       const response = await authService.register({
         username: userData.username,
         email: userData.email,
@@ -196,17 +208,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         lastName: userData.lastName,
       });
 
-      if (response.data?.user) {
-        setUser(response.data.user);
+      console.log('Registration response:', response);
+
+      if (response?.data?.user || response?.user) {
+        const user = response.data?.user || response.user;
+        setUser(user);
 
         toast({
           title: 'Welcome to EndlessChat!',
           description: 'Your account has been created successfully.',
         });
 
-        navigate('/feed');
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          navigate('/feed');
+        }, 100);
       } else {
-        const errorMessage = response.message || 'Registration failed';
+        console.error('Registration response:', response);
+        const errorMessage = response?.message || 'Registration failed - invalid response';
         setRegistrationError(errorMessage);
         throw new Error(errorMessage);
       }

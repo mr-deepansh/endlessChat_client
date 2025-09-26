@@ -47,26 +47,34 @@ export interface SubscriptionMetrics {
 
 class RevenueService {
   async getRevenueAnalytics(period = '30d'): Promise<RevenueAnalytics> {
-    const response = await apiClient.get<RevenueAnalytics>(`/admin/bi/revenue-analytics?period=${period}`);
+    const response = await apiClient.get<RevenueAnalytics>(
+      `/admin/bi/revenue-analytics?period=${period}`
+    );
     return response.data;
   }
 
   async getUserLifetimeValue(segment = 'premium'): Promise<UserLifetimeValue> {
-    const response = await apiClient.get<UserLifetimeValue>(`/admin/bi/user-lifetime-value?segment=${segment}`);
+    const response = await apiClient.get<UserLifetimeValue>(
+      `/admin/bi/user-lifetime-value?segment=${segment}`
+    );
     return response.data;
   }
 
   async getSubscriptionMetrics(timeRange = '30d'): Promise<SubscriptionMetrics> {
-    const response = await apiClient.get<SubscriptionMetrics>(`/admin/bi/subscription-metrics?timeRange=${timeRange}`);
+    const response = await apiClient.get<SubscriptionMetrics>(
+      `/admin/bi/subscription-metrics?timeRange=${timeRange}`
+    );
     return response.data;
   }
 
-  async getRevenueByPlan(period = '30d'): Promise<Array<{
-    plan: string;
-    revenue: number;
-    subscribers: number;
-    growth: number;
-  }>> {
+  async getRevenueByPlan(period = '30d'): Promise<
+    Array<{
+      plan: string;
+      revenue: number;
+      subscribers: number;
+      growth: number;
+    }>
+  > {
     const response = await apiClient.get(`/admin/bi/revenue-by-plan?period=${period}`);
     return response.data;
   }

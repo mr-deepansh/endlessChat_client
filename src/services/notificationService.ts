@@ -75,17 +75,50 @@ class NotificationService {
     isRead?: boolean,
     priority?: string
   ): Promise<NotificationsResponse> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
 
-    if (type) params.append('type', type);
-    if (isRead !== undefined) params.append('isRead', isRead.toString());
-    if (priority) params.append('priority', priority);
+      if (type) params.append('type', type);
+      if (isRead !== undefined) params.append('isRead', isRead.toString());
+      if (priority) params.append('priority', priority);
 
-    const response = await apiClient.get(`/notifications?${params}`);
-    return response.data;
+      const response = await apiClient.get(`/notifications?${params}`);
+
+      // Ensure proper data structure
+      const data = response.data || {};
+      return {
+        notifications: (data.notifications || []).map((notification: any) => ({
+          ...notification,
+          from: notification.from || {
+            _id: 'unknown',
+            username: 'unknown',
+            firstName: 'Unknown',
+            lastName: 'User',
+            avatar: null,
+          },
+        })),
+        totalNotifications: data.totalNotifications || 0,
+        totalPages: data.totalPages || 0,
+        currentPage: data.currentPage || page,
+        hasNextPage: data.hasNextPage || false,
+        hasPrevPage: data.hasPrevPage || false,
+        unreadCount: data.unreadCount || 0,
+      };
+    } catch (error) {
+      console.error('Failed to get notifications:', error);
+      return {
+        notifications: [],
+        totalNotifications: 0,
+        totalPages: 0,
+        currentPage: page,
+        hasNextPage: false,
+        hasPrevPage: false,
+        unreadCount: 0,
+      };
+    }
   }
 
   // Get unread count

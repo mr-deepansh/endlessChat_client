@@ -27,7 +27,9 @@ export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
               <p className="text-sm text-gray-600">Collections</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold">{DataFormatter.formatNumber(data.overview.objects)}</p>
+              <p className="text-2xl font-bold">
+                {DataFormatter.formatNumber(data.overview.objects)}
+              </p>
               <p className="text-sm text-gray-600">Objects</p>
             </div>
             <div className="text-center">
@@ -61,7 +63,7 @@ export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {data.collections.slice(0, 5).map((collection) => (
+            {data.collections.slice(0, 5).map(collection => (
               <div key={collection.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{collection.name}</span>

@@ -18,26 +18,26 @@ export class ServiceCache {
 
   get<T>(key: string): T | null {
     const item = this.cache.get(key);
-    
+
     if (!item) return null;
-    
+
     if (Date.now() - item.timestamp > item.ttl) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return item.data;
   }
 
   has(key: string): boolean {
     const item = this.cache.get(key);
     if (!item) return false;
-    
+
     if (Date.now() - item.timestamp > item.ttl) {
       this.cache.delete(key);
       return false;
     }
-    
+
     return true;
   }
 
@@ -54,11 +54,7 @@ export class ServiceCache {
   }
 
   // Cache with automatic refresh
-  async getOrFetch<T>(
-    key: string,
-    fetchFn: () => Promise<T>,
-    ttl = this.defaultTTL
-  ): Promise<T> {
+  async getOrFetch<T>(key: string, fetchFn: () => Promise<T>, ttl = this.defaultTTL): Promise<T> {
     const cached = this.get<T>(key);
     if (cached) return cached;
 

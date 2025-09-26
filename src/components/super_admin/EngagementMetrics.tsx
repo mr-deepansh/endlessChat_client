@@ -12,17 +12,23 @@ interface EngagementMetricsProps {
 export const EngagementMetricsCard: React.FC<EngagementMetricsProps> = ({ data }) => {
   const getTrendColor = (trend: string) => {
     switch (trend) {
-      case 'increasing': return 'text-green-600';
-      case 'decreasing': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'increasing':
+        return 'text-green-600';
+      case 'decreasing':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'increasing': return '↗️';
-      case 'decreasing': return '↘️';
-      default: return '➡️';
+      case 'increasing':
+        return '↗️';
+      case 'decreasing':
+        return '↘️';
+      default:
+        return '➡️';
     }
   };
 
@@ -40,7 +46,9 @@ export const EngagementMetricsCard: React.FC<EngagementMetricsProps> = ({ data }
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Daily Active Users</p>
-                <p className="text-2xl font-bold">{DataFormatter.formatNumber(data.metrics.dailyActiveUsers)}</p>
+                <p className="text-2xl font-bold">
+                  {DataFormatter.formatNumber(data.metrics.dailyActiveUsers)}
+                </p>
               </div>
               <div className="text-right">
                 <span className={`text-sm ${getTrendColor(data.trends.dailyActive)}`}>
@@ -51,12 +59,16 @@ export const EngagementMetricsCard: React.FC<EngagementMetricsProps> = ({ data }
 
             <div>
               <p className="text-sm text-gray-600">Weekly Active Users</p>
-              <p className="text-lg font-semibold">{DataFormatter.formatNumber(data.metrics.weeklyActiveUsers)}</p>
+              <p className="text-lg font-semibold">
+                {DataFormatter.formatNumber(data.metrics.weeklyActiveUsers)}
+              </p>
             </div>
 
             <div>
               <p className="text-sm text-gray-600">Monthly Active Users</p>
-              <p className="text-lg font-semibold">{DataFormatter.formatNumber(data.metrics.monthlyActiveUsers)}</p>
+              <p className="text-lg font-semibold">
+                {DataFormatter.formatNumber(data.metrics.monthlyActiveUsers)}
+              </p>
             </div>
           </div>
 
@@ -64,7 +76,9 @@ export const EngagementMetricsCard: React.FC<EngagementMetricsProps> = ({ data }
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg Session Duration</p>
-                <p className="text-lg font-semibold">{DataFormatter.formatDuration(data.metrics.averageSessionDuration)}</p>
+                <p className="text-lg font-semibold">
+                  {DataFormatter.formatDuration(data.metrics.averageSessionDuration)}
+                </p>
               </div>
               <div className="text-right">
                 <span className={`text-sm ${getTrendColor(data.trends.engagement)}`}>
@@ -75,13 +89,17 @@ export const EngagementMetricsCard: React.FC<EngagementMetricsProps> = ({ data }
 
             <div>
               <p className="text-sm text-gray-600">Bounce Rate</p>
-              <p className="text-lg font-semibold">{DataFormatter.formatPercentage(data.metrics.bounceRate)}</p>
+              <p className="text-lg font-semibold">
+                {DataFormatter.formatPercentage(data.metrics.bounceRate)}
+              </p>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pages per Session</p>
-                <p className="text-lg font-semibold">{data.metrics.pageViewsPerSession.toFixed(1)}</p>
+                <p className="text-lg font-semibold">
+                  {(data.metrics.pageViewsPerSession || 0).toFixed(1)}
+                </p>
               </div>
               <div className="text-right">
                 <span className={`text-sm ${getTrendColor(data.trends.retention)}`}>

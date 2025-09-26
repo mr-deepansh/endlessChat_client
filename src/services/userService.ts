@@ -123,8 +123,39 @@ class UserService {
 
   // Get user feed
   async getUserFeed(page = 1, limit = 20, sort = 'recent'): Promise<FeedResponse> {
-    const response = await apiClient.get(`/users/feed?page=${page}&limit=${limit}&sort=${sort}`);
-    return response.data;
+    try {
+      const response = await apiClient.get(`/users/feed?page=${page}&limit=${limit}&sort=${sort}`);
+      console.log('Raw feed response:', response);
+
+      // Handle different response structures
+      if (response?.data?.posts) {
+        return response.data;
+      } else if (response?.posts) {
+        return response;
+      } else if (Array.isArray(response?.data)) {
+        return {
+          posts: response.data,
+          totalPosts: response.data.length,
+          totalPages: 1,
+          currentPage: page,
+          hasNextPage: false,
+          hasPrevPage: false,
+        };
+      } else {
+        console.warn('Unexpected feed response structure:', response);
+        return {
+          posts: [],
+          totalPosts: 0,
+          totalPages: 0,
+          currentPage: page,
+          hasNextPage: false,
+          hasPrevPage: false,
+        };
+      }
+    } catch (error) {
+      console.error('Feed API error:', error);
+      throw error;
+    }
   }
 
   // Change password

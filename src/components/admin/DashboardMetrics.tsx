@@ -1,5 +1,10 @@
 import React from 'react';
-import { useRetentionAnalytics, useEngagementMetrics, useRevenueAnalytics, useDatabaseStats } from '../../hooks/useAnalytics';
+import {
+  useRetentionAnalytics,
+  useEngagementMetrics,
+  useRevenueAnalytics,
+  useDatabaseStats,
+} from '../../hooks/useAnalytics';
 import { DataFormatter } from '../../services';
 
 export const DashboardMetrics: React.FC = () => {
@@ -21,7 +26,9 @@ export const DashboardMetrics: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>Total:</span>
-              <span className="font-bold">{DataFormatter.formatCurrency(revenue.revenue.total)}</span>
+              <span className="font-bold">
+                {DataFormatter.formatCurrency(revenue.revenue.total)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>MRR:</span>
@@ -42,7 +49,9 @@ export const DashboardMetrics: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>DAU:</span>
-              <span className="font-bold">{DataFormatter.formatNumber(engagement.metrics.dailyActiveUsers)}</span>
+              <span className="font-bold">
+                {DataFormatter.formatNumber(engagement.metrics.dailyActiveUsers)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>MAU:</span>
@@ -84,7 +93,9 @@ export const DashboardMetrics: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>Week 1:</span>
-              <span className="font-bold">{DataFormatter.formatPercentage(retention.averageRetention.week1)}</span>
+              <span className="font-bold">
+                {DataFormatter.formatPercentage(retention.averageRetention.week1)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Week 4:</span>

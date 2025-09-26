@@ -22,19 +22,27 @@ export const RetentionAnalyticsCard: React.FC<RetentionAnalyticsProps> = ({ data
         <CardContent>
           <div className="grid grid-cols-4 gap-4 mb-6">
             <div className="text-center">
-              <p className="text-lg font-bold">{DataFormatter.formatPercentage(data.averageRetention.week1)}</p>
+              <p className="text-lg font-bold">
+                {DataFormatter.formatPercentage(data.averageRetention.week1)}
+              </p>
               <p className="text-sm text-gray-600">Week 1</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold">{DataFormatter.formatPercentage(data.averageRetention.week2)}</p>
+              <p className="text-lg font-bold">
+                {DataFormatter.formatPercentage(data.averageRetention.week2)}
+              </p>
               <p className="text-sm text-gray-600">Week 2</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold">{DataFormatter.formatPercentage(data.averageRetention.week4)}</p>
+              <p className="text-lg font-bold">
+                {DataFormatter.formatPercentage(data.averageRetention.week4)}
+              </p>
               <p className="text-sm text-gray-600">Week 4</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold">{DataFormatter.formatPercentage(data.averageRetention.week8)}</p>
+              <p className="text-lg font-bold">
+                {DataFormatter.formatPercentage(data.averageRetention.week8)}
+              </p>
               <p className="text-sm text-gray-600">Week 8</p>
             </div>
           </div>
@@ -50,11 +58,13 @@ export const RetentionAnalyticsCard: React.FC<RetentionAnalyticsProps> = ({ data
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {data.cohorts.map((cohort) => (
+            {data.cohorts.map(cohort => (
               <div key={cohort.cohort} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{cohort.cohort}</span>
-                  <span className="text-sm text-gray-600">{DataFormatter.formatNumber(cohort.users)} users</span>
+                  <span className="text-sm text-gray-600">
+                    {DataFormatter.formatNumber(cohort.users)} users
+                  </span>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   <div className="space-y-1">

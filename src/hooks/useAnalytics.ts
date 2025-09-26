@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { analyticsService, revenueService, monitoringService } from '../services/modules';
-import type { RetentionAnalytics, EngagementMetrics, RevenueAnalytics, DatabaseStats } from '../services/modules';
+import type {
+  RetentionAnalytics,
+  EngagementMetrics,
+  RevenueAnalytics,
+  DatabaseStats,
+} from '../services/modules';
 
 export const useRetentionAnalytics = (period = 'weekly', weeks = 12) => {
   const [data, setData] = useState<RetentionAnalytics | null>(null);

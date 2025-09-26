@@ -8,12 +8,7 @@ export { default as adminService } from './adminService';
 export { default as api } from './api';
 
 // Export new modular services
-export {
-  securityService,
-  monitoringService,
-  analyticsService,
-  revenueService,
-} from './modules';
+export { securityService, monitoringService, analyticsService, revenueService } from './modules';
 
 // Export service manager and utilities
 export { serviceManager, ServiceManager } from './serviceManager';
