@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { ResponsiveCard, ResponsiveCardContent, ResponsiveCardHeader, ResponsiveCardTitle, ResponsiveCardDescription } from '@/components/ui/responsive-card';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 
 interface FormContainerProps extends React.FormHTMLAttributes<HTMLFormElement> {
   title?: string;

@@ -10,7 +10,15 @@ interface ResponsiveCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ResponsiveCard = React.forwardRef<HTMLDivElement, ResponsiveCardProps>(
-  ({ className, variant = 'default', size = 'md', hover = false, interactive = false, children, ...props }, ref) => {
+  ({ 
+    className, 
+    variant = 'default', 
+    size = 'md', 
+    hover = false, 
+    interactive = false, 
+    children, 
+    ...props 
+  }, ref) => {
     const variantClasses = {
       default: 'bg-card border border-border',
       elevated: 'bg-card border-0 shadow-lg hover:shadow-xl',

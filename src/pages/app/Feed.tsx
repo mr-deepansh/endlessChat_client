@@ -147,25 +147,25 @@ const Feed: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <Navbar />
       <LeftSidebar />
-      <div className="ml-60 transition-all duration-300">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-2">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <div className="mb-6">
+      <div className="ml-56 sm:ml-60 lg:ml-64 xl:ml-72 2xl:ml-80 transition-all duration-300">
+        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 2xl:px-12 py-3 sm:py-4 lg:py-6 xl:py-8 2xl:py-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 xl:gap-8 2xl:gap-10">
+            <div className="lg:col-span-2 xl:col-span-3 2xl:col-span-4">
+              <div className="mb-4 sm:mb-6 lg:mb-8">
                 <CreatePost
                   onSubmit={handleCreatePost}
                   placeholder="What's happening? 🚀 Share your thoughts!"
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4 lg:space-y-6 xl:space-y-8 2xl:space-y-10">
                 {loading && (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                    <p className="text-muted-foreground mt-2">Creating post...</p>
+                  <div className="text-center py-6 sm:py-8 lg:py-12">
+                    <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 border-b-2 border-primary mx-auto"></div>
+                    <p className="text-muted-foreground mt-2 text-sm sm:text-base lg:text-lg">Creating post...</p>
                   </div>
                 )}
 
@@ -179,14 +179,14 @@ const Feed: React.FC = () => {
 
                 {posts.length === 0 && !loading ? (
                   <Card className="border-none shadow-soft bg-gradient-card">
-                    <CardContent className="p-8 text-center">
-                      <div className="space-y-4">
-                        <div className="text-6xl">👋</div>
+                    <CardContent className="p-6 sm:p-8 lg:p-10 xl:p-12 2xl:p-16 text-center">
+                      <div className="space-y-3 sm:space-y-4 lg:space-y-6">
+                        <div className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl">👋</div>
                         <div>
-                          <h3 className="text-xl font-semibold text-foreground mb-2">
+                          <h3 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-foreground mb-2">
                             Welcome to your feed!
                           </h3>
-                          <p className="text-muted-foreground">
+                          <p className="text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl text-muted-foreground">
                             Follow some users to see their posts here, or create your first post to
                             get started.
                           </p>
@@ -235,7 +235,7 @@ const Feed: React.FC = () => {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="sticky top-20">
+              <div className="sticky top-16 sm:top-20 lg:top-24 xl:top-28 2xl:top-32">
                 <FeedSidebar onUserFollow={handleUserFollow} />
               </div>
             </div>
