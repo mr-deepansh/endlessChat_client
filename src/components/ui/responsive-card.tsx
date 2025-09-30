@@ -10,15 +10,18 @@ interface ResponsiveCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ResponsiveCard = React.forwardRef<HTMLDivElement, ResponsiveCardProps>(
-  ({ 
-    className, 
-    variant = 'default', 
-    size = 'md', 
-    hover = false, 
-    interactive = false, 
-    children, 
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      variant = 'default',
+      size = 'md',
+      hover = false,
+      interactive = false,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const variantClasses = {
       default: 'bg-card border border-border',
       elevated: 'bg-card border-0 shadow-lg hover:shadow-xl',
@@ -73,41 +76,40 @@ const ResponsiveCardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttribut
   )
 );
 
-const ResponsiveCardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <CardTitle
-      ref={ref}
-      className={cn(
-        'text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold leading-tight tracking-tight',
-        className
-      )}
-      {...props}
-    />
-  )
-);
+const ResponsiveCardTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <CardTitle
+    ref={ref}
+    className={cn(
+      'text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold leading-tight tracking-tight',
+      className
+    )}
+    {...props}
+  />
+));
 
-const ResponsiveCardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <CardDescription
-      ref={ref}
-      className={cn(
-        'text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl text-muted-foreground mt-1 sm:mt-2',
-        className
-      )}
-      {...props}
-    />
-  )
-);
+const ResponsiveCardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <CardDescription
+    ref={ref}
+    className={cn(
+      'text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl text-muted-foreground mt-1 sm:mt-2',
+      className
+    )}
+    {...props}
+  />
+));
 
-const ResponsiveCardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <CardContent
-      ref={ref}
-      className={cn('p-0', className)}
-      {...props}
-    />
-  )
-);
+const ResponsiveCardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <CardContent ref={ref} className={cn('p-0', className)} {...props} />
+));
 
 const ResponsiveCardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (

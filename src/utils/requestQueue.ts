@@ -56,7 +56,9 @@ class RequestQueue {
 
   private generateRequestKey(request: () => Promise<any>): string {
     // Generate a simple key based on the request function
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 11);
+    return `req_${timestamp}_${randomId}`;
   }
 
   private async executeWithRetry<T>(request: () => Promise<T>): Promise<T> {

@@ -15,7 +15,17 @@ interface ResponsiveGridProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ResponsiveGrid = React.forwardRef<HTMLDivElement, ResponsiveGridProps>(
-  ({ className, cols = { default: 1, md: 2, lg: 3 }, gap = 'md', align = 'stretch', children, ...props }, ref) => {
+  (
+    {
+      className,
+      cols = { default: 1, md: 2, lg: 3 },
+      gap = 'md',
+      align = 'stretch',
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const gapClasses = {
       none: 'gap-0',
       sm: 'gap-2 sm:gap-3 lg:gap-4 xl:gap-5 2xl:gap-6',
@@ -45,13 +55,7 @@ const ResponsiveGrid = React.forwardRef<HTMLDivElement, ResponsiveGridProps>(
     return (
       <div
         ref={ref}
-        className={cn(
-          'grid',
-          getGridCols(),
-          gapClasses[gap],
-          alignClasses[align],
-          className
-        )}
+        className={cn('grid', getGridCols(), gapClasses[gap], alignClasses[align], className)}
         {...props}
       >
         {children}

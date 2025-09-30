@@ -36,11 +36,11 @@ export const meetsContrastRequirement = (
   size: 'normal' | 'large' = 'normal'
 ): boolean => {
   const contrast = calculateContrast(foreground, background);
-  
+
   if (level === 'AAA') {
     return size === 'large' ? contrast >= 4.5 : contrast >= 7;
   }
-  
+
   return size === 'large' ? contrast >= 3 : contrast >= 4.5;
 };
 
@@ -139,16 +139,15 @@ export const focusManagement = {
   // Move focus to next/previous element
   moveFocus: (direction: 'next' | 'previous', container?: HTMLElement) => {
     const activeElement = document.activeElement as HTMLElement;
-    const focusableElements = focusManagement.getFocusableElements(
-      container || document.body
-    );
+    const focusableElements = focusManagement.getFocusableElements(container || document.body);
     const currentIndex = focusableElements.indexOf(activeElement);
 
     if (currentIndex === -1) return;
 
-    const nextIndex = direction === 'next' 
-      ? (currentIndex + 1) % focusableElements.length
-      : (currentIndex - 1 + focusableElements.length) % focusableElements.length;
+    const nextIndex =
+      direction === 'next'
+        ? (currentIndex + 1) % focusableElements.length
+        : (currentIndex - 1 + focusableElements.length) % focusableElements.length;
 
     focusableElements[nextIndex]?.focus();
   },
@@ -260,12 +259,12 @@ export const formAccessibility = {
 
     inputs.forEach((input, index) => {
       const element = input as HTMLInputElement;
-      
+
       // Check for labels
       const hasLabel = element.labels && element.labels.length > 0;
       const hasAriaLabel = element.hasAttribute('aria-label');
       const hasAriaLabelledBy = element.hasAttribute('aria-labelledby');
-      
+
       if (!hasLabel && !hasAriaLabel && !hasAriaLabelledBy) {
         issues.push(`Input ${index + 1} is missing a label`);
       }

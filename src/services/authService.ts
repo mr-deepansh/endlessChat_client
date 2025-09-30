@@ -1,4 +1,5 @@
 import { apiClient } from './core/apiClient';
+import SecureStorage from '../utils/secureStorage';
 
 export interface AuthResponse {
   success: boolean;
@@ -32,14 +33,8 @@ export const authService = {
       rememberMe,
     });
 
-    // Store tokens
-    if (response.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-    }
-    if (response.data?.refreshToken) {
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-
+    // Tokens are now set as HttpOnly cookies by backend
+    // No manual storage needed
     return response;
   },
 
@@ -55,39 +50,23 @@ export const authService = {
   }): Promise<AuthResponse> => {
     const response = await apiClient.post('/users/register', userData);
 
-    // Store tokens if provided
-    if (response.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-    }
-    if (response.data?.refreshToken) {
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-
+    // Tokens are now set as HttpOnly cookies by backend
+    // No manual storage needed
     return response;
   },
 
   // Logout
   logout: async () => {
     try {
+      // Prevent 401 redirects during logout
+      apiClient.setLoggingOut(true);
       await apiClient.post('/users/logout');
     } catch (error) {
       console.warn('Logout API call failed, clearing local data anyway');
     }
 
-    // Clear all authentication data
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // Clear API client auth
+    // Clear API client auth (cookies cleared by backend)
     apiClient.clearAuth();
-
-    // Clear all cookies
-    document.cookie.split(';').forEach(cookie => {
-      const eqPos = cookie.indexOf('=');
-      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=localhost`;
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-    });
 
     return { success: true };
   },
@@ -195,21 +174,10 @@ export const authService = {
     return response;
   },
 
-  // Refresh Token
-  refreshToken: async (refreshToken: string) => {
-    const response = await apiClient.post('/auth/refresh-token', { refreshToken });
-
-    // Update stored token
-    if (response.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-    }
-
-    return response;
-  },
-
-  // Check if user is authenticated
+  // Check if user is authenticated (check with backend)
   isAuthenticated: (): boolean => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('auth_token');
-    return !!token;
+    // For HttpOnly cookies, we can't check client-side
+    // This will be validated by backend on each request
+    return true; // Let backend handle auth validation
   },
 };

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import Sanitizer from '@/utils/sanitizer';
 import {
   Dialog,
   DialogContent,
@@ -82,14 +83,18 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
     setIsSubmitting(true);
     try {
+      const sanitizedContent = Sanitizer.sanitizeContent(content);
+      const sanitizedTitle = Sanitizer.sanitizeContent(articleTitle);
+      const sanitizedLocation = Sanitizer.sanitizeInput(location.trim());
+
       const postData: any = {
         content:
           postType === 'article'
-            ? `${articleTitle}\n\n${content}`
-            : content || (images.length > 0 ? '📷 Shared media' : 'New post'),
+            ? `${sanitizedTitle}\n\n${sanitizedContent}`
+            : sanitizedContent || (images.length > 0 ? '📷 Shared media' : 'New post'),
         files: imageFiles && imageFiles.length > 0 ? imageFiles : undefined,
         type: postType,
-        location: location.trim() || undefined,
+        location: sanitizedLocation || undefined,
         scheduledFor:
           scheduledDate && scheduledTime
             ? new Date(`${format(scheduledDate, 'yyyy-MM-dd')}T${scheduledTime}`).toISOString()
@@ -98,10 +103,10 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
 
       if (postType === 'poll') {
         postData.poll = {
-          question: pollQuestion,
+          question: Sanitizer.sanitizeContent(pollQuestion),
           options: pollOptions
             .filter(opt => opt.text.trim())
-            .map(opt => ({ text: opt.text, votes: 0 })),
+            .map(opt => ({ text: Sanitizer.sanitizeContent(opt.text), votes: 0 })),
           totalVotes: 0,
           endsAt: new Date(Date.now() + pollDuration * 60 * 60 * 1000).toISOString(),
         };
@@ -129,7 +134,19 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
     const files = event.target.files;
     if (files) {
       Array.from(files).forEach(file => {
+        // Validate file type
         const isVideo = file.type.startsWith('video/');
+        const isValidFile = isVideo ? Sanitizer.isValidVideo(file) : Sanitizer.isValidImage(file);
+
+        if (!isValidFile) {
+          toast({
+            title: 'Invalid file type',
+            description: 'Please select valid image or video files only.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
         const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 50MB for videos, 10MB for images
 
         if (file.size > maxSize) {

@@ -154,7 +154,11 @@ class NotificationService {
   }
 
   // Notification Preferences
-  async getPreferences(): Promise<ApiResponse<NotificationPreferences>> {
+  async getPreferences(): Promise<Apiimport SecureStorage from '../../utils/secureStorage';
+import SafeJSON from '../../utils/safeJson';
+import Logger from '../../utils/logger';
+
+Response<NotificationPreferences>> {
     return apiClient.get(`${this.baseUrl}/preferences`);
   }
 
@@ -297,18 +301,22 @@ class NotificationService {
   }
 
   private setupEventSource(): void {
-    const token = localStorage.getItem('auth_token');
+    const token = SecureStorage.getAccessToken();
     if (!token) return;
 
     const baseUrl = apiClient.getInstance().defaults.baseURL;
-    this.eventSource = new EventSource(`${baseUrl}/notifications/stream?token=${token}`);
+    this.eventSource = new EventSource(`${baseUrl}/notifications/stream?token=${encodeURIComponent(token)}`);
 
     this.eventSource.onmessage = event => {
       try {
-        const notification: Notification = JSON.parse(event.data);
-        this.listeners.forEach(callback => callback(notification));
+        const notification = SafeJSON.parse(event.data, SafeJSON.isValidNotification);
+        if (notification) {
+          this.listeners.forEach(callback => callback(notification));
+        } else {
+          Logger.warn('Invalid notification data received');
+        }
       } catch (error) {
-        console.error('Failed to parse notification:', error);
+        Logger.error('Failed to parse notification', error);
       }
     };
 

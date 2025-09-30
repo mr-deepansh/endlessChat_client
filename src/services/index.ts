@@ -14,17 +14,6 @@ export { securityService, monitoringService, analyticsService, revenueService } 
 export { serviceManager, ServiceManager } from './serviceManager';
 export { DataFormatter, serviceCache } from './utils';
 
-// Create a mock superAdminService for now
-export const superAdminService = {
-  getAllAdmins: () => Promise.resolve({ success: true, data: [] }),
-  getAuditLogs: () => Promise.resolve({ success: true, data: [] }),
-  getSystemConfig: () => Promise.resolve({ success: true, data: {} }),
-  deleteAdmin: () => Promise.resolve({ success: true }),
-  changeUserRole: () => Promise.resolve({ success: true }),
-  createAdmin: () => Promise.resolve({ success: true }),
-  emergencyLockdown: () => Promise.resolve({ success: true }),
-};
-
 // Export types
 export type { AuthResponse, ChangePasswordData, UpdateProfileData } from './authService';
 export type { Post, CreatePostData, PostsResponse } from './postService';

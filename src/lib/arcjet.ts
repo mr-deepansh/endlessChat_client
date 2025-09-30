@@ -12,12 +12,12 @@ export const aj = arcjet({
       interval: 60, // 60 seconds
       capacity: 100, // Maximum 100 tokens
     }),
-    
+
     // Shield protection against common attacks
     shield({
       mode: 'LIVE',
     }),
-    
+
     // Bot detection
     detectBot({
       mode: 'LIVE',

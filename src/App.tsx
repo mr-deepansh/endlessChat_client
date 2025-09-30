@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Logger from './utils/logger';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import RateLimitIndicator from './components/common/RateLimitIndicator';
@@ -53,14 +54,18 @@ const App = () => {
   // Global error handler for debugging
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      console.error('Global error caught:', event.error);
-      console.error('Error message:', event.message);
-      console.error('Error filename:', event.filename);
-      console.error('Error line:', event.lineno);
+      Logger.error('Global error caught', {
+        error: event.error?.name || 'Unknown',
+        message: event.message || 'No message',
+        filename: event.filename || 'Unknown file',
+        line: event.lineno || 0,
+      });
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled promise rejection:', event.reason);
+      Logger.error('Unhandled promise rejection', {
+        reason: event.reason?.message || 'Unknown reason',
+      });
     };
 
     window.addEventListener('error', handleError);

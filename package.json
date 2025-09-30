@@ -9,8 +9,6 @@
     "build": "vite build",
     "build:prod": "vite build --mode production",
     "build:dev": "vite build --mode development",
-    "serve": "npm run build && node server.js",
-    "start:8080": "npm run build && node server.js",
     "lint": "eslint . --max-warnings 10",
     "lint:fix": "eslint . --max-warnings 10 --fix",
     "lint:strict": "eslint . --max-warnings 0",

@@ -1,17 +1,18 @@
 import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
   ReactNode,
+  createContext,
   useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LoadingScreen from '../components/ui/loading-screen';
 import { toast } from '../hooks/use-toast';
 import { authService } from '../services';
-import { userService } from '../services';
-import LoadingScreen from '../components/ui/loading-screen';
-import { User, LoginRequest, RegisterRequest, ChangePasswordRequest } from '../types/api';
+import { ChangePasswordRequest, LoginRequest, RegisterRequest, User } from '../types/api';
+import Logger from '../utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -52,6 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
@@ -61,21 +63,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        if (authService.isAuthenticated()) {
-          const response = await authService.getCurrentUser();
-          if (response.data) {
-            setUser(response.data);
-          }
+        // Check if there are any cookies before making request
+        if (!document.cookie) {
+          Logger.info('No cookies found, skipping auth check');
+          setUser(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // With HttpOnly cookies, always try to get current user
+        // Backend will validate the cookie automatically
+        const response = await authService.getCurrentUser();
+        if (response.data) {
+          setUser(response.data);
         }
       } catch (error: any) {
-        console.error('Auth check failed:', error);
+        Logger.error('Auth check failed', { error: error.message || 'Unknown error' });
 
         // Handle rate limiting gracefully
         if (error.code === 'RATE_LIMIT_ERROR') {
-          console.warn('Rate limited during auth check, will retry later');
+          Logger.warn('Rate limited during auth check, will retry later');
           // Don't logout on rate limit, just set loading to false
+        } else if (error.code === 'NETWORK_ERROR') {
+          Logger.warn('Network error during auth check, backend may be unavailable');
+          // Don't logout on network error, just clear state
+          setUser(null);
+        } else if (error.response?.status === 401) {
+          // User not authenticated, clear state
+          setUser(null);
         } else {
-          authService.logout();
+          // Only logout for other API errors, not network issues
+          setUser(null);
         }
       } finally {
         setIsLoading(false);
@@ -87,9 +105,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Auto-refresh user data periodically
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+      return;
+    }
 
-    const interval = setInterval(
+    refreshIntervalRef.current = setInterval(
       async () => {
         try {
           const response = await authService.getCurrentUser();
@@ -97,18 +121,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(response.data);
           }
         } catch (error: any) {
-          console.error('Failed to refresh user data:', error);
+          Logger.error('Failed to refresh user data', { error: error.message || 'Unknown error' });
 
           // Handle rate limiting gracefully - don't spam the server
           if (error.code === 'RATE_LIMIT_ERROR') {
-            console.warn('Rate limited during user refresh, will retry later');
+            Logger.warn('Rate limited during user refresh, will retry later');
+          } else if (error.code === 'NETWORK_ERROR') {
+            Logger.warn('Network error during user refresh, stopping interval');
+            // Stop interval on network errors
+            setUser(null);
+            if (refreshIntervalRef.current) {
+              clearInterval(refreshIntervalRef.current);
+              refreshIntervalRef.current = null;
+            }
+          } else if (error.response?.status === 401) {
+            // User logged out, clear state and stop trying
+            setUser(null);
+            if (refreshIntervalRef.current) {
+              clearInterval(refreshIntervalRef.current);
+              refreshIntervalRef.current = null;
+            }
+          } else {
+            // Stop interval on any other error to prevent spam
+            if (refreshIntervalRef.current) {
+              clearInterval(refreshIntervalRef.current);
+              refreshIntervalRef.current = null;
+            }
           }
         }
       },
       5 * 60 * 1000
     ); // Refresh every 5 minutes
 
-    return () => clearInterval(interval);
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
   }, [isAuthenticated]);
 
   const refreshUser = useCallback(async () => {
@@ -119,8 +169,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         throw new Error('Failed to get user data');
       }
-    } catch (error) {
-      console.error('Failed to refresh user:', error);
+    } catch (error: any) {
+      Logger.error('Failed to refresh user', { error: error.message || 'Unknown error' });
       throw error;
     }
   }, []);
@@ -147,8 +197,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.data) {
         setUser(response.data);
       }
-    } catch (error) {
-      console.error('Failed to refresh user after follow:', error);
+    } catch (error: any) {
+      Logger.error('Failed to refresh user after follow', {
+        error: error.message || 'Unknown error',
+      });
     }
   }, []);
 
@@ -166,8 +218,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(response.data.user);
 
         toast({
-          title: 'Welcome back!',
-          description: `Hello ${response.data.user.firstName}, you're successfully logged in.`,
+          title: `Welcome back, ${response.data.user.firstName}! 👋`,
+          description: "You're all set to explore and connect",
+          duration: 4000,
         });
 
         // Always redirect to feed after login
@@ -177,9 +230,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error: any) {
       toast({
-        title: 'Login Failed',
-        description: error.message || 'Invalid credentials. Please try again.',
+        title: "Couldn't sign you in",
+        description: 'Please check your credentials and try again',
         variant: 'destructive',
+        duration: 4000,
       });
       throw error;
     } finally {
@@ -192,7 +246,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       setRegistrationError(null);
 
-      console.log('Registering user with data:', {
+      Logger.debug('Registering user', {
         username: userData.username,
         email: userData.email,
         firstName: userData.firstName,
@@ -208,15 +262,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         lastName: userData.lastName,
       });
 
-      console.log('Registration response:', response);
+      Logger.debug('Registration completed successfully');
 
       if (response?.data?.user || response?.user) {
         const user = response.data?.user || response.user;
         setUser(user);
 
         toast({
-          title: 'Welcome to EndlessChat!',
-          description: 'Your account has been created successfully.',
+          title: `Welcome to EndlessChat, ${user.firstName}! 🎉`,
+          description: 'Your account is ready. Start connecting!',
+          duration: 5000,
         });
 
         // Small delay to ensure state is updated
@@ -224,7 +279,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           navigate('/feed');
         }, 100);
       } else {
-        console.error('Registration response:', response);
+        Logger.error('Registration failed - invalid response');
         const errorMessage = response?.message || 'Registration failed - invalid response';
         setRegistrationError(errorMessage);
         throw new Error(errorMessage);
@@ -234,9 +289,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setRegistrationError(errorMessage);
 
       toast({
-        title: 'Registration Failed',
-        description: errorMessage,
+        title: "Couldn't create account",
+        description: 'Something went wrong. Please try again',
         variant: 'destructive',
+        duration: 4000,
       });
       throw error;
     } finally {
@@ -250,14 +306,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await authService.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Force clear all state
+      // Clear interval immediately
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+
+      // Clear user state immediately to stop intervals
       setUser(null);
       setIsLoading(false);
 
+      await authService.logout();
+    } catch (error: any) {
+      Logger.error('Logout error', { error: error.message || 'Unknown error' });
+    } finally {
       // Force page reload to clear any cached state
       window.location.href = '/';
     }
@@ -271,17 +333,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(response.data);
 
         toast({
-          title: 'Profile Updated',
-          description: 'Your profile has been updated successfully.',
+          title: 'Profile updated',
+          description: 'Your changes have been saved',
+          duration: 3000,
         });
       } else {
         throw new Error(response.message || 'Failed to update profile');
       }
     } catch (error: any) {
       toast({
-        title: 'Update Failed',
-        description: error.message || 'Failed to update profile. Please try again.',
+        title: 'Update failed',
+        description: "Couldn't save changes. Try again",
         variant: 'destructive',
+        duration: 4000,
       });
       throw error;
     }
@@ -304,9 +368,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setTimeout(() => logout(), 1500);
     } catch (error: any) {
       toast({
-        title: 'Password Change Failed',
-        description: error.message || 'Failed to change password.',
+        title: 'Password update failed',
+        description: "Couldn't update password. Try again",
         variant: 'destructive',
+        duration: 4000,
       });
       throw error;
     }

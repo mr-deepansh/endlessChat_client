@@ -8,13 +8,17 @@ const responsiveButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:scale-105 active:scale-95',
-        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-lg',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent',
+        default:
+          'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:scale-105 active:scale-95',
+        destructive:
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-lg',
+        outline:
+          'border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-md',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        gradient: 'bg-gradient-primary text-white hover:shadow-primary hover:scale-105 active:scale-95',
+        gradient:
+          'bg-gradient-primary text-white hover:shadow-primary hover:scale-105 active:scale-95',
       },
       size: {
         sm: 'h-8 px-3 text-xs sm:h-9 sm:px-4 sm:text-sm lg:h-10 lg:px-5 lg:text-base xl:h-11 xl:px-6 2xl:h-12 2xl:px-7',
@@ -46,21 +50,24 @@ export interface ResponsiveButtonProps
 }
 
 const ResponsiveButton = React.forwardRef<HTMLButtonElement, ResponsiveButtonProps>(
-  ({ 
-    className, 
-    variant, 
-    size, 
-    responsive, 
-    asChild = false, 
-    loading = false,
-    icon,
-    iconPosition = 'left',
-    children,
-    disabled,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      responsive,
+      asChild = false,
+      loading = false,
+      icon,
+      iconPosition = 'left',
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : 'button';
-    
+
     const isDisabled = disabled || loading;
 
     return (

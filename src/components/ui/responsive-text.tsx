@@ -11,17 +11,20 @@ interface ResponsiveTextProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const ResponsiveText = React.forwardRef<HTMLElement, ResponsiveTextProps>(
-  ({ 
-    className, 
-    as: Component = 'p', 
-    size = 'base', 
-    weight = 'normal', 
-    color = 'default',
-    align = 'left',
-    responsive = true,
-    children, 
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      as: Component = 'p',
+      size = 'base',
+      weight = 'normal',
+      color = 'default',
+      align = 'left',
+      responsive = true,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const sizeClasses = {
       xs: responsive ? 'text-xs sm:text-sm lg:text-base xl:text-lg 2xl:text-xl' : 'text-xs',
       sm: responsive ? 'text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl' : 'text-sm',

@@ -1,22 +1,33 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { ApiResponse, ApiError } from '../../types/api';
 import { config } from '../../config/environment';
+import type { ApiError, ApiResponse } from '../../types/api';
+import Logger from '../../utils/logger';
 import { requestQueue } from '../../utils/requestQueue';
+import SecureStorage from '../../utils/secureStorage';
 
 class ApiClient {
   private instance: AxiosInstance;
   private baseURL: string;
   private token: string | null = null;
+  private isLoggingOut: boolean = false;
+  private consecutiveFailures: number = 0;
+  private circuitBreakerOpen: boolean = false;
+  private lastFailureTime: number = 0;
+  private readonly maxFailures = 5;
+  private readonly circuitBreakerTimeout = 30000; // 30 seconds
 
   constructor(baseURL: string = config.apiBaseUrl) {
     this.baseURL = baseURL;
 
     this.instance = axios.create({
-      baseURL: this.baseURL,
+      baseURL: config.apiBaseUrl,
       timeout: config.performance.requestTimeout,
       headers: {
         'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Client-Version': config.appVersion,
       },
+      withCredentials: true, // Essential for HttpOnly cookies
     });
 
     // Remove any problematic headers that might cause CORS issues
@@ -24,46 +35,24 @@ class ApiClient {
     delete this.instance.defaults.headers.common['Accept-Version'];
 
     this.setupInterceptors();
-    this.loadTokenFromStorage();
-
-    // Ensure token is set on instance creation
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      this.instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
+    // No manual token management - cookies handled automatically
   }
 
   private setupInterceptors(): void {
     // Request interceptor
     this.instance.interceptors.request.use(
       config => {
-        // Always check for token from storage
-        const token =
-          this.token || localStorage.getItem('auth_token') || localStorage.getItem('accessToken');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-          if (!this.token) {
-            this.token = token; // Update instance token
-          }
+        // Add CSRF protection header if available
+        const csrfToken = document
+          .querySelector('meta[name="csrf-token"]')
+          ?.getAttribute('content');
+        if (csrfToken) {
+          config.headers['X-CSRF-Token'] = csrfToken;
         }
 
         // Add request timestamp for performance monitoring
         config.metadata = { startTime: new Date() };
 
-        // Ensure proper JSON serialization
-        if (
-          config.data &&
-          typeof config.data === 'string' &&
-          config.headers['Content-Type'] === 'application/json'
-        ) {
-          try {
-            // If data is already a JSON string, parse and re-stringify to ensure it's valid
-            config.data = JSON.parse(config.data);
-          } catch (e) {
-            // If parsing fails, it might be a malformed string, so wrap it properly
-            console.warn('Invalid JSON string detected, attempting to fix:', config.data);
-          }
-        }
         return config;
       },
       error => Promise.reject(error)
@@ -78,9 +67,11 @@ class ApiClient {
 
         // Log performance metrics in development
         if (config.isDevelopment && config.features.enableDebug) {
-          console.log(
-            `API Request: ${response.config.method?.toUpperCase()} ${response.config.url} - ${duration}ms`
-          );
+          Logger.debug(`API Request completed`, {
+            method: response.config.method?.toUpperCase(),
+            url: response.config.url,
+            duration: `${duration}ms`,
+          });
         }
 
         return response;
@@ -88,18 +79,23 @@ class ApiClient {
       async error => {
         const originalRequest = error.config;
 
-        // Handle 401 Unauthorized
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
+        // Handle 401 Unauthorized - redirect to login
+        if (error.response?.status === 401 && !this.isLoggingOut) {
+          this.consecutiveFailures++;
+          this.lastFailureTime = Date.now();
 
-          try {
-            await this.refreshToken();
-            return this.instance(originalRequest);
-          } catch (refreshError) {
+          // Open circuit breaker if too many failures
+          if (this.consecutiveFailures >= this.maxFailures) {
+            this.circuitBreakerOpen = true;
+            Logger.warn('Circuit breaker opened due to consecutive 401 failures');
+          }
+
+          // Only redirect once, not on every 401
+          if (this.consecutiveFailures === 1) {
             this.clearAuth();
             window.location.href = '/login';
-            return Promise.reject(refreshError);
           }
+          return Promise.reject(error);
         }
 
         // Handle rate limiting (429)
@@ -146,50 +142,43 @@ class ApiClient {
     );
   }
 
-  private loadTokenFromStorage(): void {
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('accessToken');
-    if (token) {
-      this.setToken(token);
-    }
-  }
-
-  public setToken(token: string): void {
-    this.token = token;
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('accessToken', token); // Also store as accessToken for compatibility
-    // Update default headers immediately
-    this.instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    console.log('🔑 Token set in API client:', token.substring(0, 20) + '...');
-  }
-
   public clearAuth(): void {
     this.token = null;
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refresh_token');
-    // Remove authorization header
-    delete this.instance.defaults.headers.common['Authorization'];
+    this.isLoggingOut = false;
+    this.consecutiveFailures = 0;
+    this.circuitBreakerOpen = false;
+    // Clear any client-side storage (cookies handled by backend)
+    SecureStorage.clearTokens();
   }
 
-  private async refreshToken(): Promise<void> {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
+  public setLoggingOut(value: boolean): void {
+    this.isLoggingOut = value;
+  }
+
+  private checkCircuitBreaker(): boolean {
+    if (!this.circuitBreakerOpen) return false;
+
+    // Check if circuit breaker timeout has passed
+    if (Date.now() - this.lastFailureTime > this.circuitBreakerTimeout) {
+      this.circuitBreakerOpen = false;
+      this.consecutiveFailures = 0;
+      Logger.info('Circuit breaker closed, allowing requests again');
+      return false;
     }
 
-    const response = await axios.post(`${this.baseURL}/auth/refresh`, {
-      refreshToken,
-    });
-
-    const { token } = response.data.data;
-    this.setToken(token);
+    return true;
   }
 
   // Generic request methods with rate limiting protection
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    if (this.checkCircuitBreaker()) {
+      throw new Error('Circuit breaker is open - too many failed requests');
+    }
+
     const requestKey = `GET_${url}_${JSON.stringify(config?.params || {})}`;
     return requestQueue.add(async () => {
       const response = await this.instance.get(url, config);
+      this.consecutiveFailures = 0; // Reset on success
       return response.data;
     }, requestKey);
   }
@@ -301,7 +290,9 @@ class ApiClient {
         if (result.status === 'fulfilled') {
           return result.value.data;
         } else {
-          console.error(`Batch request ${index} failed:`, result.reason);
+          Logger.error(`Batch request ${index} failed`, {
+            reason: result.reason?.message || 'Unknown error',
+          });
           return null;
         }
       })

@@ -32,7 +32,9 @@ export interface ResponsiveState {
   isBetween: (min: Breakpoint, max: Breakpoint) => boolean;
 }
 
-export const useResponsive = (breakpoints: BreakpointConfig = defaultBreakpoints): ResponsiveState => {
+export const useResponsive = (
+  breakpoints: BreakpointConfig = defaultBreakpoints
+): ResponsiveState => {
   const [windowSize, setWindowSize] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1024,
     height: typeof window !== 'undefined' ? window.innerHeight : 768,
@@ -56,7 +58,7 @@ export const useResponsive = (breakpoints: BreakpointConfig = defaultBreakpoints
     };
 
     window.addEventListener('resize', debouncedHandleResize);
-    
+
     // Initial call
     handleResize();
 

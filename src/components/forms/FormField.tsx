@@ -51,28 +51,31 @@ interface SelectFieldProps extends BaseFieldProps {
 
 // Input Field Component
 export const FormInputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
-  ({
-    label,
-    error,
-    hint,
-    required,
-    className,
-    labelClassName,
-    inputClassName,
-    type = 'text',
-    placeholder,
-    value,
-    onChange,
-    onBlur,
-    onFocus,
-    icon,
-    iconPosition = 'left',
-    disabled,
-    maxLength,
-    minLength,
-    autoComplete,
-    ...props
-  }, ref) => {
+  (
+    {
+      label,
+      error,
+      hint,
+      required,
+      className,
+      labelClassName,
+      inputClassName,
+      type = 'text',
+      placeholder,
+      value,
+      onChange,
+      onBlur,
+      onFocus,
+      icon,
+      iconPosition = 'left',
+      disabled,
+      maxLength,
+      minLength,
+      autoComplete,
+      ...props
+    },
+    ref
+  ) => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [isFocused, setIsFocused] = React.useState(false);
     const inputId = React.useId();
@@ -110,14 +113,14 @@ export const FormInputField = React.forwardRef<HTMLInputElement, InputFieldProps
             {required && <span className="text-destructive ml-1">*</span>}
           </Label>
         )}
-        
+
         <div className="relative">
           {icon && iconPosition === 'left' && (
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
               {icon}
             </div>
           )}
-          
+
           <Input
             ref={ref}
             id={inputId}
@@ -143,13 +146,13 @@ export const FormInputField = React.forwardRef<HTMLInputElement, InputFieldProps
             )}
             {...props}
           />
-          
+
           {icon && iconPosition === 'right' && !isPassword && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
               {icon}
             </div>
           )}
-          
+
           {isPassword && (
             <ResponsiveButton
               type="button"
@@ -163,7 +166,7 @@ export const FormInputField = React.forwardRef<HTMLInputElement, InputFieldProps
             </ResponsiveButton>
           )}
         </div>
-        
+
         {(error || hint) && (
           <div className="space-y-1">
             {error && (
@@ -177,14 +180,16 @@ export const FormInputField = React.forwardRef<HTMLInputElement, InputFieldProps
             )}
           </div>
         )}
-        
+
         {maxLength && value && (
           <div className="flex justify-end">
-            <span className={cn(
-              'text-xs text-muted-foreground',
-              value.length > maxLength * 0.9 && 'text-orange-500',
-              value.length >= maxLength && 'text-destructive'
-            )}>
+            <span
+              className={cn(
+                'text-xs text-muted-foreground',
+                value.length > maxLength * 0.9 && 'text-orange-500',
+                value.length >= maxLength && 'text-destructive'
+              )}
+            >
               {value.length}/{maxLength}
             </span>
           </div>
@@ -196,25 +201,28 @@ export const FormInputField = React.forwardRef<HTMLInputElement, InputFieldProps
 
 // Textarea Field Component
 export const FormTextareaField = React.forwardRef<HTMLTextAreaElement, TextareaFieldProps>(
-  ({
-    label,
-    error,
-    hint,
-    required,
-    className,
-    labelClassName,
-    inputClassName,
-    placeholder,
-    value,
-    onChange,
-    onBlur,
-    onFocus,
-    rows = 4,
-    maxLength,
-    resize = true,
-    disabled,
-    ...props
-  }, ref) => {
+  (
+    {
+      label,
+      error,
+      hint,
+      required,
+      className,
+      labelClassName,
+      inputClassName,
+      placeholder,
+      value,
+      onChange,
+      onBlur,
+      onFocus,
+      rows = 4,
+      maxLength,
+      resize = true,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const [isFocused, setIsFocused] = React.useState(false);
     const inputId = React.useId();
 
@@ -248,7 +256,7 @@ export const FormTextareaField = React.forwardRef<HTMLTextAreaElement, TextareaF
             {required && <span className="text-destructive ml-1">*</span>}
           </Label>
         )}
-        
+
         <Textarea
           ref={ref}
           id={inputId}
@@ -271,7 +279,7 @@ export const FormTextareaField = React.forwardRef<HTMLTextAreaElement, TextareaF
           )}
           {...props}
         />
-        
+
         {(error || hint) && (
           <div className="space-y-1">
             {error && (
@@ -285,14 +293,16 @@ export const FormTextareaField = React.forwardRef<HTMLTextAreaElement, TextareaF
             )}
           </div>
         )}
-        
+
         {maxLength && value && (
           <div className="flex justify-end">
-            <span className={cn(
-              'text-xs text-muted-foreground',
-              value.length > maxLength * 0.9 && 'text-orange-500',
-              value.length >= maxLength && 'text-destructive'
-            )}>
+            <span
+              className={cn(
+                'text-xs text-muted-foreground',
+                value.length > maxLength * 0.9 && 'text-orange-500',
+                value.length >= maxLength && 'text-destructive'
+              )}
+            >
               {value.length}/{maxLength}
             </span>
           </div>
@@ -304,21 +314,24 @@ export const FormTextareaField = React.forwardRef<HTMLTextAreaElement, TextareaF
 
 // Select Field Component
 export const FormSelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
-  ({
-    label,
-    error,
-    hint,
-    required,
-    className,
-    labelClassName,
-    inputClassName,
-    value,
-    onChange,
-    options,
-    placeholder,
-    disabled,
-    ...props
-  }, ref) => {
+  (
+    {
+      label,
+      error,
+      hint,
+      required,
+      className,
+      labelClassName,
+      inputClassName,
+      value,
+      onChange,
+      options,
+      placeholder,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const inputId = React.useId();
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -341,7 +354,7 @@ export const FormSelectField = React.forwardRef<HTMLSelectElement, SelectFieldPr
             {required && <span className="text-destructive ml-1">*</span>}
           </Label>
         )}
-        
+
         <select
           ref={ref}
           id={inputId}
@@ -364,13 +377,13 @@ export const FormSelectField = React.forwardRef<HTMLSelectElement, SelectFieldPr
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
+          {options.map(option => (
             <option key={option.value} value={option.value} disabled={option.disabled}>
               {option.label}
             </option>
           ))}
         </select>
-        
+
         {(error || hint) && (
           <div className="space-y-1">
             {error && (

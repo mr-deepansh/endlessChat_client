@@ -135,16 +135,14 @@ export const responsiveValues = {
   },
 
   // Get responsive font sizes
-  getResponsiveFontSizes: (
-    base: number
-  ): Partial<Record<Breakpoint | 'xs', number>> => {
+  getResponsiveFontSizes: (base: number): Partial<Record<Breakpoint | 'xs', number>> => {
     return {
       xs: base,
       sm: base * 1.125, // 18px if base is 16px
-      md: base * 1.25,  // 20px if base is 16px
-      lg: base * 1.5,   // 24px if base is 16px
-      xl: base * 1.75,  // 28px if base is 16px
-      '2xl': base * 2,  // 32px if base is 16px
+      md: base * 1.25, // 20px if base is 16px
+      lg: base * 1.5, // 24px if base is 16px
+      xl: base * 1.75, // 28px if base is 16px
+      '2xl': base * 2, // 32px if base is 16px
     };
   },
 };
@@ -173,10 +171,7 @@ export const layoutUtils = {
   },
 
   // Calculate responsive aspect ratio
-  getResponsiveAspectRatio: (
-    baseRatio: number,
-    screenWidth: number
-  ): number => {
+  getResponsiveAspectRatio: (baseRatio: number, screenWidth: number): number => {
     if (screenWidth < breakpoints.md) {
       return Math.max(baseRatio * 0.75, 0.5); // Taller on mobile
     }
@@ -189,7 +184,7 @@ export const performanceUtils = {
   // Debounce resize events
   debounceResize: (callback: () => void, delay: number = 150): (() => void) => {
     let timeoutId: NodeJS.Timeout;
-    
+
     const debouncedCallback = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(callback, delay);
@@ -201,7 +196,7 @@ export const performanceUtils = {
   // Throttle scroll events
   throttleScroll: (callback: () => void, delay: number = 16): (() => void) => {
     let isThrottled = false;
-    
+
     const throttledCallback = () => {
       if (!isThrottled) {
         callback();
@@ -216,19 +211,15 @@ export const performanceUtils = {
   },
 
   // Optimize images for different screen sizes
-  getOptimizedImageUrl: (
-    baseUrl: string,
-    screenWidth: number,
-    pixelRatio: number = 1
-  ): string => {
+  getOptimizedImageUrl: (baseUrl: string, screenWidth: number, pixelRatio: number = 1): string => {
     const targetWidth = Math.ceil(screenWidth * pixelRatio);
-    
+
     // This would typically integrate with an image optimization service
     // For now, return the base URL with width parameter
     if (baseUrl.includes('unsplash.com')) {
       return `${baseUrl}&w=${targetWidth}&q=80&fm=webp`;
     }
-    
+
     return baseUrl;
   },
 };

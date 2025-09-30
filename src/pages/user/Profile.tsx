@@ -1,6 +1,6 @@
 import { Calendar, Filter, Grid3X3, Link as LinkIcon, List, MapPin, Settings } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { FollowButton } from '../../components/common/FollowButton';
 import LeftSidebar from '../../components/layout/LeftSidebar';
 import Navbar from '../../components/layout/Navbar';
@@ -17,177 +17,166 @@ import {
 } from '../../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { useAuth } from '../../contexts/AuthContext';
-import { useApi } from '../../hooks/useApi';
 import { postService, userService } from '../../services';
 import { followService } from '../../services/followService';
 import type { Post } from '../../services/postService';
 import type { User } from '../../services/userService';
 
+type PostFilter = 'all' | 'text' | 'media' | 'poll' | 'article';
+type ViewMode = 'grid' | 'list';
+type TabValue = 'posts' | 'reposts' | 'likes' | 'media';
+
 const Profile = () => {
   const { userId, username } = useParams<{ userId?: string; username?: string }>();
-  const location = useLocation();
   const { user: currentUser, refreshUserAfterFollow } = useAuth();
+
+  // State
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [activeTab, setActiveTab] = useState('posts');
-  const [postFilter, setPostFilter] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [activeTab, setActiveTab] = useState<TabValue>('posts');
+  const [postFilter, setPostFilter] = useState<PostFilter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
-  // Get identifier from either /profile/:userId or /u/:username route
+  // Derived values
   const identifier = userId || username || '';
   const isUsernameRoute = !!username;
-
-  // Utility to show username or userId in error
   const cleanUsername = username || userId || 'unknown';
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!identifier) return;
+  // Check if this is the current user's profile
+  const isOwnProfile = useMemo(() => {
+    if (!user || !currentUser) return false;
 
-      try {
-        setLoading(true);
-        // cleanUsername is now defined at component level
+    const currentUserId = currentUser.id || currentUser._id;
+    const profileUserId = user.id || user._id;
 
-        // Check if this is the current user's profile
-        const isCurrentUser =
-          currentUser &&
-          ((isUsernameRoute && currentUser.username === identifier) ||
-            (!isUsernameRoute &&
-              (currentUser._id === identifier || currentUser.id === identifier)));
-
-        if (isCurrentUser) {
-          setUser(currentUser);
-          setIsFollowing(false);
-
-          // Fetch current user's posts
-          try {
-            const userPosts = await postService.getMyPosts();
-            const postsData = userPosts.posts || [];
-            setPosts(postsData);
-            setFilteredPosts(postsData);
-          } catch (error) {
-            console.warn('User posts API not available:', error);
-            setPosts([]);
-            setFilteredPosts([]);
-          }
-        } else {
-          // Find other user by ID or username
-          try {
-            let foundUser;
-            if (isUsernameRoute) {
-              // Search by username
-              const usersResponse = await userService.searchUsers(identifier, 1, 10);
-              foundUser = usersResponse.users?.find(u => u.username === identifier);
-            } else {
-              // Get by ID
-              foundUser = await userService.getUserById(identifier);
-            }
-
-            if (foundUser) {
-              setUser(foundUser);
-
-              // Check follow status using the new endpoint
-              try {
-                const followStatus = await followService.checkFollowStatus(
-                  foundUser._id || foundUser.id
-                );
-                setIsFollowing(followStatus.data?.isFollowing || false);
-              } catch (error) {
-                console.warn('Failed to check follow status:', error);
-                // Fallback to user data or default to false
-                setIsFollowing(foundUser.isFollowing || false);
-              }
-
-              // Fetch user posts
-              try {
-                const userPosts = await postService.getUserPosts(foundUser.username);
-                const postsData = userPosts.posts || [];
-                setPosts(postsData);
-                setFilteredPosts(postsData);
-              } catch (error) {
-                console.warn('User posts API not available:', error);
-                setPosts([]);
-                setFilteredPosts([]);
-              }
-            } else {
-              setUser(null);
-            }
-          } catch (userError) {
-            console.error('Failed to fetch user:', userError);
-            setUser(null);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [identifier, currentUser, isUsernameRoute]);
+    return (
+      currentUserId === profileUserId || (isUsernameRoute && currentUser.username === identifier)
+    );
+  }, [user, currentUser, isUsernameRoute, identifier]);
 
   // Filter posts based on selected filter
-  useEffect(() => {
-    let filtered = posts;
-
+  const filteredPosts = useMemo(() => {
     switch (postFilter) {
       case 'text':
-        filtered = posts.filter(post => post.type === 'text' || !post.type);
-        break;
+        return posts.filter(post => post.type === 'text' || !post.type);
       case 'media':
-        filtered = posts.filter(post => post.type === 'media' || post.images?.length);
-        break;
+        return posts.filter(post => post.type === 'media' || post.images?.length);
       case 'poll':
-        filtered = posts.filter(post => post.type === 'poll' || post.poll);
-        break;
+        return posts.filter(post => post.type === 'poll' || post.poll);
       case 'article':
-        filtered = posts.filter(post => post.type === 'article');
-        break;
+        return posts.filter(post => post.type === 'article');
       default:
-        filtered = posts;
+        return posts;
     }
-
-    setFilteredPosts(filtered);
   }, [posts, postFilter]);
 
-  const { execute: executeFollow } = useApi({
-    showSuccessToast: true,
-    successMessage: 'Follow status updated successfully',
-  });
+  // Get media posts for media tab
+  const mediaPosts = useMemo(
+    () => posts.filter(post => post.images?.length || post.type === 'media'),
+    [posts]
+  );
 
-  const handleFollow = async () => {
-    if (!user) return;
+  // Calculate total likes
+  const totalLikes = useMemo(
+    () => posts.reduce((sum, post) => sum + (post.likesCount || 0), 0),
+    [posts]
+  );
+
+  // Fetch user data
+  const fetchUserData = useCallback(async () => {
+    if (!identifier) return;
 
     try {
-      const userId = user.id || user._id;
-      const response = await followService.followUser(userId);
+      setLoading(true);
 
-      if (response.success) {
-        const newIsFollowing = response.data?.isFollowing ?? !isFollowing;
-        setIsFollowing(newIsFollowing);
+      // Check if this is the current user's profile
+      const isCurrentUser =
+        currentUser &&
+        ((isUsernameRoute && currentUser.username === identifier) ||
+          (!isUsernameRoute && (currentUser._id === identifier || currentUser.id === identifier)));
 
-        // Update the target user's follower count
-        setUser(prev =>
-          prev
-            ? {
-                ...prev,
-                followersCount: response.data?.followersCount || prev.followersCount,
-              }
-            : null
-        );
+      if (isCurrentUser) {
+        setUser(currentUser);
+        setIsFollowing(false);
 
-        // Refresh current user data to get updated following count
-        await refreshUserAfterFollow();
+        // Fetch current user's posts
+        try {
+          const userPosts = await postService.getMyPosts();
+          const postsData = userPosts.posts || [];
+          setPosts(postsData);
+        } catch (error) {
+          console.warn('User posts API not available:', error);
+          setPosts([]);
+        }
+      } else {
+        // Find other user by ID or username
+        let foundUser;
+        try {
+          if (isUsernameRoute) {
+            const usersResponse = await userService.searchUsers(identifier, 1, 10);
+            foundUser = usersResponse.users?.find(u => u.username === identifier);
+          } else {
+            foundUser = await userService.getUserById(identifier);
+          }
+
+          if (foundUser) {
+            setUser(foundUser);
+
+            // Check follow status
+            try {
+              const followStatus = await followService.checkFollowStatus(
+                foundUser._id || foundUser.id
+              );
+              setIsFollowing(followStatus.data?.isFollowing || false);
+            } catch (error) {
+              console.warn('Failed to check follow status:', error);
+              setIsFollowing(foundUser.isFollowing || false);
+            }
+
+            // Fetch user posts
+            try {
+              const userPosts = await postService.getUserPosts(foundUser.username);
+              const postsData = userPosts.posts || [];
+              setPosts(postsData);
+            } catch (error) {
+              console.warn('User posts API not available:', error);
+              setPosts([]);
+            }
+          } else {
+            setUser(null);
+          }
+        } catch (userError) {
+          console.error('Failed to fetch user:', userError);
+          setUser(null);
+        }
       }
-    } catch (error: any) {
-      console.error('Follow action failed:', error);
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [identifier, currentUser, isUsernameRoute]);
 
+  // Handle follow action
+  const handleFollowChange = useCallback(
+    async (newIsFollowing: boolean, newFollowersCount?: number) => {
+      setIsFollowing(newIsFollowing);
+      if (newFollowersCount !== undefined) {
+        setUser(prev => (prev ? { ...prev, followersCount: newFollowersCount } : null));
+      }
+      await refreshUserAfterFollow();
+    },
+    [refreshUserAfterFollow]
+  );
+
+  // Effects
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -202,6 +191,7 @@ const Profile = () => {
     );
   }
 
+  // User not found
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
@@ -213,33 +203,6 @@ const Profile = () => {
       </div>
     );
   }
-
-  const isOwnProfile =
-    user &&
-    currentUser &&
-    ((currentUser.id && user.id && currentUser.id === user.id) ||
-      (currentUser._id && user._id && currentUser._id === user._id) ||
-      (currentUser.id && user._id && currentUser.id === user._id) ||
-      (currentUser._id && user.id && currentUser._id === user.id));
-
-  // Debug logging to help identify the issue
-  console.log('Profile Debug:', {
-    routeType: isUsernameRoute ? 'username' : 'userId',
-    identifier,
-    currentUserId: currentUser?.id || currentUser?._id,
-    currentUserUsername: currentUser?.username,
-    profileUserId: user?.id || user?._id,
-    profileUsername: user?.username,
-    isOwnProfile,
-    isFollowing,
-    userIsFollowing: user?.isFollowing,
-    comparisons: {
-      'currentUser.id === user.id': currentUser?.id === user?.id,
-      'currentUser._id === user._id': currentUser?._id === user?._id,
-      'currentUser.id === user._id': currentUser?.id === user?._id,
-      'currentUser._id === user.id': currentUser?._id === user?.id,
-    },
-  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -280,16 +243,7 @@ const Profile = () => {
                         <FollowButton
                           userId={user.id || user._id}
                           isFollowing={isFollowing}
-                          onFollowChange={async (newIsFollowing, newFollowersCount) => {
-                            setIsFollowing(newIsFollowing);
-                            if (newFollowersCount !== undefined) {
-                              setUser(prev =>
-                                prev ? { ...prev, followersCount: newFollowersCount } : null
-                              );
-                            }
-                            // Refresh current user data
-                            await refreshUserAfterFollow();
-                          }}
+                          onFollowChange={handleFollowChange}
                           size="sm"
                         />
                       )}
@@ -357,7 +311,7 @@ const Profile = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-lg sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold text-purple-500">
-                    {posts.reduce((sum, post) => sum + (post.likesCount || 0), 0)}
+                    {totalLikes}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Likes</div>
                 </div>
@@ -366,7 +320,7 @@ const Profile = () => {
           </Card>
 
           {/* Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={value => setActiveTab(value as TabValue)}>
             <div className="flex items-center justify-between mb-4">
               <TabsList className="grid grid-cols-4 w-auto">
                 <TabsTrigger value="posts" className="text-xs sm:text-sm">
@@ -384,7 +338,10 @@ const Profile = () => {
               </TabsList>
 
               <div className="flex items-center gap-2">
-                <Select value={postFilter} onValueChange={setPostFilter}>
+                <Select
+                  value={postFilter}
+                  onValueChange={value => setPostFilter(value as PostFilter)}
+                >
                   <SelectTrigger className="w-32">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue />
@@ -484,9 +441,8 @@ const Profile = () => {
 
             <TabsContent value="media" className="mt-4 sm:mt-6">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {posts
-                  .filter(post => post.images?.length || post.type === 'media')
-                  .map((post, index) => (
+                {mediaPosts.length > 0 ? (
+                  mediaPosts.map((post, index) => (
                     <div
                       key={post._id || `media-${index}`}
                       className="aspect-square bg-muted rounded-lg overflow-hidden"
@@ -503,9 +459,8 @@ const Profile = () => {
                         </div>
                       )}
                     </div>
-                  ))}
-                {posts.filter(post => post.images?.length || post.type === 'media').length ===
-                  0 && (
+                  ))
+                ) : (
                   <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">No media posts yet</p>
                   </div>

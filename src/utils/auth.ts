@@ -1,23 +1,24 @@
 // src/utils/auth.ts
 import { User } from '@/contexts/AuthContext';
+import SecureStorage from './secureStorage';
 
 /**
- * Safely get token from localStorage
+ * Safely get token from secure storage
  */
 export const getStoredToken = (): string | null => {
   try {
-    return localStorage.getItem('token');
+    return SecureStorage.getAccessToken();
   } catch {
     return null;
   }
 };
 
 /**
- * Safely get user from localStorage
+ * Safely get user from sessionStorage (non-sensitive data)
  */
 export const getStoredUser = (): User | null => {
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user_profile');
     if (!userStr) return null;
 
     const user = JSON.parse(userStr);
@@ -32,8 +33,18 @@ export const getStoredUser = (): User | null => {
  */
 export const storeAuthData = (token: string, user: User): void => {
   try {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    SecureStorage.setAccessToken(token);
+    // Store non-sensitive user profile data in sessionStorage
+    const userProfile = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      avatar: user.avatar,
+    };
+    sessionStorage.setItem('user_profile', JSON.stringify(userProfile));
   } catch (error) {
     console.error('Failed to store auth data:', error);
   }
@@ -44,8 +55,8 @@ export const storeAuthData = (token: string, user: User): void => {
  */
 export const clearAuthData = (): void => {
   try {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    SecureStorage.clearTokens();
+    sessionStorage.removeItem('user_profile');
   } catch (error) {
     console.error('Failed to clear auth data:', error);
   }
