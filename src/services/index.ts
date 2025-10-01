@@ -8,7 +8,7 @@ export { default as adminService } from './adminService';
 export { default as api } from './api';
 
 // Export new modular services
-export { securityService, monitoringService, analyticsService, revenueService } from './modules';
+export { securityService, monitoringService, analyticsService } from './modules';
 
 // Export service manager and utilities
 export { serviceManager, ServiceManager } from './serviceManager';
@@ -41,7 +41,4 @@ export type {
   RetentionAnalytics,
   EngagementMetrics,
   UserGrowthData,
-  RevenueAnalytics,
-  UserLifetimeValue,
-  SubscriptionMetrics,
 } from './modules';

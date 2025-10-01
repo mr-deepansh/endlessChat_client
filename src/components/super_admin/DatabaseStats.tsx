@@ -11,6 +11,24 @@ interface DatabaseStatsProps {
 }
 
 export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
+  if (!data || !data.overview) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Database Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-gray-500 py-8">
+            No database statistics available
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Card>
@@ -23,32 +41,32 @@ export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold">{data.overview.collections}</p>
+              <p className="text-2xl font-bold">{data.overview?.collections || 0}</p>
               <p className="text-sm text-gray-600">Collections</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">
-                {DataFormatter.formatNumber(data.overview.objects)}
+                {DataFormatter.formatNumber(data.overview?.objects || 0)}
               </p>
               <p className="text-sm text-gray-600">Objects</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold">{data.overview.dataSize}</p>
+              <p className="text-2xl font-bold">{data.overview?.dataSize || 'N/A'}</p>
               <p className="text-sm text-gray-600">Data Size</p>
             </div>
           </div>
           <div className="mt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span>Storage Size:</span>
-              <span>{data.overview.storageSize}</span>
+              <span>{data.overview?.storageSize || 'N/A'}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Index Size:</span>
-              <span>{data.overview.indexSize}</span>
+              <span>{data.overview?.indexSize || 'N/A'}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Avg Object Size:</span>
-              <span>{data.overview.avgObjSize}</span>
+              <span>{data.overview?.avgObjSize || 'N/A'}</span>
             </div>
           </div>
         </CardContent>
@@ -63,7 +81,7 @@ export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {data.collections.slice(0, 5).map(collection => (
+            {data.collections?.slice(0, 5).map(collection => (
               <div key={collection.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{collection.name}</span>
@@ -79,7 +97,11 @@ export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
                   </div>
                 </div>
               </div>
-            ))}
+            )) || (
+              <div className="text-center text-gray-500 py-4">
+                No collection data available
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

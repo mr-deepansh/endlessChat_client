@@ -6,15 +6,12 @@ import { RefreshCw } from 'lucide-react';
 import { SecurityOverviewCard } from './SecurityOverview';
 import { DatabaseStatsCard } from './DatabaseStats';
 import { RetentionAnalyticsCard } from './RetentionAnalytics';
-import { RevenueAnalyticsCard } from './RevenueAnalytics';
 import { EngagementMetricsCard } from './EngagementMetrics';
-import { serviceManager } from '../../services';
+import { adminService } from '../../services/adminService';
 import type {
   SecurityOverview,
   DatabaseStats,
   RetentionAnalytics,
-  RevenueAnalytics,
-  UserLifetimeValue,
   EngagementMetrics,
 } from '../../services/modules';
 
@@ -24,37 +21,28 @@ export const SuperAdminDashboard: React.FC = () => {
     security: SecurityOverview | null;
     database: DatabaseStats | null;
     retention: RetentionAnalytics | null;
-    revenue: RevenueAnalytics | null;
-    ltv: UserLifetimeValue | null;
     engagement: EngagementMetrics | null;
   }>({
     security: null,
     database: null,
     retention: null,
-    revenue: null,
-    ltv: null,
     engagement: null,
   });
 
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [security, database, retention, revenue, ltv, engagement] = await Promise.allSettled([
-        serviceManager.getSecurityOverview(),
-        serviceManager.getDatabaseStats(),
-        serviceManager.getRetentionAnalytics(),
-        serviceManager.getRevenueAnalytics(),
-        serviceManager.getUserLifetimeValue(),
-        serviceManager.getEngagementMetrics(),
+      const [database, retention, engagement] = await Promise.allSettled([
+        adminService.getDatabaseStats(),
+        adminService.getUserRetentionAnalytics({ cohortPeriod: 'monthly' }),
+        adminService.getEngagementMetrics({ timeRange: '30d' }),
       ]);
 
       setData({
-        security: security.status === 'fulfilled' ? security.value : null,
-        database: database.status === 'fulfilled' ? database.value : null,
-        retention: retention.status === 'fulfilled' ? retention.value : null,
-        revenue: revenue.status === 'fulfilled' ? revenue.value : null,
-        ltv: ltv.status === 'fulfilled' ? ltv.value : null,
-        engagement: engagement.status === 'fulfilled' ? engagement.value : null,
+        security: null, // Mock data for now
+        database: database.status === 'fulfilled' && database.value.success ? database.value.data : null,
+        retention: retention.status === 'fulfilled' && retention.value.success ? retention.value.data : null,
+        engagement: engagement.status === 'fulfilled' && engagement.value.success ? engagement.value.data : null,
       });
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -88,21 +76,15 @@ export const SuperAdminDashboard: React.FC = () => {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="system">System</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {data.security && <SecurityOverviewCard data={data.security} />}
             {data.engagement && <EngagementMetricsCard data={data.engagement} />}
+            {data.database && <DatabaseStatsCard data={data.database} />}
           </div>
-        </TabsContent>
-
-        <TabsContent value="security" className="space-y-4">
-          {data.security && <SecurityOverviewCard data={data.security} />}
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
@@ -110,10 +92,6 @@ export const SuperAdminDashboard: React.FC = () => {
             {data.retention && <RetentionAnalyticsCard data={data.retention} />}
             {data.engagement && <EngagementMetricsCard data={data.engagement} />}
           </div>
-        </TabsContent>
-
-        <TabsContent value="revenue" className="space-y-4">
-          {data.revenue && <RevenueAnalyticsCard revenue={data.revenue} ltv={data.ltv} />}
         </TabsContent>
 
         <TabsContent value="system" className="space-y-4">

@@ -88,12 +88,13 @@ export interface ChangePasswordRequest {
 
 // User Types
 export interface User {
-  id: string;
+  _id?: string;
+  id?: string;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
-  fullName: string;
+  fullName?: string;
   avatar?: string;
   bio?: string;
   location?: string;
@@ -101,22 +102,23 @@ export interface User {
   dateOfBirth?: string;
   phone?: string;
   role: 'user' | 'admin' | 'super_admin';
-  status: 'active' | 'inactive' | 'suspended' | 'banned';
-  isVerified: boolean;
-  emailVerified: boolean;
-  isPrivate: boolean;
-  isOnline: boolean;
-  lastSeen: string;
+  status?: 'active' | 'inactive' | 'suspended' | 'banned';
+  isActive?: boolean;
+  isVerified?: boolean;
+  emailVerified?: boolean;
+  isPrivate?: boolean;
+  isOnline?: boolean;
+  lastSeen?: string;
   createdAt: string;
   updatedAt: string;
 
   // Social Stats
-  followersCount: number;
-  followingCount: number;
-  postsCount: number;
+  followersCount?: number;
+  followingCount?: number;
+  postsCount?: number;
 
   // Privacy Settings
-  privacy: {
+  privacy?: {
     profileVisibility: 'public' | 'followers' | 'private';
     showEmail: boolean;
     showPhone: boolean;
@@ -126,7 +128,7 @@ export interface User {
   };
 
   // Preferences
-  preferences: {
+  preferences?: {
     language: string;
     timezone: string;
     theme: 'light' | 'dark' | 'auto';
@@ -352,29 +354,112 @@ export interface Relationship {
 
 // Admin Types
 export interface AdminStats {
-  users: {
-    total: number;
-    active: number;
-    new: number;
-    suspended: number;
-    banned: number;
+  overview: {
+    totalUsers: number;
+    activeUsers: number;
+    adminUsers: number;
+    verifiedUsers: number;
+    suspendedUsers: number;
+    activePercentage: string;
+    currentMonthSignups: number;
+    userGrowthTrend: string;
+    healthScore: number;
   };
-  content: {
-    posts: number;
-    comments: number;
-    reports: number;
-    flagged: number;
+  breakdown: {
+    usersByRole: Record<string, number>;
+    usersByLocation: Record<string, number>;
+    monthlyGrowth: Array<{
+      year: number;
+      month: number;
+      count: number;
+      monthName: string;
+    }>;
+    dailyGrowth: Array<{
+      year: number;
+      month: number;
+      day: number;
+      count: number;
+      date: string;
+    }>;
   };
-  engagement: {
-    likes: number;
-    shares: number;
-    views: number;
+  activity: {
+    recentUsers: Array<{
+      id: string;
+      username: string;
+      email: string;
+      role: string;
+      joinedAt: string;
+      lastLogin: string;
+      status: string;
+      daysSinceJoined: number;
+    }>;
   };
-  system: {
-    uptime: number;
-    performance: number;
-    errors: number;
+  engagement: any;
+  metadata: {
+    generatedAt: string;
+    fromCache: boolean;
+    optimizedVersion?: string;
+    pipeline?: string;
   };
+}
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+  lastLoginAt?: string;
+  profileImage?: string;
+  daysSinceJoined: number;
+}
+
+export interface AnalyticsOverview {
+  timeRange: string;
+  metrics: Record<string, number>;
+  trends: Array<{
+    date: string;
+    value: number;
+    change?: number;
+  }>;
+  breakdown: Record<string, number>;
+  insights: string[];
+}
+
+export interface SuspiciousAccount {
+  id: string;
+  userId: string;
+  username: string;
+  email: string;
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskFactors: string[];
+  lastActivity: string;
+  flaggedAt: string;
+}
+
+export interface LoginAttempt {
+  id: string;
+  userId?: string;
+  email: string;
+  ipAddress: string;
+  userAgent: string;
+  status: 'success' | 'failed' | 'blocked';
+  failureReason?: string;
+  location?: string;
+  timestamp: string;
+}
+
+export interface UserManagementParams {
+  page: number;
+  limit: number;
+  search: string;
+  role: string;
+  status: string;
+  sortBy: string;
+  sortOrder: string;
 }
 
 // Security Types
@@ -504,6 +589,11 @@ export type {
   FollowStats,
   Relationship,
   AdminStats,
+  AdminUser,
+  AnalyticsOverview,
+  SuspiciousAccount,
+  LoginAttempt,
+  UserManagementParams,
   SecurityEvent,
   AnalyticsData,
   FileUploadResponse,

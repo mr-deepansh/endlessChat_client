@@ -4,6 +4,7 @@ import type { ApiError, ApiResponse } from '../../types/api';
 import Logger from '../../utils/logger';
 import { requestQueue } from '../../utils/requestQueue';
 import SecureStorage from '../../utils/secureStorage';
+import { AuthPersistence } from '../../utils/authPersistence';
 
 class ApiClient {
   private instance: AxiosInstance;
@@ -35,13 +36,20 @@ class ApiClient {
     delete this.instance.defaults.headers.common['Accept-Version'];
 
     this.setupInterceptors();
-    // No manual token management - cookies handled automatically
+    // Initialize token from AuthPersistence
+    this.token = AuthPersistence.getAccessToken();
   }
 
   private setupInterceptors(): void {
     // Request interceptor
     this.instance.interceptors.request.use(
       config => {
+        // Add token to requests
+        const token = AuthPersistence.getAccessToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        
         // Add CSRF protection header if available
         const csrfToken = document
           .querySelector('meta[name="csrf-token"]')
@@ -142,11 +150,19 @@ class ApiClient {
     );
   }
 
+  public setToken(token: string): void {
+    this.token = token;
+    // Store using AuthPersistence
+    AuthPersistence.setTokens(token);
+  }
+
   public clearAuth(): void {
     this.token = null;
     this.isLoggingOut = false;
     this.consecutiveFailures = 0;
     this.circuitBreakerOpen = false;
+    // Clear tokens using AuthPersistence
+    AuthPersistence.clearTokens();
     // Clear any client-side storage (cookies handled by backend)
     SecureStorage.clearTokens();
   }

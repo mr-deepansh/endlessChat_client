@@ -13,6 +13,7 @@ import { toast } from '../hooks/use-toast';
 import { authService } from '../services';
 import { ChangePasswordRequest, LoginRequest, RegisterRequest, User } from '../types/api';
 import Logger from '../utils/logger';
+import { AuthPersistence } from '../utils/authPersistence';
 
 interface AuthContextType {
   user: User | null;
@@ -63,37 +64,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check if there are any cookies before making request
-        if (!document.cookie) {
-          Logger.info('No cookies found, skipping auth check');
+        setIsLoading(true);
+        
+        // Check for valid stored token first
+        if (!AuthPersistence.hasValidToken()) {
+          Logger.info('No valid authentication found, user not logged in');
           setUser(null);
           setIsLoading(false);
           return;
         }
 
-        // With HttpOnly cookies, always try to get current user
-        // Backend will validate the cookie automatically
+        // Try to get current user - this will validate the session
         const response = await authService.getCurrentUser();
-        if (response.data) {
+        if (response.success && response.data) {
           setUser(response.data);
+          Logger.info('User session restored successfully');
+        } else {
+          // Clear invalid tokens
+          AuthPersistence.clearTokens();
+          setUser(null);
         }
       } catch (error: any) {
         Logger.error('Auth check failed', { error: error.message || 'Unknown error' });
 
-        // Handle rate limiting gracefully
+        // Handle different error types
         if (error.code === 'RATE_LIMIT_ERROR') {
           Logger.warn('Rate limited during auth check, will retry later');
-          // Don't logout on rate limit, just set loading to false
+          // Don't clear user state on rate limit
         } else if (error.code === 'NETWORK_ERROR') {
-          Logger.warn('Network error during auth check, backend may be unavailable');
-          // Don't logout on network error, just clear state
-          setUser(null);
+          Logger.warn('Network error during auth check, keeping existing state');
+          // Don't clear user state on network error
         } else if (error.response?.status === 401) {
-          // User not authenticated, clear state
+          // Clear invalid authentication
+          AuthPersistence.clearTokens();
           setUser(null);
         } else {
-          // Only logout for other API errors, not network issues
-          setUser(null);
+          // For other errors, keep existing state but log the error
+          Logger.error('Unexpected error during auth check', error);
         }
       } finally {
         setIsLoading(false);
@@ -208,14 +215,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      const response = await authService.login(
-        credentials.identifier,
-        credentials.password,
-        credentials.rememberMe
-      );
+      const response = await authService.login({
+        identifier: credentials.identifier,
+        password: credentials.password,
+        rememberMe: credentials.rememberMe
+      });
 
-      if (response.data?.user) {
+      if (response.success && response.data?.user) {
         setUser(response.data.user);
+
+        // Store tokens for persistence
+        const token = response.data.token || response.data.accessToken;
+        const refreshToken = response.data.refreshToken;
+        
+        if (token) {
+          AuthPersistence.setTokens(token, refreshToken);
+        }
 
         toast({
           title: `Welcome back, ${response.data.user.firstName}! 👋`,
@@ -253,20 +268,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         lastName: userData.lastName,
       });
 
-      const response = await authService.register({
-        username: userData.username,
-        email: userData.email,
-        password: userData.password,
-        confirmPassword: userData.confirmPassword,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-      });
+      const response = await authService.register(userData);
 
       Logger.debug('Registration completed successfully');
 
-      if (response?.data?.user || response?.user) {
+      if (response.success && (response.data?.user || response.user)) {
         const user = response.data?.user || response.user;
         setUser(user);
+
+        // Store tokens for persistence
+        const token = response.data?.token || response.data?.accessToken;
+        const refreshToken = response.data?.refreshToken;
+        
+        if (token) {
+          AuthPersistence.setTokens(token, refreshToken);
+        }
 
         toast({
           title: `Welcome to EndlessChat, ${user.firstName}! 🎉`,
@@ -315,6 +331,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Clear user state immediately to stop intervals
       setUser(null);
       setIsLoading(false);
+
+      // Clear all stored tokens
+      AuthPersistence.clearTokens();
 
       await authService.logout();
     } catch (error: any) {
@@ -438,7 +457,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Show loading screen during initial auth check
-  if (isLoading && !user) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 

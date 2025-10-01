@@ -1,33 +1,13 @@
 import { apiClient } from './core/apiClient';
-
-export interface AdminStats {
-  users: {
-    total: number;
-    active: number;
-    inactive: number;
-    newToday: number;
-    newThisWeek: number;
-    newThisMonth: number;
-  };
-  posts: {
-    total: number;
-    today: number;
-    thisWeek: number;
-    thisMonth: number;
-  };
-  engagement: {
-    totalLikes: number;
-    totalComments: number;
-    totalReposts: number;
-    totalViews: number;
-  };
-  system: {
-    uptime: string;
-    memoryUsage: number;
-    cpuUsage: number;
-    diskUsage: number;
-  };
-}
+import type {
+  AdminStats,
+  AdminUser,
+  AnalyticsOverview,
+  SuspiciousAccount,
+  LoginAttempt,
+  UserManagementParams,
+  ApiResponse
+} from '../types/api';
 
 export interface AdminDashboard {
   stats: AdminStats;
@@ -64,83 +44,96 @@ export interface SecurityAnalysis {
 
 class AdminService {
   // Get admin dashboard
-  async getDashboard(): Promise<AdminDashboard> {
-    const response = await apiClient.get('/admin/dashboard');
-    return response.data.data;
+  async getDashboard(): Promise<ApiResponse<AdminDashboard>> {
+    const response = await apiClient.get('/api/v2/admin/dashboard');
+    return response.data;
   }
 
   // Get admin stats
-  async getStats(): Promise<AdminStats> {
-    const response = await apiClient.get('/admin/stats');
-    return response.data.data;
+  async getStats(): Promise<ApiResponse<{ stats: AdminStats }>> {
+    const response = await apiClient.get('/api/v2/admin/stats');
+    return response.data;
   }
 
   // Get live stats
-  async getLiveStats(): Promise<AdminStats> {
-    const response = await apiClient.get('/admin/stats/live');
-    return response.data.data;
+  async getLiveStats(): Promise<ApiResponse<AdminStats>> {
+    const response = await apiClient.get('/api/v2/admin/stats/live');
+    return response.data;
   }
 
   // Get all users (admin view)
-  async getAllUsers(page = 1, limit = 20, filters?: any): Promise<any> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      ...filters,
+  async getAllUsers(params: UserManagementParams): Promise<ApiResponse<{ users: AdminUser[]; pagination: any; filters: any; meta: any }>> {
+    const queryParams = new URLSearchParams({
+      page: params.page.toString(),
+      limit: params.limit.toString(),
+      search: params.search,
+      role: params.role,
+      isActive: params.status === 'all' ? '' : (params.status === 'active').toString(),
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     });
-    const response = await apiClient.get(`/admin/users?${params}`);
-    return response.data.data;
+    const response = await apiClient.get(`/api/v2/admin/users?${queryParams}`);
+    return response.data;
   }
 
   // Get user by ID (admin)
-  async getUserById(id: string): Promise<any> {
-    const response = await apiClient.get(`/admin/users/${id}`);
-    return response.data.data;
+  async getUserById(id: string): Promise<ApiResponse<{ user: AdminUser }>> {
+    const response = await apiClient.get(`/api/v2/admin/users/${id}`);
+    return response.data;
   }
 
   // Update user (admin)
-  async updateUser(id: string, data: any): Promise<any> {
-    const response = await apiClient.put(`/admin/users/${id}`, data);
-    return response.data.data;
+  async updateUser(id: string, data: any): Promise<ApiResponse<{ user: AdminUser }>> {
+    const response = await apiClient.put(`/api/v2/admin/users/${id}`, data);
+    return response.data;
   }
 
   // Delete user (admin)
-  async deleteUser(id: string): Promise<void> {
-    await apiClient.delete(`/admin/users/${id}`);
+  async deleteUser(id: string, data: { reason: string; confirmPassword?: string; notifyUser?: boolean }): Promise<ApiResponse<any>> {
+    const response = await apiClient.delete(`/api/v2/admin/users/${id}`, { data });
+    return response.data;
   }
 
   // Suspend user
-  async suspendUser(id: string, reason: string): Promise<void> {
-    await apiClient.patch(`/admin/users/${id}/suspend`, { reason });
+  async suspendUser(id: string, data: { reason: string }): Promise<ApiResponse<{ user: AdminUser }>> {
+    const response = await apiClient.patch(`/api/v2/admin/users/${id}/suspend`, data);
+    return response.data;
   }
 
   // Activate user
-  async activateUser(id: string): Promise<void> {
-    await apiClient.patch(`/admin/users/${id}/activate`);
+  async activateUser(id: string): Promise<ApiResponse<{ user: AdminUser }>> {
+    const response = await apiClient.patch(`/api/v2/admin/users/${id}/activate`);
+    return response.data;
   }
 
   // Verify user account
-  async verifyUser(id: string): Promise<void> {
-    await apiClient.patch(`/admin/users/${id}/verify`);
+  async verifyUser(id: string): Promise<ApiResponse<{ user: AdminUser }>> {
+    const response = await apiClient.patch(`/api/v2/admin/users/${id}/verify`);
+    return response.data;
   }
 
   // Search users (admin)
-  async searchUsers(query: string, page = 1, limit = 20, role?: string): Promise<any> {
-    const params = new URLSearchParams({
-      query,
-      page: page.toString(),
-      limit: limit.toString(),
+  async searchUsers(params: { q?: string; search?: string; username?: string; page?: number; limit?: number; role?: string; isActive?: boolean; sortBy?: string; sortOrder?: string }): Promise<ApiResponse<{ users: AdminUser[]; search: any; pagination: any; meta: any }>> {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        queryParams.append(key, value.toString());
+      }
     });
-    if (role) params.append('role', role);
-
-    const response = await apiClient.get(`/admin/users/search?${params}`);
-    return response.data.data;
+    const response = await apiClient.get(`/api/v2/admin/users/search?${queryParams}`);
+    return response.data;
   }
 
   // Bulk export users
-  async exportUsers(format = 'csv', filters = 'active'): Promise<Blob> {
+  async exportUsers(params: { format?: string; role?: string; isActive?: boolean; fields?: string; search?: string; limit?: number; sortBy?: string; sortOrder?: string }): Promise<Blob> {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
     const response = await apiClient.get(
-      `/admin/users/export?format=${format}&filters=${filters}`,
+      `/api/v2/admin/users/export?${queryParams}`,
       {
         responseType: 'blob',
       }
@@ -149,127 +142,185 @@ class AdminService {
   }
 
   // Bulk actions on users
-  async bulkActions(data: BulkActionData): Promise<void> {
-    await apiClient.post('/admin/users/bulk-actions', data);
+  async bulkActions(data: BulkActionData): Promise<ApiResponse<any>> {
+    const response = await apiClient.post('/api/v2/admin/users/bulk-actions', data);
+    return response.data;
   }
 
   // Get user activity log
-  async getUserActivityLog(id: string, page = 1, limit = 50, type?: string): Promise<any> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    if (type) params.append('type', type);
-
-    const response = await apiClient.get(`/admin/users/${id}/activity-log?${params}`);
-    return response.data.data;
+  async getUserActivityLog(id: string, params?: { page?: number; limit?: number; type?: string }): Promise<ApiResponse<{ activityLog: any }>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await apiClient.get(`/api/v2/admin/users/${id}/activity-log?${queryParams}`);
+    return response.data;
   }
 
   // Send notification to user
   async sendNotificationToUser(
     id: string,
     data: {
-      type: string;
-      title: string;
-      message: string;
-      channels: string[];
+      title?: string;
+      message?: string;
+      type?: string;
+      priority?: string;
+      template?: string;
+      templateData?: any;
+      channels?: string[];
+      scheduleFor?: string;
+      trackDelivery?: boolean;
     }
-  ): Promise<void> {
-    await apiClient.post(`/admin/users/${id}/notify`, data);
+  ): Promise<ApiResponse<any>> {
+    const response = await apiClient.post(`/api/v2/admin/users/${id}/notify`, data);
+    return response.data;
   }
 
   // Force password reset
-  async forcePasswordReset(id: string, reason: string): Promise<void> {
-    await apiClient.post(`/admin/users/${id}/force-password-reset`, { reason });
+  async forcePasswordReset(id: string, data: { reason: string; notifyUser?: boolean; invalidateAllSessions?: boolean; confirmPassword?: string }): Promise<ApiResponse<any>> {
+    const response = await apiClient.post(`/api/v2/admin/users/${id}/force-password-reset`, data);
+    return response.data;
   }
 
   // Get user security analysis
-  async getUserSecurityAnalysis(id: string): Promise<SecurityAnalysis> {
-    const response = await apiClient.get(`/admin/users/${id}/security-analysis`);
-    return response.data.data;
+  async getUserSecurityAnalysis(id: string, params?: { includeDevices?: boolean; includeSessions?: boolean }): Promise<ApiResponse<{ user: any; securityAnalysis: SecurityAnalysis; meta: any }>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await apiClient.get(`/api/v2/admin/users/${id}/security-analysis?${queryParams}`);
+    return response.data;
   }
 
   // Get all admins
-  async getAllAdmins(): Promise<any> {
-    const response = await apiClient.get('/admin/admins');
-    return response.data.data;
+  async getAllAdmins(params?: { page?: number; limit?: number; sortBy?: string; sortOrder?: string; search?: string; status?: string; role?: string }): Promise<ApiResponse<{ admins: AdminUser[]; pagination: any; summary: any; filters: any; metadata: any }>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await apiClient.get(`/api/v2/admin/admins?${queryParams}`);
+    return response.data;
   }
 
   // Get admin by ID
-  async getAdminById(adminId: string): Promise<any> {
-    const response = await apiClient.get(`/admin/admins/${adminId}`);
-    return response.data.data;
+  async getAdminById(adminId: string): Promise<ApiResponse<{ admin: any; meta: any }>> {
+    const response = await apiClient.get(`/api/v2/admin/admins/${adminId}`);
+    return response.data;
   }
 
   // Analytics endpoints
-  async getSessionAnalytics(timeRange = '30d'): Promise<any> {
-    const response = await apiClient.get(`/admin/sessions/analytics?timeRange=${timeRange}`);
-    return response.data.data;
+  async getAnalyticsOverview(params?: { timeRange?: string }): Promise<ApiResponse<AnalyticsOverview>> {
+    const queryParams = new URLSearchParams();
+    if (params?.timeRange) queryParams.append('timeRange', params.timeRange);
+    const response = await apiClient.get(`/api/v2/admin/analytics/overview?${queryParams}`);
+    return response.data;
   }
 
-  async getAnalyticsOverview(timeRange = '30d'): Promise<any> {
-    const response = await apiClient.get(`/admin/analytics/overview?timeRange=${timeRange}`);
-    return response.data.data;
+  async getUserGrowthAnalytics(params?: { period?: string; days?: number }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams();
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.days) queryParams.append('days', params.days.toString());
+    const response = await apiClient.get(`/api/v2/admin/analytics/users/growth?${queryParams}`);
+    return response.data;
   }
 
-  async getUserGrowthAnalytics(period = 'daily', days = 30): Promise<any> {
-    const response = await apiClient.get(
-      `/admin/analytics/users/growth?period=${period}&days=${days}`
-    );
-    return response.data.data;
+  async getUserRetentionAnalytics(params?: { cohortPeriod?: string }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams();
+    if (params?.cohortPeriod) queryParams.append('cohortPeriod', params.cohortPeriod);
+    const response = await apiClient.get(`/api/v2/admin/analytics/users/retention?${queryParams}`);
+    return response.data;
   }
 
-  async getUserRetentionAnalytics(period = 'weekly', weeks = 12): Promise<any> {
-    const response = await apiClient.get(
-      `/admin/analytics/users/retention?period=${period}&weeks=${weeks}`
-    );
-    return response.data.data;
+  async getUserDemographics(): Promise<ApiResponse<any>> {
+    const response = await apiClient.get('/api/v2/admin/analytics/users/demographics');
+    return response.data;
   }
 
-  async getUserDemographics(): Promise<any> {
-    const response = await apiClient.get('/admin/analytics/users/demographics');
-    return response.data.data;
-  }
-
-  async getEngagementMetrics(timeRange = '30d', metric = 'all'): Promise<any> {
-    const response = await apiClient.get(
-      `/admin/analytics/engagement/metrics?timeRange=${timeRange}&metric=${metric}`
-    );
-    return response.data.data;
+  async getEngagementMetrics(params?: { timeRange?: string }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams();
+    if (params?.timeRange) queryParams.append('timeRange', params.timeRange);
+    const response = await apiClient.get(`/api/v2/admin/analytics/engagement/metrics?${queryParams}`);
+    return response.data;
   }
 
   // Security endpoints
-  async getSuspiciousAccounts(page = 1, limit = 20, riskLevel = 'high'): Promise<any> {
-    const response = await apiClient.get(
-      `/admin/security/suspicious-accounts?page=${page}&limit=${limit}&riskLevel=${riskLevel}`
-    );
-    return response.data.data;
+  async getSuspiciousAccounts(params?: { page?: number; limit?: number; riskLevel?: string }): Promise<ApiResponse<SuspiciousAccount[]>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await apiClient.get(`/api/v2/admin/security/suspicious-accounts?${queryParams}`);
+    return response.data;
   }
 
-  async getLoginAttempts(status = 'failed', timeRange = '24h'): Promise<any> {
-    const response = await apiClient.get(
-      `/admin/security/login-attempts?status=${status}&timeRange=${timeRange}`
-    );
-    return response.data.data;
+  async getLoginAttempts(params?: { status?: string; timeRange?: string; limit?: number }): Promise<ApiResponse<LoginAttempt[]>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await apiClient.get(`/api/v2/admin/security/login-attempts?${queryParams}`);
+    return response.data;
   }
 
-  async getBlockedIPs(page = 1, limit = 20): Promise<any> {
-    const response = await apiClient.get(`/admin/security/blocked-ips?page=${page}&limit=${limit}`);
-    return response.data.data;
+  async getBlockedIPs(params?: { page?: number; limit?: number }): Promise<ApiResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await apiClient.get(`/api/v2/admin/security/blocked-ips?${queryParams}`);
+    return response.data;
   }
 
-  async blockIP(data: { ipAddress: string; reason: string; duration: string }): Promise<void> {
-    await apiClient.post('/admin/security/blocked-ips', data);
+  async blockIP(data: { ipAddress: string; reason: string; duration: string }): Promise<ApiResponse<any>> {
+    const response = await apiClient.post('/api/v2/admin/security/blocked-ips', data);
+    return response.data;
   }
 
-  async unblockIP(ipId: string, reason: string): Promise<void> {
-    await apiClient.delete(`/admin/security/blocked-ips/${ipId}`, { data: { reason } });
+  async unblockIP(ipId: string, data: { reason: string }): Promise<ApiResponse<any>> {
+    const response = await apiClient.delete(`/api/v2/admin/security/blocked-ips/${ipId}`, { data });
+    return response.data;
   }
 
-  async getThreatDetection(): Promise<any> {
-    const response = await apiClient.get('/admin/security/threat-detection');
-    return response.data.data;
+  async getThreatDetection(): Promise<ApiResponse<any>> {
+    const response = await apiClient.get('/api/v2/admin/security/threat-detection');
+    return response.data;
+  }
+
+  // Monitoring endpoints
+  async getServerHealth(): Promise<ApiResponse<any>> {
+    const response = await apiClient.get('/api/v2/admin/monitoring/server-health');
+    return response.data;
+  }
+
+  async getDatabaseStats(): Promise<ApiResponse<any>> {
+    const response = await apiClient.get('/api/v2/admin/monitoring/database-stats');
+    return response.data;
   }
 }
 
-export default new AdminService();
+export const adminService = new AdminService();
+export default adminService;

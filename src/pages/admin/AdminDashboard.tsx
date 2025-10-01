@@ -16,7 +16,7 @@ import {
   Zap,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AdminDashboard } from '../../components/admin';
+
 import Navbar from '../../components/layout/Navbar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
@@ -49,7 +49,9 @@ import {
   LoginAttempt,
   SuspiciousAccount,
   UserManagementParams,
+  ApiResponse,
 } from '../../types/api';
+import { adminService } from '../../services/adminService';
 
 interface DashboardState {
   stats: AdminStats | null;
@@ -106,17 +108,13 @@ const AdminDashboard: React.FC = () => {
         error: null,
       }));
 
-      // Batch requests for better performance
-      const [statsResponse, dashboardResponse] = await Promise.allSettled([
-        adminService.getStats(),
-        adminService.getDashboard(),
-      ]);
-
-      // Handle stats response
-      if (statsResponse.status === 'fulfilled' && statsResponse.value.success) {
+      // Load stats from the corrected API
+      const statsResponse = await adminService.getStats();
+      
+      if (statsResponse.success && statsResponse.data) {
         setDashboardState(prev => ({
           ...prev,
-          stats: statsResponse.value.data!,
+          stats: statsResponse.data.stats,
           loading: { ...prev.loading, stats: false },
         }));
       } else {
@@ -150,7 +148,7 @@ const AdminDashboard: React.FC = () => {
       if (response.success && response.data) {
         setDashboardState(prev => ({
           ...prev,
-          users: response.data!,
+          users: response.data.users,
           loading: { ...prev.loading, users: false },
         }));
       }
@@ -180,7 +178,7 @@ const AdminDashboard: React.FC = () => {
       if (response.success && response.data) {
         setDashboardState(prev => ({
           ...prev,
-          analytics: response.data!,
+          analytics: response.data,
           loading: { ...prev.loading, analytics: false },
         }));
       }
@@ -208,8 +206,8 @@ const AdminDashboard: React.FC = () => {
 
       setDashboardState(prev => ({
         ...prev,
-        suspiciousAccounts: suspiciousResponse.data || [],
-        loginAttempts: loginAttemptsResponse.data || [],
+        suspiciousAccounts: suspiciousResponse.success ? suspiciousResponse.data : [],
+        loginAttempts: loginAttemptsResponse.success ? loginAttemptsResponse.data : [],
         loading: { ...prev.loading, security: false },
       }));
     } catch (error: any) {
@@ -225,7 +223,7 @@ const AdminDashboard: React.FC = () => {
   const handleUserAction = useCallback(
     async (userId: string, action: 'suspend' | 'activate' | 'delete', reason?: string) => {
       try {
-        let response;
+        let response: ApiResponse<any>;
 
         switch (action) {
           case 'suspend':
@@ -239,7 +237,7 @@ const AdminDashboard: React.FC = () => {
             break;
         }
 
-        if (response?.success) {
+        if (response.success) {
           toast({
             title: 'Success',
             description: `User ${action}d successfully`,
@@ -247,6 +245,8 @@ const AdminDashboard: React.FC = () => {
 
           // Reload users
           loadUsers();
+        } else {
+          throw new Error(response.message || `Failed to ${action} user`);
         }
       } catch (error: any) {
         toast({
@@ -284,30 +284,30 @@ const AdminDashboard: React.FC = () => {
     return [
       {
         title: 'Total Users',
-        value: (stats.totalUsers || 0).toLocaleString(),
+        value: (stats.overview?.totalUsers || 0).toLocaleString(),
         icon: Users,
-        change: `+${stats.userGrowth || 0}%`,
+        change: `+${stats.overview?.currentMonthSignups || 0}`,
         changeType: 'positive' as const,
       },
       {
         title: 'Active Users',
-        value: (stats.activeUsers || 0).toLocaleString(),
+        value: (stats.overview?.activeUsers || 0).toLocaleString(),
         icon: UserCheck,
-        change: `${Math.round(((stats.activeUsers || 0) / (stats.totalUsers || 1)) * 100)}%`,
+        change: stats.overview?.activePercentage || '0%',
         changeType: 'neutral' as const,
       },
       {
-        title: 'Total Posts',
-        value: (stats.totalPosts || 0).toLocaleString(),
-        icon: Activity,
-        change: 'This month',
+        title: 'Admin Users',
+        value: (stats.overview?.adminUsers || 0).toLocaleString(),
+        icon: Shield,
+        change: 'System admins',
         changeType: 'neutral' as const,
       },
       {
-        title: 'Engagement Rate',
-        value: `${stats.engagementRate || 0}%`,
+        title: 'Health Score',
+        value: `${stats.overview?.healthScore || 0}%`,
         icon: TrendingUp,
-        change: '+2.1%',
+        change: stats.overview?.userGrowthTrend || 'stable',
         changeType: 'positive' as const,
       },
     ];
@@ -320,7 +320,7 @@ const AdminDashboard: React.FC = () => {
       loadAnalytics();
       loadSecurityData();
     }
-  }, []); // Remove dependencies to prevent infinite re-renders
+  }, [canAccessAdmin, loadDashboardData, loadAnalytics, loadSecurityData]);
 
   // Debounced user loading
   useEffect(() => {
@@ -568,11 +568,11 @@ const AdminDashboard: React.FC = () => {
                           ))
                         ) : dashboardState.users?.length > 0 ? (
                           dashboardState.users.map(user => (
-                            <TableRow key={user._id}>
+                            <TableRow key={user.id}>
                               <TableCell>
                                 <div>
                                   <p className="font-medium">
-                                    {user.firstName} {user.lastName}
+                                    {user.firstName || user.username} {user.lastName || ''}
                                   </p>
                                   <p className="text-sm text-muted-foreground">{user.email}</p>
                                 </div>
@@ -595,7 +595,7 @@ const AdminDashboard: React.FC = () => {
                                     size="sm"
                                     onClick={() =>
                                       handleUserAction(
-                                        user._id,
+                                        user.id,
                                         user.isActive ? 'suspend' : 'activate'
                                       )
                                     }
@@ -610,7 +610,7 @@ const AdminDashboard: React.FC = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() =>
-                                      window.open(`/admin/users/${user._id}`, '_blank')
+                                      window.open(`/admin/users/${user.id}`, '_blank')
                                     }
                                   >
                                     <Eye className="h-4 w-4" />
@@ -692,11 +692,11 @@ const AdminDashboard: React.FC = () => {
                       ) : dashboardState.suspiciousAccounts?.length > 0 ? (
                         dashboardState.suspiciousAccounts.map(account => (
                           <div
-                            key={account.userId}
+                            key={account.id}
                             className="flex items-center justify-between p-3 border rounded-lg"
                           >
                             <div>
-                              <p className="font-medium">{account.user?.username || 'Unknown'}</p>
+                              <p className="font-medium">{account.username || 'Unknown'}</p>
                               <p className="text-sm text-muted-foreground">
                                 Risk: {account.riskLevel}
                               </p>
@@ -739,13 +739,13 @@ const AdminDashboard: React.FC = () => {
                       ) : dashboardState.loginAttempts?.length > 0 ? (
                         dashboardState.loginAttempts.map(attempt => (
                           <div
-                            key={attempt._id}
+                            key={attempt.id}
                             className="flex items-center justify-between p-3 border rounded-lg"
                           >
                             <div>
                               <p className="font-medium">{attempt.ipAddress}</p>
                               <p className="text-sm text-muted-foreground">
-                                {new Date(attempt.attemptedAt).toLocaleString()}
+                                {new Date(attempt.timestamp).toLocaleString()}
                               </p>
                             </div>
                             <Badge variant="outline">{attempt.status}</Badge>
