@@ -332,7 +332,7 @@ const Settings: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {true ? (
+                  {user?.emailVerified || user?.isEmailVerified || user?.isVerified ? (
                     <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <CheckCircle className="w-5 h-5 text-green-600" />
                       <div>

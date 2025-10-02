@@ -1,5 +1,4 @@
 import { authApi as apiClient } from '../core/serviceClients';
-import { AuthPersistence } from '../../utils/authPersistence';
 import type {
   ApiResponse,
   LoginRequest,
@@ -17,50 +16,41 @@ class AuthService {
 
   // Authentication Methods
   async login(credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> {
-    console.log('🔍 Login request:', JSON.stringify(credentials, null, 2));
-    
-    try {
-      const response = await apiClient.post<AuthResponse>(`${this.baseUrl}/login`, credentials);
-      console.log('🔍 Login response:', JSON.stringify(response, null, 2));
-      
-      if (response.success && response.data) {
-        // Extract token from multiple possible locations in response
-        const token =
-          response.data.token ||
-          response.data.accessToken ||
-          response.data.data?.token ||
-          response.data.data?.accessToken ||
-          response.token ||
-          response.accessToken;
+    const response = await apiClient.post<AuthResponse>(`${this.baseUrl}/login`, credentials);
 
-        if (token) {
-          // Store token using API client method
-          apiClient.setToken(token);
-          console.log('✅ Token stored successfully:', token.substring(0, 20) + '...');
-        } else {
-          console.warn('⚠️ No token found in login response. Full response:', response);
-        }
+    if (response.success && response.data) {
+      console.log('🔍 Full login response:', JSON.stringify(response, null, 2));
 
-        // Store refresh token if provided
-        const refreshToken =
-          response.data.refreshToken ||
-          response.data.refresh_token ||
-          response.data.data?.refreshToken ||
-          response.refreshToken ||
-          response.refresh_token;
-        
-        // Use AuthPersistence to store tokens only if token exists
-        if (token) {
-          AuthPersistence.setTokens(token, refreshToken);
-          console.log('✅ Tokens stored successfully');
-        }
+      // Extract token from multiple possible locations in response
+      const token =
+        response.data.token ||
+        response.data.accessToken ||
+        response.data.data?.token ||
+        response.data.data?.accessToken ||
+        response.token ||
+        response.accessToken;
+
+      if (token) {
+        apiClient.setToken(token);
+        console.log('✅ Token stored successfully:', token.substring(0, 20) + '...');
+      } else {
+        console.warn('⚠️ No token found in login response. Full response:', response);
       }
-      
-      return response;
-    } catch (error: any) {
-      console.error('🚨 Login error:', error);
-      throw error;
+
+      // Store refresh token if provided
+      const refreshToken =
+        response.data.refreshToken ||
+        response.data.refresh_token ||
+        response.data.data?.refreshToken ||
+        response.refreshToken ||
+        response.refresh_token;
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
+        console.log('✅ Refresh token stored');
+      }
     }
+
+    return response;
   }
 
   async register(userData: RegisterRequest): Promise<ApiResponse<AuthResponse>> {
@@ -71,16 +61,15 @@ class AuthService {
       const token = response.data.token || response.data.accessToken;
 
       if (token) {
-        // Store token using API client method
         apiClient.setToken(token);
         console.log('Registration token stored successfully:', token.substring(0, 20) + '...');
       }
 
       // Handle refresh token
       const refreshToken = response.data.refreshToken || response.data.refresh_token;
-      
-      // Use AuthPersistence to store tokens
-      AuthPersistence.setTokens(token, refreshToken);
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
+      }
     }
 
     return response;
@@ -92,13 +81,12 @@ class AuthService {
       return response;
     } finally {
       // Always clear local auth data
-      AuthPersistence.clearTokens();
       apiClient.clearAuth();
     }
   }
 
   async refreshToken(): Promise<ApiResponse<{ token: string }>> {
-    const refreshToken = AuthPersistence.getRefreshToken();
+    const refreshToken = localStorage.getItem('refresh_token');
 
     if (!refreshToken) {
       throw new Error('No refresh token available');
@@ -109,7 +97,6 @@ class AuthService {
     });
 
     if (response.success && response.data?.token) {
-      AuthPersistence.setTokens(response.data.token);
       apiClient.setToken(response.data.token);
     }
 
@@ -231,11 +218,11 @@ class AuthService {
 
   // Utility Methods
   isAuthenticated(): boolean {
-    return AuthPersistence.isAuthenticated();
+    return !!localStorage.getItem('auth_token');
   }
 
   getCurrentToken(): string | null {
-    return AuthPersistence.getAccessToken();
+    return localStorage.getItem('auth_token');
   }
 
   getUserFromToken(): User | null {

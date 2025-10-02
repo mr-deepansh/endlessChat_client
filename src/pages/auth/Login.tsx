@@ -23,15 +23,12 @@ const Login = memo(() => {
   const [isLoading, setIsLoading] = useState(false);
   const { login, user } = useAuth();
   const navigate = useNavigate();
-
   // Debouncing refs
   const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSubmitRef = useRef<number>(0);
-
   useEffect(() => {
     if (user) navigate('/feed', { replace: true });
   }, [user, navigate]);
-
   // Debounced submit to prevent multiple API calls
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
@@ -39,18 +36,15 @@ const Login = memo(() => {
         e.preventDefault();
         e.stopPropagation();
       }
-
       if (!identifier.trim() || !password.trim() || isLoading) {
         return;
       }
-
       // Debounce: prevent multiple submissions within 1 second
       const now = Date.now();
       if (now - lastSubmitRef.current < 1000) {
         return;
       }
       lastSubmitRef.current = now;
-
       setIsLoading(true);
       try {
         await login({ identifier, password, rememberMe });
@@ -62,9 +56,7 @@ const Login = memo(() => {
     },
     [identifier, password, rememberMe, login, isLoading]
   );
-
   const togglePassword = useCallback(() => setShowPassword(prev => !prev), []);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -77,7 +69,6 @@ const Login = memo(() => {
   return (
     <div className="min-h-screen flex items-center justify-center p-3 sm:p-4">
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" />
-
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between">
         <Button
           variant="ghost"
@@ -100,7 +91,6 @@ const Login = memo(() => {
           </Link>
         </Button>
       </div>
-
       {/* Login Form */}
       <div className="relative z-10 w-full max-w-sm sm:max-w-md">
         <Card className="glass border-white/20 shadow-2xl">
@@ -116,7 +106,13 @@ const Login = memo(() => {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            <form className="space-y-3 sm:space-y-4" onSubmit={handleSubmit}>
+            <form
+              className="space-y-3 sm:space-y-4"
+              onSubmit={e => {
+                e.preventDefault();
+                handleSubmit(e);
+              }}
+            >
               <div className="space-y-1 sm:space-y-2">
                 <Label htmlFor="identifier" className="text-foreground text-sm">
                   Email or Username

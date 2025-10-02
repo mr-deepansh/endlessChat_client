@@ -24,17 +24,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isAuthenticated, isLoading, user, error } = useAuth();
   const location = useLocation();
   const state = location.state as LocationState | null;
-
   // Show loading screen while checking authentication
   if (isLoading) {
     return <LoadingScreen />;
   }
-
   // Handle authentication errors
   if (error && requireAuth) {
     return <Navigate to="/login" state={{ from: location.pathname, error }} replace />;
   }
-
   // Routes that require NO authentication (login, register, etc.)
   if (!requireAuth) {
     if (isAuthenticated) {
@@ -44,12 +41,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
     return <>{children}</>;
   }
-
   // Routes that require authentication
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
-
   // Admin only
   if (adminOnly && user?.role !== 'admin' && user?.role !== 'super_admin') {
     return (
@@ -72,7 +67,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       </div>
     );
   }
-
   // Super admin only
   if (superAdminOnly && user?.role !== 'super_admin') {
     return (

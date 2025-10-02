@@ -13,7 +13,6 @@ import { toast } from '../hooks/use-toast';
 import { authService } from '../services';
 import { ChangePasswordRequest, LoginRequest, RegisterRequest, User } from '../types/api';
 import Logger from '../utils/logger';
-import { AuthPersistence } from '../utils/authPersistence';
 
 interface AuthContextType {
   user: User | null;
@@ -64,43 +63,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        setIsLoading(true);
-        
-        // Check for valid stored token first
-        if (!AuthPersistence.hasValidToken()) {
-          Logger.info('No valid authentication found, user not logged in');
-          setUser(null);
-          setIsLoading(false);
-          return;
-        }
-
-        // Try to get current user - this will validate the session
+        // Always try to get current user since we use HttpOnly cookies
+        // The backend will validate the cookie automatically
         const response = await authService.getCurrentUser();
-        if (response.success && response.data) {
+        if (response.data) {
           setUser(response.data);
-          Logger.info('User session restored successfully');
         } else {
-          // Clear invalid tokens
-          AuthPersistence.clearTokens();
           setUser(null);
         }
       } catch (error: any) {
         Logger.error('Auth check failed', { error: error.message || 'Unknown error' });
 
-        // Handle different error types
+        // Handle rate limiting gracefully
         if (error.code === 'RATE_LIMIT_ERROR') {
           Logger.warn('Rate limited during auth check, will retry later');
-          // Don't clear user state on rate limit
+          // Don't logout on rate limit, just set loading to false
         } else if (error.code === 'NETWORK_ERROR') {
-          Logger.warn('Network error during auth check, keeping existing state');
-          // Don't clear user state on network error
+          Logger.warn('Network error during auth check, backend may be unavailable');
+          // Don't logout on network error, just clear state
+          setUser(null);
         } else if (error.response?.status === 401) {
-          // Clear invalid authentication
-          AuthPersistence.clearTokens();
+          // User not authenticated, clear state
           setUser(null);
         } else {
-          // For other errors, keep existing state but log the error
-          Logger.error('Unexpected error during auth check', error);
+          // Only logout for other API errors, not network issues
+          setUser(null);
         }
       } finally {
         setIsLoading(false);
@@ -215,22 +202,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      const response = await authService.login({
-        identifier: credentials.identifier,
-        password: credentials.password,
-        rememberMe: credentials.rememberMe
-      });
+      const response = await authService.login(
+        credentials.identifier,
+        credentials.password,
+        credentials.rememberMe
+      );
 
-      if (response.success && response.data?.user) {
+      if (response.data?.user) {
         setUser(response.data.user);
-
-        // Store tokens for persistence
-        const token = response.data.token || response.data.accessToken;
-        const refreshToken = response.data.refreshToken;
-        
-        if (token) {
-          AuthPersistence.setTokens(token, refreshToken);
-        }
 
         toast({
           title: `Welcome back, ${response.data.user.firstName}! 👋`,
@@ -244,13 +223,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(response.message || 'Login failed');
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Couldn't sign you in",
         description: 'Please check your credentials and try again',
         variant: 'destructive',
         duration: 4000,
       });
-      throw error;
+      // Don't throw error to prevent page reload
     } finally {
       setIsLoading(false);
     }
@@ -268,21 +248,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         lastName: userData.lastName,
       });
 
-      const response = await authService.register(userData);
+      const response = await authService.register({
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        confirmPassword: userData.confirmPassword,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      });
 
       Logger.debug('Registration completed successfully');
 
-      if (response.success && (response.data?.user || response.user)) {
+      if (response?.data?.user || response?.user) {
         const user = response.data?.user || response.user;
         setUser(user);
-
-        // Store tokens for persistence
-        const token = response.data?.token || response.data?.accessToken;
-        const refreshToken = response.data?.refreshToken;
-        
-        if (token) {
-          AuthPersistence.setTokens(token, refreshToken);
-        }
 
         toast({
           title: `Welcome to EndlessChat, ${user.firstName}! 🎉`,
@@ -332,15 +311,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setIsLoading(false);
 
-      // Clear all stored tokens
-      AuthPersistence.clearTokens();
-
       await authService.logout();
+      
+      // Navigate instead of reload
+      navigate('/', { replace: true });
     } catch (error: any) {
       Logger.error('Logout error', { error: error.message || 'Unknown error' });
-    } finally {
-      // Force page reload to clear any cached state
-      window.location.href = '/';
+      // Navigate on error too
+      navigate('/', { replace: true });
     }
   };
 
@@ -457,7 +435,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Show loading screen during initial auth check
-  if (isLoading) {
+  if (isLoading && !user) {
     return <LoadingScreen />;
   }
 

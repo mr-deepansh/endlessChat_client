@@ -45,19 +45,19 @@ export interface SecurityAnalysis {
 class AdminService {
   // Get admin dashboard
   async getDashboard(): Promise<ApiResponse<AdminDashboard>> {
-    const response = await apiClient.get('/api/v2/admin/dashboard');
+    const response = await apiClient.get('/admin/dashboard');
     return response.data;
   }
 
   // Get admin stats
   async getStats(): Promise<ApiResponse<{ stats: AdminStats }>> {
-    const response = await apiClient.get('/api/v2/admin/stats');
+    const response = await apiClient.get('/admin/stats');
     return response.data;
   }
 
   // Get live stats
   async getLiveStats(): Promise<ApiResponse<AdminStats>> {
-    const response = await apiClient.get('/api/v2/admin/stats/live');
+    const response = await apiClient.get('/admin/stats/live');
     return response.data;
   }
 
@@ -72,43 +72,43 @@ class AdminService {
       sortBy: params.sortBy,
       sortOrder: params.sortOrder,
     });
-    const response = await apiClient.get(`/api/v2/admin/users?${queryParams}`);
+    const response = await apiClient.get(`/admin/users?${queryParams}`);
     return response.data;
   }
 
   // Get user by ID (admin)
   async getUserById(id: string): Promise<ApiResponse<{ user: AdminUser }>> {
-    const response = await apiClient.get(`/api/v2/admin/users/${id}`);
+    const response = await apiClient.get(`/admin/users/${id}`);
     return response.data;
   }
 
   // Update user (admin)
   async updateUser(id: string, data: any): Promise<ApiResponse<{ user: AdminUser }>> {
-    const response = await apiClient.put(`/api/v2/admin/users/${id}`, data);
+    const response = await apiClient.put(`/admin/users/${id}`, data);
     return response.data;
   }
 
   // Delete user (admin)
   async deleteUser(id: string, data: { reason: string; confirmPassword?: string; notifyUser?: boolean }): Promise<ApiResponse<any>> {
-    const response = await apiClient.delete(`/api/v2/admin/users/${id}`, { data });
+    const response = await apiClient.delete(`/admin/users/${id}`, { data });
     return response.data;
   }
 
   // Suspend user
   async suspendUser(id: string, data: { reason: string }): Promise<ApiResponse<{ user: AdminUser }>> {
-    const response = await apiClient.patch(`/api/v2/admin/users/${id}/suspend`, data);
+    const response = await apiClient.patch(`/admin/users/${id}/suspend`, data);
     return response.data;
   }
 
   // Activate user
   async activateUser(id: string): Promise<ApiResponse<{ user: AdminUser }>> {
-    const response = await apiClient.patch(`/api/v2/admin/users/${id}/activate`);
+    const response = await apiClient.patch(`/admin/users/${id}/activate`);
     return response.data;
   }
 
   // Verify user account
   async verifyUser(id: string): Promise<ApiResponse<{ user: AdminUser }>> {
-    const response = await apiClient.patch(`/api/v2/admin/users/${id}/verify`);
+    const response = await apiClient.patch(`/admin/users/${id}/verify`);
     return response.data;
   }
 
@@ -120,7 +120,7 @@ class AdminService {
         queryParams.append(key, value.toString());
       }
     });
-    const response = await apiClient.get(`/api/v2/admin/users/search?${queryParams}`);
+    const response = await apiClient.get(`/admin/users/search?${queryParams}`);
     return response.data;
   }
 
@@ -133,7 +133,7 @@ class AdminService {
       }
     });
     const response = await apiClient.get(
-      `/api/v2/admin/users/export?${queryParams}`,
+      `/admin/users/export?${queryParams}`,
       {
         responseType: 'blob',
       }
@@ -143,7 +143,7 @@ class AdminService {
 
   // Bulk actions on users
   async bulkActions(data: BulkActionData): Promise<ApiResponse<any>> {
-    const response = await apiClient.post('/api/v2/admin/users/bulk-actions', data);
+    const response = await apiClient.post('/admin/users/bulk-actions', data);
     return response.data;
   }
 
@@ -157,7 +157,7 @@ class AdminService {
         }
       });
     }
-    const response = await apiClient.get(`/api/v2/admin/users/${id}/activity-log?${queryParams}`);
+    const response = await apiClient.get(`/admin/users/${id}/activity-log?${queryParams}`);
     return response.data;
   }
 
@@ -176,13 +176,13 @@ class AdminService {
       trackDelivery?: boolean;
     }
   ): Promise<ApiResponse<any>> {
-    const response = await apiClient.post(`/api/v2/admin/users/${id}/notify`, data);
+    const response = await apiClient.post(`/admin/users/${id}/notify`, data);
     return response.data;
   }
 
   // Force password reset
   async forcePasswordReset(id: string, data: { reason: string; notifyUser?: boolean; invalidateAllSessions?: boolean; confirmPassword?: string }): Promise<ApiResponse<any>> {
-    const response = await apiClient.post(`/api/v2/admin/users/${id}/force-password-reset`, data);
+    const response = await apiClient.post(`/admin/users/${id}/force-password-reset`, data);
     return response.data;
   }
 
@@ -196,7 +196,7 @@ class AdminService {
         }
       });
     }
-    const response = await apiClient.get(`/api/v2/admin/users/${id}/security-analysis?${queryParams}`);
+    const response = await apiClient.get(`/admin/users/${id}/security-analysis?${queryParams}`);
     return response.data;
   }
 
@@ -210,13 +210,13 @@ class AdminService {
         }
       });
     }
-    const response = await apiClient.get(`/api/v2/admin/admins?${queryParams}`);
+    const response = await apiClient.get(`/admin/admins?${queryParams}`);
     return response.data;
   }
 
   // Get admin by ID
   async getAdminById(adminId: string): Promise<ApiResponse<{ admin: any; meta: any }>> {
-    const response = await apiClient.get(`/api/v2/admin/admins/${adminId}`);
+    const response = await apiClient.get(`/admin/admins/${adminId}`);
     return response.data;
   }
 
@@ -224,7 +224,7 @@ class AdminService {
   async getAnalyticsOverview(params?: { timeRange?: string }): Promise<ApiResponse<AnalyticsOverview>> {
     const queryParams = new URLSearchParams();
     if (params?.timeRange) queryParams.append('timeRange', params.timeRange);
-    const response = await apiClient.get(`/api/v2/admin/analytics/overview?${queryParams}`);
+    const response = await apiClient.get(`/admin/analytics/overview?${queryParams}`);
     return response.data;
   }
 
@@ -232,26 +232,26 @@ class AdminService {
     const queryParams = new URLSearchParams();
     if (params?.period) queryParams.append('period', params.period);
     if (params?.days) queryParams.append('days', params.days.toString());
-    const response = await apiClient.get(`/api/v2/admin/analytics/users/growth?${queryParams}`);
+    const response = await apiClient.get(`/admin/analytics/users/growth?${queryParams}`);
     return response.data;
   }
 
   async getUserRetentionAnalytics(params?: { cohortPeriod?: string }): Promise<ApiResponse<any>> {
     const queryParams = new URLSearchParams();
     if (params?.cohortPeriod) queryParams.append('cohortPeriod', params.cohortPeriod);
-    const response = await apiClient.get(`/api/v2/admin/analytics/users/retention?${queryParams}`);
+    const response = await apiClient.get(`/admin/analytics/users/retention?${queryParams}`);
     return response.data;
   }
 
   async getUserDemographics(): Promise<ApiResponse<any>> {
-    const response = await apiClient.get('/api/v2/admin/analytics/users/demographics');
+    const response = await apiClient.get('/admin/analytics/users/demographics');
     return response.data;
   }
 
   async getEngagementMetrics(params?: { timeRange?: string }): Promise<ApiResponse<any>> {
     const queryParams = new URLSearchParams();
     if (params?.timeRange) queryParams.append('timeRange', params.timeRange);
-    const response = await apiClient.get(`/api/v2/admin/analytics/engagement/metrics?${queryParams}`);
+    const response = await apiClient.get(`/admin/analytics/engagement/metrics?${queryParams}`);
     return response.data;
   }
 
@@ -265,7 +265,7 @@ class AdminService {
         }
       });
     }
-    const response = await apiClient.get(`/api/v2/admin/security/suspicious-accounts?${queryParams}`);
+    const response = await apiClient.get(`/admin/security/suspicious-accounts?${queryParams}`);
     return response.data;
   }
 
@@ -278,7 +278,7 @@ class AdminService {
         }
       });
     }
-    const response = await apiClient.get(`/api/v2/admin/security/login-attempts?${queryParams}`);
+    const response = await apiClient.get(`/admin/security/login-attempts?${queryParams}`);
     return response.data;
   }
 
@@ -291,33 +291,33 @@ class AdminService {
         }
       });
     }
-    const response = await apiClient.get(`/api/v2/admin/security/blocked-ips?${queryParams}`);
+    const response = await apiClient.get(`/admin/security/blocked-ips?${queryParams}`);
     return response.data;
   }
 
   async blockIP(data: { ipAddress: string; reason: string; duration: string }): Promise<ApiResponse<any>> {
-    const response = await apiClient.post('/api/v2/admin/security/blocked-ips', data);
+    const response = await apiClient.post('/admin/security/blocked-ips', data);
     return response.data;
   }
 
   async unblockIP(ipId: string, data: { reason: string }): Promise<ApiResponse<any>> {
-    const response = await apiClient.delete(`/api/v2/admin/security/blocked-ips/${ipId}`, { data });
+    const response = await apiClient.delete(`/admin/security/blocked-ips/${ipId}`, { data });
     return response.data;
   }
 
   async getThreatDetection(): Promise<ApiResponse<any>> {
-    const response = await apiClient.get('/api/v2/admin/security/threat-detection');
+    const response = await apiClient.get('/admin/security/threat-detection');
     return response.data;
   }
 
   // Monitoring endpoints
   async getServerHealth(): Promise<ApiResponse<any>> {
-    const response = await apiClient.get('/api/v2/admin/monitoring/server-health');
+    const response = await apiClient.get('/admin/monitoring/server-health');
     return response.data;
   }
 
   async getDatabaseStats(): Promise<ApiResponse<any>> {
-    const response = await apiClient.get('/api/v2/admin/monitoring/database-stats');
+    const response = await apiClient.get('/admin/monitoring/database-stats');
     return response.data;
   }
 }

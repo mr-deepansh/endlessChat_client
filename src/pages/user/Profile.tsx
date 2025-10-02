@@ -123,7 +123,6 @@ const Profile = () => {
 
           if (foundUser) {
             setUser(foundUser);
-
             // Check follow status
             try {
               const followStatus = await followService.checkFollowStatus(
@@ -134,7 +133,6 @@ const Profile = () => {
               console.warn('Failed to check follow status:', error);
               setIsFollowing(foundUser.isFollowing || false);
             }
-
             // Fetch user posts
             try {
               const userPosts = await postService.getUserPosts(foundUser.username);
@@ -158,7 +156,6 @@ const Profile = () => {
       setLoading(false);
     }
   }, [identifier, currentUser, isUsernameRoute]);
-
   // Handle follow action
   const handleFollowChange = useCallback(
     async (newIsFollowing: boolean, newFollowersCount?: number) => {
@@ -190,7 +187,6 @@ const Profile = () => {
       </div>
     );
   }
-
   // User not found
   if (!user) {
     return (
@@ -221,7 +217,6 @@ const Profile = () => {
                     {user.lastName?.[0] || ''}
                   </AvatarFallback>
                 </Avatar>
-
                 <div className="flex-1 text-center sm:text-left">
                   <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between mb-3 sm:mb-4">
                     <div>
@@ -230,7 +225,6 @@ const Profile = () => {
                       </h1>
                       <p className="text-muted-foreground text-sm sm:text-base">@{user.username}</p>
                     </div>
-
                     <div className="flex gap-2 mt-3 sm:mt-0">
                       {isOwnProfile ? (
                         <Button variant="outline" size="sm" asChild>
@@ -249,11 +243,9 @@ const Profile = () => {
                       )}
                     </div>
                   </div>
-
                   {user.bio && (
                     <p className="text-foreground mb-3 sm:mb-4 text-sm sm:text-base">{user.bio}</p>
                   )}
-
                   <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                     {user.location && (
                       <div className="flex items-center gap-1">
@@ -272,7 +264,6 @@ const Profile = () => {
                       </span>
                     </div>
                   </div>
-
                   {user.website && (
                     <div className="flex items-center justify-center sm:justify-start gap-1 text-xs sm:text-sm mb-3 sm:mb-4">
                       <LinkIcon className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -288,7 +279,6 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-
               {/* Stats */}
               <div className="grid grid-cols-4 gap-2 sm:gap-4 xl:gap-6 2xl:gap-8 mt-4 sm:mt-6 xl:mt-8 2xl:mt-10 pt-4 sm:pt-6 xl:pt-8 2xl:pt-10 border-t">
                 <div className="text-center">
@@ -318,7 +308,6 @@ const Profile = () => {
               </div>
             </CardContent>
           </Card>
-
           {/* Content Tabs */}
           <Tabs value={activeTab} onValueChange={value => setActiveTab(value as TabValue)}>
             <div className="flex items-center justify-between mb-4">
@@ -336,7 +325,6 @@ const Profile = () => {
                   Media
                 </TabsTrigger>
               </TabsList>
-
               <div className="flex items-center gap-2">
                 <Select
                   value={postFilter}
@@ -354,7 +342,6 @@ const Profile = () => {
                     <SelectItem value="article">Articles</SelectItem>
                   </SelectContent>
                 </Select>
-
                 <div className="flex border rounded-md">
                   <Button
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -375,7 +362,6 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-
             <TabsContent value="posts" className="mt-4 sm:mt-6">
               <div
                 className={
@@ -426,19 +412,16 @@ const Profile = () => {
                 )}
               </div>
             </TabsContent>
-
             <TabsContent value="reposts" className="mt-4 sm:mt-6">
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No reposts yet</p>
               </div>
             </TabsContent>
-
             <TabsContent value="likes" className="mt-4 sm:mt-6">
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No liked posts yet</p>
               </div>
             </TabsContent>
-
             <TabsContent value="media" className="mt-4 sm:mt-6">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {mediaPosts.length > 0 ? (

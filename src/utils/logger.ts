@@ -17,10 +17,8 @@ class Logger {
         return '[Object]';
       }
     }
-
     return String(input).substring(0, 1000);
   }
-
   private static formatMessage(level: string, message: string, ...args: any[]): string {
     const timestamp = new Date().toISOString();
     const sanitizedMessage = this.sanitizeInput(message);
@@ -34,23 +32,19 @@ class Logger {
       console.log(this.formatMessage('info', message, ...args));
     }
   }
-
   static log(message: string, ...args: any[]): void {
     if (process.env.NODE_ENV !== 'production') {
       console.log(this.formatMessage('info', message, ...args));
     }
   }
-
   static error(message: string, ...args: any[]): void {
     console.error(this.formatMessage('error', message, ...args));
   }
-
   static warn(message: string, ...args: any[]): void {
     if (process.env.NODE_ENV !== 'production') {
       console.warn(this.formatMessage('warn', message, ...args));
     }
   }
-
   static debug(message: string, ...args: any[]): void {
     if (process.env.NODE_ENV === 'development') {
       console.debug(this.formatMessage('debug', message, ...args));

@@ -4,7 +4,6 @@ import type { ApiError, ApiResponse } from '../../types/api';
 import Logger from '../../utils/logger';
 import { requestQueue } from '../../utils/requestQueue';
 import SecureStorage from '../../utils/secureStorage';
-import { AuthPersistence } from '../../utils/authPersistence';
 
 class ApiClient {
   private instance: AxiosInstance;
@@ -36,20 +35,13 @@ class ApiClient {
     delete this.instance.defaults.headers.common['Accept-Version'];
 
     this.setupInterceptors();
-    // Initialize token from AuthPersistence
-    this.token = AuthPersistence.getAccessToken();
+    // No manual token management - cookies handled automatically
   }
 
   private setupInterceptors(): void {
     // Request interceptor
     this.instance.interceptors.request.use(
       config => {
-        // Add token to requests
-        const token = AuthPersistence.getAccessToken();
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        
         // Add CSRF protection header if available
         const csrfToken = document
           .querySelector('meta[name="csrf-token"]')
@@ -57,10 +49,8 @@ class ApiClient {
         if (csrfToken) {
           config.headers['X-CSRF-Token'] = csrfToken;
         }
-
         // Add request timestamp for performance monitoring
         config.metadata = { startTime: new Date() };
-
         return config;
       },
       error => Promise.reject(error)
@@ -72,7 +62,6 @@ class ApiClient {
         // Calculate request duration
         const endTime = new Date();
         const duration = endTime.getTime() - response.config.metadata?.startTime?.getTime();
-
         // Log performance metrics in development
         if (config.isDevelopment && config.features.enableDebug) {
           Logger.debug(`API Request completed`, {
@@ -81,23 +70,19 @@ class ApiClient {
             duration: `${duration}ms`,
           });
         }
-
         return response;
       },
       async error => {
         const originalRequest = error.config;
-
         // Handle 401 Unauthorized - redirect to login
         if (error.response?.status === 401 && !this.isLoggingOut) {
           this.consecutiveFailures++;
           this.lastFailureTime = Date.now();
-
           // Open circuit breaker if too many failures
           if (this.consecutiveFailures >= this.maxFailures) {
             this.circuitBreakerOpen = true;
             Logger.warn('Circuit breaker opened due to consecutive 401 failures');
           }
-
           // Only redirect once, not on every 401
           if (this.consecutiveFailures === 1) {
             this.clearAuth();
@@ -105,7 +90,6 @@ class ApiClient {
           }
           return Promise.reject(error);
         }
-
         // Handle rate limiting (429)
         if (error.response?.status === 429) {
           const rateLimitError: ApiError = {
@@ -113,7 +97,6 @@ class ApiClient {
             message: 'Too many requests. Please try again later.',
             timestamp: new Date().toISOString(),
           };
-
           // Notify rate limit context if available
           if (typeof window !== 'undefined') {
             // Dispatch a custom event that the rate limit context can listen to
@@ -123,10 +106,8 @@ class ApiClient {
               })
             );
           }
-
           return Promise.reject(rateLimitError);
         }
-
         // Handle network errors
         if (!error.response) {
           const networkError: ApiError = {
@@ -136,7 +117,6 @@ class ApiClient {
           };
           return Promise.reject(networkError);
         }
-
         // Transform error response
         const apiError: ApiError = {
           code: error.response.data?.code || 'API_ERROR',
@@ -144,16 +124,9 @@ class ApiClient {
           details: error.response.data?.details,
           timestamp: new Date().toISOString(),
         };
-
         return Promise.reject(apiError);
       }
     );
-  }
-
-  public setToken(token: string): void {
-    this.token = token;
-    // Store using AuthPersistence
-    AuthPersistence.setTokens(token);
   }
 
   public clearAuth(): void {
@@ -161,8 +134,6 @@ class ApiClient {
     this.isLoggingOut = false;
     this.consecutiveFailures = 0;
     this.circuitBreakerOpen = false;
-    // Clear tokens using AuthPersistence
-    AuthPersistence.clearTokens();
     // Clear any client-side storage (cookies handled by backend)
     SecureStorage.clearTokens();
   }
@@ -170,10 +141,8 @@ class ApiClient {
   public setLoggingOut(value: boolean): void {
     this.isLoggingOut = value;
   }
-
   private checkCircuitBreaker(): boolean {
     if (!this.circuitBreakerOpen) return false;
-
     // Check if circuit breaker timeout has passed
     if (Date.now() - this.lastFailureTime > this.circuitBreakerTimeout) {
       this.circuitBreakerOpen = false;
@@ -181,7 +150,6 @@ class ApiClient {
       Logger.info('Circuit breaker closed, allowing requests again');
       return false;
     }
-
     return true;
   }
 
@@ -190,7 +158,6 @@ class ApiClient {
     if (this.checkCircuitBreaker()) {
       throw new Error('Circuit breaker is open - too many failed requests');
     }
-
     const requestKey = `GET_${url}_${JSON.stringify(config?.params || {})}`;
     return requestQueue.add(async () => {
       const response = await this.instance.get(url, config);
@@ -198,7 +165,6 @@ class ApiClient {
       return response.data;
     }, requestKey);
   }
-
   public async post<T>(
     url: string,
     data?: any,
@@ -207,7 +173,6 @@ class ApiClient {
     return requestQueue.add(async () => {
       const serializedData = data && typeof data === 'object' ? data : data;
       const response = await this.instance.post(url, serializedData, config);
-
       // Clear related cache for follow/unfollow actions
       if (url.includes('/follow/')) {
         const userId = url.split('/follow/')[1];
@@ -217,7 +182,6 @@ class ApiClient {
         // Clear all cache to ensure fresh data
         requestQueue.clearCache();
       }
-
       return response.data;
     });
   }
@@ -243,7 +207,6 @@ class ApiClient {
   public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return requestQueue.add(async () => {
       const response = await this.instance.delete(url, config);
-
       // Clear related cache for follow/unfollow actions
       if (url.includes('/follow/')) {
         const userId = url.split('/follow/')[1];
@@ -253,7 +216,6 @@ class ApiClient {
         // Clear all cache to ensure fresh data
         requestQueue.clearCache();
       }
-
       return response.data;
     });
   }
@@ -280,7 +242,6 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const formData = new FormData();
     formData.append('file', file);
-
     const config: AxiosRequestConfig = {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -314,7 +275,6 @@ class ApiClient {
       })
       .filter(Boolean);
   }
-
   // Health check method
   public async healthCheck(): Promise<boolean> {
     try {
@@ -324,7 +284,6 @@ class ApiClient {
       return false;
     }
   }
-
   // Get instance for direct access if needed
   public getInstance(): AxiosInstance {
     return this.instance;

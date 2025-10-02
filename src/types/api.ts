@@ -113,12 +113,12 @@ export interface User {
   updatedAt: string;
 
   // Social Stats
-  followersCount?: number;
-  followingCount?: number;
-  postsCount?: number;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
 
   // Privacy Settings
-  privacy?: {
+  privacy: {
     profileVisibility: 'public' | 'followers' | 'private';
     showEmail: boolean;
     showPhone: boolean;
@@ -128,7 +128,7 @@ export interface User {
   };
 
   // Preferences
-  preferences?: {
+  preferences: {
     language: string;
     timezone: string;
     theme: 'light' | 'dark' | 'auto';
