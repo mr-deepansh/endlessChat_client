@@ -1,4 +1,4 @@
-// Core API Types for Enterprise Social Media Platform
+// src/types/api.ts
 
 export interface ApiResponse<T = any> {
   success: boolean;

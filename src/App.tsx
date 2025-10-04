@@ -32,6 +32,7 @@ import {
 import { About, Contact, Features, Privacy, Support, Terms } from './pages/public';
 
 import { Discover, Feed, Index, NotFound } from './pages/app/app';
+import AuthTest from './pages/test/AuthTest';
 
 // Configure React Query
 const queryClient = new QueryClient({
@@ -277,6 +278,9 @@ const App = () => {
                             </ErrorBoundary>
                           }
                         />
+
+                        {/* Debug route */}
+                        <Route path="/auth-test" element={<AuthTest />} />
 
                         {/* Catch-all route */}
                         <Route path="*" element={<NotFound />} />

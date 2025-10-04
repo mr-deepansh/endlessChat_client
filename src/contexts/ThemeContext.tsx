@@ -17,14 +17,27 @@ export const useTheme = () => {
   return context;
 };
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
+const getStoredTheme = (): Theme => {
+  try {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('endlesschat-theme') as Theme;
-      return savedTheme || 'light';
+      return (localStorage.getItem('endlesschat-theme') as Theme) || 'light';
     }
-    return 'light';
-  });
+  } catch {
+    // localStorage access denied - fallback to light theme
+  }
+  return 'light';
+};
+
+const setStoredTheme = (theme: Theme): void => {
+  try {
+    localStorage.setItem('endlesschat-theme', theme);
+  } catch {
+    // localStorage access denied - ignore
+  }
+};
+
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [theme, setTheme] = useState<Theme>(getStoredTheme);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -35,8 +48,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Add new theme class
     root.classList.add(theme);
 
-    // Save to localStorage
-    localStorage.setItem('endlesschat-theme', theme);
+    // Save to localStorage with error handling
+    setStoredTheme(theme);
 
     // Also set data attribute for additional CSS targeting
     root.setAttribute('data-theme', theme);

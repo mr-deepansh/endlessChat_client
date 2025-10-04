@@ -27,21 +27,36 @@ class ApiClient {
         'X-Requested-With': 'XMLHttpRequest',
         'X-Client-Version': config.appVersion,
       },
-      withCredentials: true, // Essential for HttpOnly cookies
+      withCredentials: true, // Keep for potential cookie support
+      validateStatus: (status) => status < 500,
     });
 
-    // Remove any problematic headers that might cause CORS issues
+    // Remove problematic headers
     delete this.instance.defaults.headers.common['accept-version'];
     delete this.instance.defaults.headers.common['Accept-Version'];
 
     this.setupInterceptors();
-    // No manual token management - cookies handled automatically
+    
+    // Initialize with stored token if available
+    const storedToken = localStorage.getItem('accessToken');
+    if (storedToken) {
+      this.setAuthToken(storedToken);
+    }
   }
 
   private setupInterceptors(): void {
     // Request interceptor
     this.instance.interceptors.request.use(
       config => {
+        // Debug request details
+        console.log('🚀 API Request:', {
+          method: config.method?.toUpperCase(),
+          url: config.url,
+          baseURL: config.baseURL,
+          withCredentials: config.withCredentials,
+          headers: config.headers,
+        });
+        
         // Add CSRF protection header if available
         const csrfToken = document
           .querySelector('meta[name="csrf-token"]')
@@ -49,6 +64,10 @@ class ApiClient {
         if (csrfToken) {
           config.headers['X-CSRF-Token'] = csrfToken;
         }
+        
+        // Ensure proper headers for local network
+        config.headers['Accept'] = 'application/json';
+        
         // Add request timestamp for performance monitoring
         config.metadata = { startTime: new Date() };
         return config;
@@ -62,6 +81,16 @@ class ApiClient {
         // Calculate request duration
         const endTime = new Date();
         const duration = endTime.getTime() - response.config.metadata?.startTime?.getTime();
+        
+        // Debug response details
+        console.log('✅ API Response:', {
+          method: response.config.method?.toUpperCase(),
+          url: response.config.url,
+          status: response.status,
+          duration: `${duration}ms`,
+          headers: response.headers,
+        });
+        
         // Log performance metrics in development
         if (config.isDevelopment && config.features.enableDebug) {
           Logger.debug(`API Request completed`, {
@@ -74,6 +103,17 @@ class ApiClient {
       },
       async error => {
         const originalRequest = error.config;
+        
+        // Debug error details
+        console.error('❌ API Error:', {
+          method: error.config?.method?.toUpperCase(),
+          url: error.config?.url,
+          status: error.response?.status,
+          message: error.message,
+          response: error.response?.data,
+          headers: error.response?.headers,
+        });
+        
         // Handle 401 Unauthorized - redirect to login
         if (error.response?.status === 401 && !this.isLoggingOut) {
           this.consecutiveFailures++;
@@ -134,8 +174,15 @@ class ApiClient {
     this.isLoggingOut = false;
     this.consecutiveFailures = 0;
     this.circuitBreakerOpen = false;
-    // Clear any client-side storage (cookies handled by backend)
+    // Remove Authorization header
+    delete this.instance.defaults.headers.common['Authorization'];
+    // Clear any client-side storage
     SecureStorage.clearTokens();
+  }
+
+  public setAuthToken(token: string): void {
+    this.token = token;
+    this.instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
 
   public setLoggingOut(value: boolean): void {

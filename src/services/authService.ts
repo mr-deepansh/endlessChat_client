@@ -33,8 +33,15 @@ export const authService = {
       rememberMe,
     });
 
-    // Tokens are now set as HttpOnly cookies by backend
-    // No manual storage needed
+    // Store tokens in localStorage for local network development
+    if (response.data?.accessToken) {
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+      
+      // Set Authorization header for future requests
+      apiClient.setAuthToken(response.data.accessToken);
+    }
+
     return response;
   },
 
@@ -65,7 +72,11 @@ export const authService = {
       console.warn('Logout API call failed, clearing local data anyway');
     }
 
-    // Clear API client auth (cookies cleared by backend)
+    // Clear tokens from localStorage
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    
+    // Clear API client auth
     apiClient.clearAuth();
 
     return { success: true };
@@ -174,10 +185,9 @@ export const authService = {
     return response;
   },
 
-  // Check if user is authenticated (check with backend)
+  // Check if user is authenticated
   isAuthenticated: (): boolean => {
-    // For HttpOnly cookies, we can't check client-side
-    // This will be validated by backend on each request
-    return true; // Let backend handle auth validation
+    const token = localStorage.getItem('accessToken');
+    return !!token;
   },
 };

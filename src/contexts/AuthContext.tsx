@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import React, {
   ReactNode,
   createContext,
@@ -13,6 +14,9 @@ import { toast } from '../hooks/use-toast';
 import { authService } from '../services';
 import { ChangePasswordRequest, LoginRequest, RegisterRequest, User } from '../types/api';
 import Logger from '../utils/logger';
+import '../utils/cookieDebug';
+import '../utils/authFix';
+import '../utils/cookieTest';
 
 interface AuthContextType {
   user: User | null;
@@ -54,47 +58,126 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [registrationError, setRegistrationError] = useState<string | null>(null);
   const navigate = useNavigate();
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initialCheckDone = useRef(false);
 
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
   const isSuperAdmin = user?.role === 'super_admin';
 
-  // Check for existing session on mount
+  // Enhanced cookie diagnostics
+  const diagnoseCookies = () => {
+    const cookies = document.cookie;
+    console.log('🍪 Browser Cookies:', cookies);
+    console.log('🍪 Has accessToken:', cookies.includes('accessToken'));
+    console.log('🍪 Has refreshToken:', cookies.includes('refreshToken'));
+    
+    // Check User-Agent and other headers that might affect cookies
+    console.log('🌐 Browser Info:', {
+      userAgent: navigator.userAgent,
+      cookieEnabled: navigator.cookieEnabled,
+      origin: window.location.origin,
+      protocol: window.location.protocol,
+    });
+
+    // Check if cookies are accessible
+    if (!cookies) {
+      console.warn(
+        '⚠️ No cookies found in document.cookie - HttpOnly cookies are NOT visible here'
+      );
+      console.log('✅ This is NORMAL for HttpOnly cookies');
+    }
+    
+    // Test manual cookie setting
+    try {
+      document.cookie = 'test=value; path=/; SameSite=None; Secure=false';
+      const testCookie = document.cookie.includes('test=value');
+      console.log('🧪 Cookie Test:', testCookie ? 'PASS' : 'FAIL');
+      if (testCookie) {
+        document.cookie = 'test=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      }
+    } catch (error) {
+      console.error('❌ Cookie Test Error:', error);
+    }
+    
+    // Check localStorage tokens
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    console.log('💾 LocalStorage Tokens:', {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+      accessTokenLength: accessToken?.length || 0
+    });
+  };
+
+  // Check for existing session on mount - ONLY ONCE
   useEffect(() => {
+    if (initialCheckDone.current) return;
+    initialCheckDone.current = true;
+
     const checkAuth = async () => {
       try {
-        // Always try to get current user since we use HttpOnly cookies
-        // The backend will validate the cookie automatically
+        diagnoseCookies();
+
+        console.log('🔍 Checking authentication...');
         const response = await authService.getCurrentUser();
+
+        console.log('✅ Auth check response:', {
+          success: response.success,
+          hasUser: !!response.data,
+          userData: response.data
+            ? {
+                id: response.data._id,
+                username: response.data.username,
+                email: response.data.email,
+              }
+            : null,
+        });
+
         if (response.data) {
           setUser(response.data);
+          Logger.info('User authenticated successfully', {
+            userId: response.data._id,
+            username: response.data.username,
+          });
         } else {
           setUser(null);
+          Logger.info('No authenticated user found');
         }
       } catch (error: any) {
-        Logger.error('Auth check failed', { error: error.message || 'Unknown error' });
+        console.error('❌ Auth check failed:', {
+          message: error.message,
+          code: error.code,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
 
-        // Handle rate limiting gracefully
+        Logger.error('Auth check failed', {
+          error: error.message || 'Unknown error',
+          code: error.code,
+          status: error.response?.status,
+        });
+
+        // Don't set loading false yet - let error handling complete
         if (error.code === 'RATE_LIMIT_ERROR') {
-          Logger.warn('Rate limited during auth check, will retry later');
-          // Don't logout on rate limit, just set loading to false
+          Logger.warn('Rate limited during auth check');
         } else if (error.code === 'NETWORK_ERROR') {
-          Logger.warn('Network error during auth check, backend may be unavailable');
-          // Don't logout on network error, just clear state
-          setUser(null);
+          Logger.warn('Network error during auth check');
         } else if (error.response?.status === 401) {
-          // User not authenticated, clear state
-          setUser(null);
-        } else {
-          // Only logout for other API errors, not network issues
-          setUser(null);
+          Logger.info('User not authenticated (401)');
         }
+
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkAuth();
+    // Small delay to ensure app is fully mounted
+    const timeoutId = setTimeout(() => {
+      checkAuth();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Auto-refresh user data periodically
@@ -107,6 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
+    // Only set interval if we have a user
     refreshIntervalRef.current = setInterval(
       async () => {
         try {
@@ -115,37 +199,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(response.data);
           }
         } catch (error: any) {
-          Logger.error('Failed to refresh user data', { error: error.message || 'Unknown error' });
+          Logger.error('Failed to refresh user data', {
+            error: error.message || 'Unknown error',
+          });
 
-          // Handle rate limiting gracefully - don't spam the server
-          if (error.code === 'RATE_LIMIT_ERROR') {
-            Logger.warn('Rate limited during user refresh, will retry later');
-          } else if (error.code === 'NETWORK_ERROR') {
-            Logger.warn('Network error during user refresh, stopping interval');
-            // Stop interval on network errors
+          // Stop interval on auth errors
+          if (error.code === 'NETWORK_ERROR' || error.response?.status === 401) {
+            if (refreshIntervalRef.current) {
+              clearInterval(refreshIntervalRef.current);
+              refreshIntervalRef.current = null;
+            }
             setUser(null);
-            if (refreshIntervalRef.current) {
-              clearInterval(refreshIntervalRef.current);
-              refreshIntervalRef.current = null;
-            }
-          } else if (error.response?.status === 401) {
-            // User logged out, clear state and stop trying
-            setUser(null);
-            if (refreshIntervalRef.current) {
-              clearInterval(refreshIntervalRef.current);
-              refreshIntervalRef.current = null;
-            }
-          } else {
-            // Stop interval on any other error to prevent spam
-            if (refreshIntervalRef.current) {
-              clearInterval(refreshIntervalRef.current);
-              refreshIntervalRef.current = null;
-            }
           }
         }
       },
-      5 * 60 * 1000
-    ); // Refresh every 5 minutes
+      5 * 60 * 1000 // 5 minutes
+    );
 
     return () => {
       if (refreshIntervalRef.current) {
@@ -202,35 +271,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
+      console.log('🔐 Attempting login...');
       const response = await authService.login(
         credentials.identifier,
         credentials.password,
         credentials.rememberMe
       );
 
+      console.log('✅ Login response:', {
+        success: response.success,
+        hasUser: !!response.data?.user,
+        message: response.message,
+      });
+
+      // Diagnose cookies after login
+      setTimeout(() => {
+        diagnoseCookies();
+      }, 500);
+
       if (response.data?.user) {
         setUser(response.data.user);
 
         toast({
-          title: `Welcome back, ${response.data.user.firstName}! 👋`,
+          title: `Welcome back, ${response.data.user.firstName}!`,
           description: "You're all set to explore and connect",
           duration: 4000,
         });
 
-        // Always redirect to feed after login
         navigate('/feed');
       } else {
         throw new Error(response.message || 'Login failed');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+
       toast({
         title: "Couldn't sign you in",
-        description: 'Please check your credentials and try again',
+        description: error.message || 'Please check your credentials and try again',
         variant: 'destructive',
         duration: 4000,
       });
-      // Don't throw error to prevent page reload
     } finally {
       setIsLoading(false);
     }
@@ -244,8 +329,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       Logger.debug('Registering user', {
         username: userData.username,
         email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
       });
 
       const response = await authService.register({
@@ -257,25 +340,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         lastName: userData.lastName,
       });
 
-      Logger.debug('Registration completed successfully');
+      // Diagnose cookies after registration
+      setTimeout(() => {
+        diagnoseCookies();
+      }, 500);
 
       if (response?.data?.user || response?.user) {
         const user = response.data?.user || response.user;
         setUser(user);
 
         toast({
-          title: `Welcome to EndlessChat, ${user.firstName}! 🎉`,
+          title: `Welcome to EndlessChat, ${user.firstName}!`,
           description: 'Your account is ready. Start connecting!',
           duration: 5000,
         });
 
-        // Small delay to ensure state is updated
         setTimeout(() => {
           navigate('/feed');
         }, 100);
       } else {
-        Logger.error('Registration failed - invalid response');
-        const errorMessage = response?.message || 'Registration failed - invalid response';
+        const errorMessage = response?.message || 'Registration failed';
         setRegistrationError(errorMessage);
         throw new Error(errorMessage);
       }
@@ -285,7 +369,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       toast({
         title: "Couldn't create account",
-        description: 'Something went wrong. Please try again',
+        description: errorMessage,
         variant: 'destructive',
         duration: 4000,
       });
@@ -301,23 +385,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Clear interval immediately
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
         refreshIntervalRef.current = null;
       }
 
-      // Clear user state immediately to stop intervals
       setUser(null);
       setIsLoading(false);
 
       await authService.logout();
-      
-      // Navigate instead of reload
+
       navigate('/', { replace: true });
     } catch (error: any) {
       Logger.error('Logout error', { error: error.message || 'Unknown error' });
-      // Navigate on error too
       navigate('/', { replace: true });
     }
   };
@@ -361,7 +441,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: 'Logging out for security...',
       });
 
-      // Immediate logout for security
       setTimeout(() => logout(), 1500);
     } catch (error: any) {
       toast({
@@ -376,11 +455,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkPermission = (permission: string): boolean => {
     if (!user) return false;
-
-    // Super admin has all permissions
     if (user.role === 'super_admin') return true;
 
-    // Admin permissions
     if (user.role === 'admin') {
       const adminPermissions = [
         'view_dashboard',
@@ -392,7 +468,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return adminPermissions.includes(permission);
     }
 
-    // User permissions
     const userPermissions = [
       'create_post',
       'edit_own_post',
@@ -435,7 +510,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Show loading screen during initial auth check
-  if (isLoading && !user) {
+  if (isLoading && !initialCheckDone.current) {
     return <LoadingScreen />;
   }
 
@@ -444,7 +519,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export default AuthProvider;
 
-// Hook for role-based access control
 export const useRoleAccess = () => {
   const { hasRole, checkPermission, isAdmin, isSuperAdmin } = useAuth();
 

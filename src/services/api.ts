@@ -1,7 +1,7 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 
-// API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v2';
+// API base URL from .env
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -10,46 +10,35 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, // ensures cookies are sent
 });
 
-// Request interceptor
+// ✅ Request interceptor (no Authorization header needed)
 api.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    config.withCredentials = true; // redundant safety line
     return config;
   },
   error => Promise.reject(error)
 );
 
-// Response interceptor
+// ✅ Response interceptor (cookie-based refresh handling)
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
+    // If Access Token expired — backend will respond 401
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-            refreshToken,
-          });
+        // Call backend refresh endpoint — this uses the refreshToken cookie
+        await axios.post(`${API_BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
 
-          const { accessToken } = response.data.data;
-          localStorage.setItem('accessToken', accessToken);
-
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return api(originalRequest);
-        }
+        // After successful refresh, retry the original request
+        return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        console.warn('Refresh token failed, redirecting to login...');
         window.location.href = '/login';
       }
     }
@@ -58,17 +47,17 @@ api.interceptors.response.use(
   }
 );
 
-// Error handling utility
+// ✅ Error handling utility
 export const withErrorHandling = <T>(fn: () => Promise<T>) => fn();
 
-// Export api response type
+// ✅ Response type
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data?: T;
 }
 
-// Follow/Unfollow API methods
+// ✅ User actions
 export const followUser = async (userId: string): Promise<ApiResponse> => {
   const response = await api.post(`/users/${userId}/follow`);
   return response.data;
