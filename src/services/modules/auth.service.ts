@@ -19,8 +19,6 @@ class AuthService {
     const response = await apiClient.post<AuthResponse>(`${this.baseUrl}/login`, credentials);
 
     if (response.success && response.data) {
-      console.log('🔍 Full login response:', JSON.stringify(response, null, 2));
-
       // Extract token from multiple possible locations in response
       const token =
         response.data.token ||
@@ -32,9 +30,6 @@ class AuthService {
 
       if (token) {
         apiClient.setToken(token);
-        console.log('✅ Token stored successfully:', token.substring(0, 20) + '...');
-      } else {
-        console.warn('⚠️ No token found in login response. Full response:', response);
       }
 
       // Store refresh token if provided
@@ -46,7 +41,6 @@ class AuthService {
         response.refresh_token;
       if (refreshToken) {
         localStorage.setItem('refresh_token', refreshToken);
-        console.log('✅ Refresh token stored');
       }
     }
 
@@ -62,7 +56,6 @@ class AuthService {
 
       if (token) {
         apiClient.setToken(token);
-        console.log('Registration token stored successfully:', token.substring(0, 20) + '...');
       }
 
       // Handle refresh token
@@ -108,7 +101,6 @@ class AuthService {
     try {
       return await apiClient.get<User>(`${this.baseUrl}/profile/me`);
     } catch (error: any) {
-      console.error('Get current user failed:', error);
       return {
         success: true,
         data: {

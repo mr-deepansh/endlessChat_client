@@ -466,9 +466,7 @@ class FeedService {
       try {
         const update = JSON.parse(event.data);
         callback(update);
-      } catch (error) {
-        console.error('Failed to parse post update:', error);
-      }
+      } catch (error) {}
     };
 
     return () => ws.close();
@@ -493,9 +491,7 @@ class FeedService {
         });
         return response.data;
       }
-    } catch (error) {
-      console.error('Failed to fetch post:', error);
-    }
+    } catch (error) {}
 
     return null;
   }

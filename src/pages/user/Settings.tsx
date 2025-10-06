@@ -165,8 +165,6 @@ const Settings: React.FC = () => {
         throw new Error(response.message);
       }
     } catch (error: any) {
-      console.error('Email verification error:', error);
-
       if (error.message?.includes('already verified')) {
         toast({
           title: 'Email Already Verified',

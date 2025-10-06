@@ -42,7 +42,6 @@ const VerticalUserSuggestions: React.FC<VerticalUserSuggestionsProps> = ({
       });
       setFollowingStates(states);
     } catch (error) {
-      console.error('Failed to load suggested users:', error);
     } finally {
       setLoading(false);
     }

@@ -9,9 +9,17 @@ export interface Notification {
     username: string;
     firstName: string;
     lastName: string;
-    avatar?: string;
+    avatar?: any;
   };
-  to: string;
+  sender?: {
+    _id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: any;
+  };
+  recipient?: string;
+  to?: string;
   postId?: string;
   postContent?: string;
   postImage?: string;
@@ -67,7 +75,6 @@ export interface NotificationPreferences {
 }
 
 class NotificationService {
-  // Get notifications
   async getNotifications(
     page = 1,
     limit = 20,
@@ -86,65 +93,90 @@ class NotificationService {
       if (priority) params.append('priority', priority);
 
       const response = await apiClient.get(`/notifications?${params}`);
-
-      // Ensure proper data structure
       const data = response.data || {};
+
       return {
         notifications: (data.notifications || []).map((notification: any) => ({
           ...notification,
-          from: notification.from || {
-            _id: 'unknown',
-            username: 'unknown',
-            firstName: 'Unknown',
-            lastName: 'User',
-            avatar: null,
-          },
+          from: notification.sender ||
+            notification.from || {
+              _id: 'unknown',
+              username: 'unknown',
+              firstName: 'Unknown',
+              lastName: 'User',
+              avatar: null,
+            },
+          postId: notification.data?.postId?._id || notification.postId,
+          postContent: notification.data?.postContent || notification.postContent,
+          postImage: notification.data?.postImage || notification.postImage,
         })),
-        totalNotifications: data.totalNotifications || 0,
-        totalPages: data.totalPages || 0,
-        currentPage: data.currentPage || page,
-        hasNextPage: data.hasNextPage || false,
-        hasPrevPage: data.hasPrevPage || false,
+        totalNotifications: data.pagination?.totalCount || 0,
+        totalPages: data.pagination?.totalPages || 0,
+        currentPage: data.pagination?.currentPage || page,
+        hasNextPage: data.pagination?.hasNext || false,
+        hasPrevPage: data.pagination?.hasPrev || false,
         unreadCount: data.unreadCount || 0,
       };
     } catch (error) {
-      console.error('Failed to get notifications:', error);
-      return {
-        notifications: [],
-        totalNotifications: 0,
-        totalPages: 0,
-        currentPage: page,
-        hasNextPage: false,
-        hasPrevPage: false,
-        unreadCount: 0,
-      };
+      return this.getEmptyResponse(page);
     }
   }
 
-  // Get unread count
   async getUnreadCount(): Promise<{ count: number }> {
-    const response = await apiClient.get('/notifications/unread-count');
-    return response.data;
+    try {
+      const response = await apiClient.get('/notifications/unread-count');
+      return { count: response.data.unreadCount || 0 };
+    } catch (error) {
+      return { count: 0 };
+    }
   }
 
-  // Mark notification as read
-  async markAsRead(notificationId: string): Promise<void> {
-    await apiClient.patch(`/notifications/${notificationId}/read`);
+  async markAsRead(notificationId: string): Promise<{ success: boolean }> {
+    try {
+      await apiClient.patch(`/notifications/${notificationId}/read`);
+      return { success: true };
+    } catch (error) {
+      throw new Error('Failed to mark notification as read');
+    }
   }
 
-  // Mark all notifications as read
-  async markAllAsRead(): Promise<void> {
-    await apiClient.patch('/notifications/mark-all-read');
+  async markAllAsRead(): Promise<{ success: boolean; count: number }> {
+    try {
+      const response = await apiClient.patch('/notifications/mark-all-read');
+      return { success: true, count: response.data.modifiedCount || 0 };
+    } catch (error) {
+      throw new Error('Failed to mark all notifications as read');
+    }
   }
 
-  // Delete notification
-  async deleteNotification(notificationId: string): Promise<void> {
-    await apiClient.delete(`/notifications/${notificationId}`);
+  async deleteNotification(notificationId: string): Promise<{ success: boolean }> {
+    try {
+      await apiClient.delete(`/notifications/${notificationId}`);
+      return { success: true };
+    } catch (error) {
+      throw new Error('Failed to delete notification');
+    }
   }
 
-  // Clear all notifications
-  async clearAllNotifications(): Promise<void> {
-    await apiClient.delete('/notifications/clear-all');
+  async clearAllNotifications(): Promise<{ success: boolean; count: number }> {
+    try {
+      const response = await apiClient.delete('/notifications/clear-all');
+      return { success: true, count: response.data.deletedCount || 0 };
+    } catch (error) {
+      throw new Error('Failed to clear all notifications');
+    }
+  }
+
+  private getEmptyResponse(page: number): NotificationsResponse {
+    return {
+      notifications: [],
+      totalNotifications: 0,
+      totalPages: 0,
+      currentPage: page,
+      hasNextPage: false,
+      hasPrevPage: false,
+      unreadCount: 0,
+    };
   }
 
   // Get notification statistics
@@ -164,12 +196,6 @@ class NotificationService {
     preferences: Partial<NotificationPreferences>
   ): Promise<NotificationPreferences> {
     const response = await apiClient.put('/notifications/preferences', preferences);
-    return response.data;
-  }
-
-  // Create test notification (for development)
-  async createTestNotification(): Promise<Notification> {
-    const response = await apiClient.post('/notifications/test/create');
     return response.data;
   }
 

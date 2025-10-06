@@ -101,7 +101,6 @@ const CurrentUserProfile = () => {
         const postsData = await userService.getUserPosts();
         setPosts(postsData || []);
       } catch (postsError: any) {
-        console.warn('Posts API not available:', postsError);
         setPosts([]); // Set empty array if API not available
       }
 
@@ -109,11 +108,9 @@ const CurrentUserProfile = () => {
         const statsData = await userService.getUserStats();
         setStats(statsData || stats);
       } catch (statsError: any) {
-        console.warn('Stats API not available:', statsError);
         // Keep default stats if API not available
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
       // Don't show error toast for API not being ready
     } finally {
       setIsLoading(false);

@@ -52,7 +52,6 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
         throw new Error(response.message);
       }
     } catch (error: any) {
-      console.error('Follow action failed:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to update follow status',

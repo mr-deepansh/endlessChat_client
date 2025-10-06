@@ -125,7 +125,6 @@ class UserService {
   async getUserFeed(page = 1, limit = 20, sort = 'recent'): Promise<FeedResponse> {
     try {
       const response = await apiClient.get(`/users/feed?page=${page}&limit=${limit}&sort=${sort}`);
-      console.log('Raw feed response:', response);
 
       // Handle different response structures
       if (response?.data?.posts) {
@@ -142,7 +141,6 @@ class UserService {
           hasPrevPage: false,
         };
       } else {
-        console.warn('Unexpected feed response structure:', response);
         return {
           posts: [],
           totalPosts: 0,
@@ -153,7 +151,6 @@ class UserService {
         };
       }
     } catch (error) {
-      console.error('Feed API error:', error);
       throw error;
     }
   }
@@ -209,7 +206,6 @@ class UserService {
       const response = await apiClient.get(`/users/posts?page=${page}&limit=${limit}`);
       return response.data || [];
     } catch (error) {
-      console.warn('getUserPosts API not available');
       return [];
     }
   }
@@ -229,7 +225,6 @@ class UserService {
         }
       );
     } catch (error) {
-      console.warn('getUserStats API not available');
       return {
         postsCount: 0,
         followersCount: 0,

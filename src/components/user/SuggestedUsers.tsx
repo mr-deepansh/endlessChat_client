@@ -44,7 +44,6 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
       });
       setFollowingStates(states);
     } catch (error) {
-      console.error('Failed to load suggested users:', error);
     } finally {
       setLoading(false);
     }

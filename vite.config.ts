@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
     hmr: { overlay: false },
     open: false,
   },
-  plugins: [react({ fastRefresh: true })],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

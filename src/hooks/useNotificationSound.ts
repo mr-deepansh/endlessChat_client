@@ -9,10 +9,8 @@ export const useNotificationSound = () => {
         audioRef.current = new Audio('/notification-sound.mp3');
         audioRef.current.volume = 0.5;
       }
-      audioRef.current.play().catch(console.error);
-    } catch (error) {
-      console.error('Failed to play notification sound:', error);
-    }
+      audioRef.current.play().catch(() => {});
+    } catch (error) {}
   }, []);
 
   return { playNotificationSound };

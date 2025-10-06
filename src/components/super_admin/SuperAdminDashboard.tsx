@@ -40,12 +40,16 @@ export const SuperAdminDashboard: React.FC = () => {
 
       setData({
         security: null, // Mock data for now
-        database: database.status === 'fulfilled' && database.value.success ? database.value.data : null,
-        retention: retention.status === 'fulfilled' && retention.value.success ? retention.value.data : null,
-        engagement: engagement.status === 'fulfilled' && engagement.value.success ? engagement.value.data : null,
+        database:
+          database.status === 'fulfilled' && database.value.success ? database.value.data : null,
+        retention:
+          retention.status === 'fulfilled' && retention.value.success ? retention.value.data : null,
+        engagement:
+          engagement.status === 'fulfilled' && engagement.value.success
+            ? engagement.value.data
+            : null,
       });
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
     } finally {
       setLoading(false);
     }

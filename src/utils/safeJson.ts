@@ -9,7 +9,6 @@ class SafeJSON {
 
       // Basic validation - check for suspicious patterns
       if (this.containsSuspiciousPatterns(jsonString)) {
-        console.warn('Suspicious JSON pattern detected, parsing rejected');
         return null;
       }
 
@@ -17,13 +16,11 @@ class SafeJSON {
 
       // Additional validation if validator provided
       if (validator && !validator(parsed)) {
-        console.warn('JSON validation failed');
         return null;
       }
 
       return parsed;
     } catch (error) {
-      console.error('JSON parsing failed:', error);
       return null;
     }
   }
@@ -75,7 +72,6 @@ class SafeJSON {
         space
       );
     } catch (error) {
-      console.error('JSON stringify failed:', error);
       return null;
     }
   }

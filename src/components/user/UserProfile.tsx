@@ -64,7 +64,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
       setProfile(data);
       setIsFollowing(data.user.isFollowing || false);
     } catch (error) {
-      console.error('Failed to load user profile:', error);
       toast({
         title: 'Error',
         description: 'Failed to load user profile',
@@ -89,7 +88,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
       });
       setIsFollowing(userData.isFollowing || false);
     } catch (error) {
-      console.error('Failed to load user profile:', error);
       toast({
         title: 'Error',
         description: 'Failed to load user profile',
@@ -108,7 +106,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
       const userPosts = await postService.getUserPostsById(profile.user._id);
       setPosts(userPosts);
     } catch (error) {
-      console.error('Failed to load user posts:', error);
       setPosts([]);
     } finally {
       setPostsLoading(false);

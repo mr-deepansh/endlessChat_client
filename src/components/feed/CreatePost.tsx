@@ -44,7 +44,6 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPostCreated, onCance
         throw new Error(response.message || 'Failed to create post');
       }
     } catch (error: any) {
-      console.error('Failed to create post:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to create post. Please try again.',

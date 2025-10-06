@@ -37,7 +37,7 @@ export const authService = {
     if (response.data?.accessToken) {
       localStorage.setItem('accessToken', response.data.accessToken);
       localStorage.setItem('refreshToken', response.data.refreshToken);
-      
+
       // Set Authorization header for future requests
       apiClient.setAuthToken(response.data.accessToken);
     }
@@ -68,14 +68,12 @@ export const authService = {
       // Prevent 401 redirects during logout
       apiClient.setLoggingOut(true);
       await apiClient.post('/users/logout');
-    } catch (error) {
-      console.warn('Logout API call failed, clearing local data anyway');
-    }
+    } catch (error) {}
 
     // Clear tokens from localStorage
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    
+
     // Clear API client auth
     apiClient.clearAuth();
 

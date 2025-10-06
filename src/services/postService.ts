@@ -82,9 +82,7 @@ class PostService {
 
   // Delete post
   async deletePost(id: string): Promise<void> {
-    console.log('PostService: Deleting post', id);
     const response = await apiClient.delete(`/blogs/posts/${id}`);
-    console.log('PostService: Delete response', response);
     return response;
   }
 
@@ -122,7 +120,6 @@ class PostService {
       );
       return response.data?.posts || [];
     } catch (error) {
-      console.warn('getUserPostsById API not available');
       return [];
     }
   }

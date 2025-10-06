@@ -35,7 +35,6 @@ const Register = () => {
       // If register() completes without throwing, registration was successful
       // The AuthContext register function already handles navigation to /feed
     } catch (error) {
-      console.error('Registration failed:', error);
       // Error handling is done in AuthContext, so we just need to catch here
     } finally {
       setIsLoading(false);

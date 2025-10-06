@@ -18,7 +18,6 @@ export const usePerformanceMonitor = (componentName: string) => {
       if (renderStartRef.current) {
         const renderTime = performance.now() - renderStartRef.current;
         // Record render time (method would need to be public)
-        console.debug(`${componentName} render time:`, renderTime);
       }
     };
   });

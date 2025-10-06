@@ -49,7 +49,6 @@ const Login = memo(() => {
       try {
         await login({ identifier, password, rememberMe });
       } catch (error) {
-        console.error('Login error:', error);
       } finally {
         setIsLoading(false);
       }

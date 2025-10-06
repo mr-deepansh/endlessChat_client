@@ -21,9 +21,7 @@ export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-gray-500 py-8">
-            No database statistics available
-          </div>
+          <div className="text-center text-gray-500 py-8">No database statistics available</div>
         </CardContent>
       </Card>
     );
@@ -98,9 +96,7 @@ export const DatabaseStatsCard: React.FC<DatabaseStatsProps> = ({ data }) => {
                 </div>
               </div>
             )) || (
-              <div className="text-center text-gray-500 py-4">
-                No collection data available
-              </div>
+              <div className="text-center text-gray-500 py-4">No collection data available</div>
             )}
           </div>
         </CardContent>

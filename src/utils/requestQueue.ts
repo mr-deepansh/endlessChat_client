@@ -15,14 +15,12 @@ class RequestQueue {
 
     // Check if request is already pending
     if (this.pendingRequests.has(key)) {
-      console.log(`🔄 Deduplicating request: ${key}`);
       return this.pendingRequests.get(key)!;
     }
 
     // Check cache first
     const cached = this.requestCache.get(key);
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      console.log(`💾 Using cached result for: ${key}`);
       return cached.data;
     }
 
@@ -75,9 +73,7 @@ class RequestQueue {
         // Check if it's a rate limit error
         if (error.code === 'RATE_LIMIT_ERROR' && attempt < this.maxRetries) {
           const delay = this.calculateBackoffDelay(attempt);
-          console.log(
-            `⏳ Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${this.maxRetries + 1})`
-          );
+
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }

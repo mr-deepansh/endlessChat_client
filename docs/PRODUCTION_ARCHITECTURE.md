@@ -7,18 +7,21 @@ This document outlines the production-grade architecture implemented in EndlessC
 ## 🎯 Architecture Principles
 
 ### Microservice-Ready Frontend
+
 - **Modular Design**: Components and services are designed for easy extraction
 - **API Abstraction**: Service layer abstracts backend communication
 - **Independent Deployment**: Frontend can be deployed independently
 - **Horizontal Scaling**: Architecture supports multiple frontend instances
 
 ### Performance-First
+
 - **Code Splitting**: Route-based and component-based splitting
 - **Lazy Loading**: Components and assets loaded on demand
 - **Caching Strategy**: Multi-layer caching for optimal performance
 - **Bundle Optimization**: Tree shaking and dead code elimination
 
 ### Type Safety
+
 - **Full TypeScript**: 100% TypeScript coverage
 - **Strict Mode**: Enabled for maximum type safety
 - **API Types**: Strongly typed API interfaces
@@ -154,21 +157,22 @@ src/
 ## 🔧 Service Architecture
 
 ### API Client Layer
+
 ```typescript
 // Centralized API client with interceptors
 class ApiClient {
   private instance: AxiosInstance;
-  
+
   constructor(baseURL: string) {
     this.instance = axios.create({
       baseURL,
       timeout: 15000,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
+
     this.setupInterceptors();
   }
-  
+
   private setupInterceptors() {
     // Request interceptor for auth tokens
     this.instance.interceptors.request.use(config => {
@@ -178,7 +182,7 @@ class ApiClient {
       }
       return config;
     });
-    
+
     // Response interceptor for error handling
     this.instance.interceptors.response.use(
       response => response,
@@ -189,15 +193,16 @@ class ApiClient {
 ```
 
 ### Service Layer Pattern
+
 ```typescript
 // Feature-specific services
 class UserService {
   private readonly baseUrl = '/users';
-  
+
   async getCurrentUser(): Promise<ApiResponse<User>> {
     return apiClient.get<User>(`${this.baseUrl}/profile/me`);
   }
-  
+
   async updateProfile(data: UpdateProfileRequest): Promise<ApiResponse<User>> {
     return apiClient.put<User>(`${this.baseUrl}/profile/me`, data);
   }
@@ -205,6 +210,7 @@ class UserService {
 ```
 
 ### Service Manager
+
 ```typescript
 // Centralized service management
 export class ServiceManager {
@@ -214,7 +220,7 @@ export class ServiceManager {
       this.getDatabaseStats(),
       this.getAnalyticsData(),
     ]);
-    
+
     return {
       security: security.status === 'fulfilled' ? security.value : null,
       database: database.status === 'fulfilled' ? database.value : null,
@@ -227,6 +233,7 @@ export class ServiceManager {
 ## 🎯 State Management
 
 ### Context-Based Architecture
+
 ```typescript
 // Authentication context with comprehensive state
 interface AuthContextType {
@@ -242,11 +249,12 @@ interface AuthContextType {
 ```
 
 ### Performance Optimizations
+
 ```typescript
 // Memoized context values
 const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  
+
   const value = useMemo(() => ({
     user,
     isAuthenticated: !!user,
@@ -254,7 +262,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     logout,
     // ... other methods
   }), [user]);
-  
+
   return (
     <AuthContext.Provider value={value}>
       {children}
@@ -266,6 +274,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 ## 🚀 Performance Architecture
 
 ### Code Splitting Strategy
+
 ```typescript
 // Route-based splitting
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -278,39 +287,44 @@ const VideoPlayer = lazy(() => import('./components/media/VideoPlayer'));
 ```
 
 ### Caching Strategy
+
 ```typescript
 // Multi-layer caching
 class CacheService {
   // Memory cache for frequently accessed data
   private memoryCache = new Map();
-  
+
   // LocalStorage cache for persistent data
   private persistentCache = {
     set: (key: string, data: any, ttl: number) => {
-      localStorage.setItem(key, JSON.stringify({
-        data,
-        timestamp: Date.now(),
-        ttl
-      }));
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          data,
+          timestamp: Date.now(),
+          ttl,
+        })
+      );
     },
-    
+
     get: (key: string) => {
       const item = localStorage.getItem(key);
       if (!item) return null;
-      
+
       const { data, timestamp, ttl } = JSON.parse(item);
       if (Date.now() - timestamp > ttl) {
         localStorage.removeItem(key);
         return null;
       }
-      
+
       return data;
-    }
+    },
   };
 }
 ```
 
 ### Bundle Optimization
+
 ```typescript
 // Vite configuration for optimal bundling
 export default defineConfig({
@@ -333,27 +347,28 @@ export default defineConfig({
 ## 🔒 Security Architecture
 
 ### Authentication Flow
+
 ```typescript
 // Secure token management
 class AuthService {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const response = await apiClient.post('/auth/login', credentials);
-    
+
     if (response.data.token) {
       // Store token securely
       this.setToken(response.data.token);
-      
+
       // Set up automatic refresh
       this.setupTokenRefresh(response.data.expiresAt);
     }
-    
+
     return response.data;
   }
-  
+
   private setupTokenRefresh(expiresAt: string) {
     const expirationTime = new Date(expiresAt).getTime();
-    const refreshTime = expirationTime - (5 * 60 * 1000); // 5 minutes before expiry
-    
+    const refreshTime = expirationTime - 5 * 60 * 1000; // 5 minutes before expiry
+
     setTimeout(() => {
       this.refreshToken();
     }, refreshTime - Date.now());
@@ -362,11 +377,12 @@ class AuthService {
 ```
 
 ### Role-Based Access Control
+
 ```typescript
 // Comprehensive permission system
 export const useRoleAccess = () => {
   const { user } = useAuth();
-  
+
   return {
     canAccessAdmin: () => hasRole(['admin', 'super_admin']),
     canAccessSuperAdmin: () => hasRole('super_admin'),
@@ -378,9 +394,10 @@ export const useRoleAccess = () => {
 ```
 
 ### Protected Routes
+
 ```typescript
 // Route protection with role checking
-<ProtectedRoute 
+<ProtectedRoute
   requireAuth={true}
   adminOnly={false}
   superAdminOnly={false}
@@ -393,6 +410,7 @@ export const useRoleAccess = () => {
 ## 📊 Data Flow Architecture
 
 ### Unidirectional Data Flow
+
 ```
 User Action → Component → Hook → Service → API → Backend
                 ↓
@@ -400,6 +418,7 @@ User Interface ← Context ← Response ← Cache ← Response
 ```
 
 ### Error Handling Flow
+
 ```typescript
 // Comprehensive error handling
 class ErrorBoundary extends Component {
@@ -407,9 +426,9 @@ class ErrorBoundary extends Component {
     // Log error to monitoring service
     errorReporting.captureException(error, {
       extra: errorInfo,
-      tags: { component: 'ErrorBoundary' }
+      tags: { component: 'ErrorBoundary' },
     });
-    
+
     // Update UI state
     this.setState({ hasError: true, error });
   }
@@ -419,6 +438,7 @@ class ErrorBoundary extends Component {
 ## 🎨 Design System Architecture
 
 ### Component Composition
+
 ```typescript
 // Composable component pattern
 const PostCard = ({ post, actions, ...props }) => (
@@ -440,6 +460,7 @@ const PostCard = ({ post, actions, ...props }) => (
 ```
 
 ### Theme System
+
 ```typescript
 // Comprehensive theme management
 interface ThemeConfig {
@@ -465,21 +486,22 @@ interface ThemeConfig {
 ## 🔄 Real-Time Architecture
 
 ### WebSocket Integration
+
 ```typescript
 // Real-time updates for social features
 class RealTimeService {
   private ws: WebSocket | null = null;
-  
+
   connect() {
     const token = authService.getToken();
     this.ws = new WebSocket(`${WS_URL}?token=${token}`);
-    
-    this.ws.onmessage = (event) => {
+
+    this.ws.onmessage = event => {
       const data = JSON.parse(event.data);
       this.handleRealTimeUpdate(data);
     };
   }
-  
+
   private handleRealTimeUpdate(data: any) {
     switch (data.type) {
       case 'NEW_NOTIFICATION':
@@ -497,6 +519,7 @@ class RealTimeService {
 ## 📈 Monitoring and Analytics
 
 ### Performance Monitoring
+
 ```typescript
 // Performance tracking
 class PerformanceMonitor {
@@ -504,10 +527,10 @@ class PerformanceMonitor {
     const navigationStart = performance.timing.navigationStart;
     const loadComplete = performance.timing.loadEventEnd;
     const loadTime = loadComplete - navigationStart;
-    
+
     this.sendMetric('page_load_time', loadTime, { page: pageName });
   }
-  
+
   trackUserInteraction(action: string, component: string) {
     this.sendMetric('user_interaction', 1, { action, component });
   }
@@ -515,6 +538,7 @@ class PerformanceMonitor {
 ```
 
 ### Error Tracking
+
 ```typescript
 // Comprehensive error tracking
 class ErrorReporting {
@@ -526,9 +550,9 @@ class ErrorReporting {
       userAgent: navigator.userAgent,
       url: window.location.href,
       userId: authService.getCurrentUser()?.id,
-      ...context
+      ...context,
     };
-    
+
     // Send to monitoring service
     this.sendToMonitoring(errorData);
   }
@@ -538,6 +562,7 @@ class ErrorReporting {
 ## 🔧 Build and Deployment
 
 ### Build Configuration
+
 ```typescript
 // Optimized Vite configuration
 export default defineConfig({
@@ -567,6 +592,7 @@ export default defineConfig({
 ```
 
 ### Environment Configuration
+
 ```typescript
 // Environment-specific configuration
 export const config = {
@@ -586,6 +612,7 @@ export const config = {
 ## 🧪 Testing Architecture
 
 ### Component Testing
+
 ```typescript
 // Comprehensive component testing
 describe('ResponsiveButton', () => {
@@ -595,18 +622,18 @@ describe('ResponsiveButton', () => {
         Test Button
       </ResponsiveButton>
     );
-    
+
     const button = screen.getByRole('button');
     expect(button).toHaveClass('h-10', 'sm:h-11', 'lg:h-12');
   });
-  
+
   it('handles loading state correctly', () => {
     render(
       <ResponsiveButton loading={true}>
         Loading Button
       </ResponsiveButton>
     );
-    
+
     expect(screen.getByRole('button')).toBeDisabled();
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
@@ -614,15 +641,16 @@ describe('ResponsiveButton', () => {
 ```
 
 ### Integration Testing
+
 ```typescript
 // API integration testing
 describe('AuthService', () => {
   it('handles login flow correctly', async () => {
     const mockResponse = { user: mockUser, token: 'mock-token' };
     jest.spyOn(apiClient, 'post').mockResolvedValue(mockResponse);
-    
+
     const result = await authService.login(mockCredentials);
-    
+
     expect(result.success).toBe(true);
     expect(localStorage.getItem('auth_token')).toBe('mock-token');
   });
@@ -630,6 +658,7 @@ describe('AuthService', () => {
 ```
 
 ### Accessibility Testing
+
 ```typescript
 // Automated accessibility testing
 test('Component meets accessibility standards', async () => {
@@ -642,16 +671,19 @@ test('Component meets accessibility standards', async () => {
 ## 🚀 Scalability Features
 
 ### Horizontal Scaling
+
 - **Stateless Frontend**: No server-side state dependencies
 - **CDN Ready**: Static assets optimized for CDN delivery
 - **Load Balancer Compatible**: Multiple frontend instances supported
 
 ### Vertical Scaling
+
 - **Efficient Rendering**: React.memo and useMemo optimizations
 - **Virtual Scrolling**: For large lists and feeds
 - **Progressive Loading**: Incremental content loading
 
 ### Database Optimization
+
 - **Optimistic Updates**: Immediate UI feedback
 - **Batch Operations**: Grouped API calls for efficiency
 - **Caching Strategy**: Multi-layer caching system
@@ -659,6 +691,7 @@ test('Component meets accessibility standards', async () => {
 ## 🔍 Monitoring and Observability
 
 ### Application Metrics
+
 ```typescript
 // Key performance indicators
 const metrics = {
@@ -666,12 +699,12 @@ const metrics = {
   pageLoadTime: 'Time to interactive',
   bundleSize: 'JavaScript bundle size',
   imageOptimization: 'Image load performance',
-  
+
   // User experience metrics
   errorRate: 'Application error rate',
   crashRate: 'Application crash rate',
   userSatisfaction: 'User satisfaction score',
-  
+
   // Business metrics
   userEngagement: 'Daily/monthly active users',
   featureAdoption: 'Feature usage statistics',
@@ -680,6 +713,7 @@ const metrics = {
 ```
 
 ### Health Checks
+
 ```typescript
 // Application health monitoring
 class HealthMonitor {
@@ -690,7 +724,7 @@ class HealthMonitor {
       this.checkServiceWorker(),
       this.checkWebSocketConnection(),
     ]);
-    
+
     return {
       status: checks.every(check => check.status === 'fulfilled') ? 'healthy' : 'degraded',
       checks: checks.map(check => ({
@@ -706,6 +740,7 @@ class HealthMonitor {
 ## 🔮 Future Architecture
 
 ### Planned Enhancements
+
 1. **Micro-Frontend Architecture**: Independent deployable modules
 2. **Edge Computing**: CDN-based computation for global performance
 3. **Progressive Web App**: Full PWA capabilities with offline support
@@ -713,6 +748,7 @@ class HealthMonitor {
 5. **Real-Time Collaboration**: Operational transformation for live editing
 
 ### Technology Roadmap
+
 - **React 19**: Concurrent features and server components
 - **Vite 6**: Enhanced build performance and features
 - **TypeScript 5.5+**: Latest language features
@@ -721,14 +757,15 @@ class HealthMonitor {
 ## 📚 Documentation Standards
 
 ### Component Documentation
-```typescript
+
+````typescript
 /**
  * ResponsiveButton - A button component that adapts to screen size
- * 
+ *
  * @example
  * ```tsx
- * <ResponsiveButton 
- *   variant="gradient" 
+ * <ResponsiveButton
+ *   variant="gradient"
  *   size="lg"
  *   loading={isLoading}
  *   onClick={handleClick}
@@ -749,13 +786,14 @@ interface ResponsiveButtonProps {
   /** Position of icon relative to text */
   iconPosition?: 'left' | 'right';
 }
-```
+````
 
 ### API Documentation
-```typescript
+
+````typescript
 /**
  * User Service - Handles all user-related API operations
- * 
+ *
  * @example
  * ```typescript
  * const user = await userService.getCurrentUser();
@@ -772,11 +810,12 @@ class UserService {
     // Implementation
   }
 }
-```
+````
 
 ## 🎯 Quality Assurance
 
 ### Code Quality Standards
+
 - **ESLint**: Strict linting rules for consistency
 - **Prettier**: Automated code formatting
 - **TypeScript**: Strict mode enabled
@@ -784,6 +823,7 @@ class UserService {
 - **Conventional Commits**: Standardized commit messages
 
 ### Performance Standards
+
 - **Core Web Vitals**: LCP < 2.5s, FID < 100ms, CLS < 0.1
 - **Bundle Size**: Main bundle < 250KB gzipped
 - **Accessibility**: WCAG 2.1 AA compliance
@@ -791,4 +831,4 @@ class UserService {
 
 ---
 
-*This architecture guide is maintained by the EndlessChat development team and reflects current best practices for production-grade React applications.*
+_This architecture guide is maintained by the EndlessChat development team and reflects current best practices for production-grade React applications._

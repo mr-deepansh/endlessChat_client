@@ -33,9 +33,7 @@ const VerifyEmail: React.FC = () => {
           // Refresh user data to update emailVerified status
           try {
             await refreshUser();
-          } catch (refreshError) {
-            console.warn('Failed to refresh user data after verification:', refreshError);
-          }
+          } catch (refreshError) {}
           toast({
             title: '✅ Email Verified Successfully',
             description: 'Welcome to EndlessChat! You can now access all features.',

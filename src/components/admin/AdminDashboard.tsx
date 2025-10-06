@@ -31,7 +31,6 @@ export const AdminDashboard: React.FC = () => {
         engagement: engagement.status === 'fulfilled' ? engagement.value : null,
       });
     } catch (error) {
-      console.error('Failed to load admin dashboard data:', error);
     } finally {
       setLoading(false);
     }

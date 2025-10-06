@@ -31,8 +31,7 @@ import {
 
 import { About, Contact, Features, Privacy, Support, Terms } from './pages/public';
 
-import { Discover, Feed, Index, NotFound } from './pages/app/app';
-import AuthTest from './pages/test/AuthTest';
+import { Discover, Feed, Index, NotFound, PostDetail, Search } from './pages/app/app';
 
 // Configure React Query
 const queryClient = new QueryClient({
@@ -279,8 +278,29 @@ const App = () => {
                           }
                         />
 
-                        {/* Debug route */}
-                        <Route path="/auth-test" element={<AuthTest />} />
+                        {/* Search route */}
+                        <Route
+                          path="/search"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <Search />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
+
+                        {/* Post Detail route */}
+                        <Route
+                          path="/post/:postId"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute>
+                                <PostDetail />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
 
                         {/* Catch-all route */}
                         <Route path="*" element={<NotFound />} />

@@ -58,13 +58,16 @@ const Navbar = () => {
       setIsSearching(true);
       try {
         const response = await userService.searchUsers(query.trim(), 1, 5);
-        if (response && response.users) {
+        if (response && response.data?.users) {
+          const users = response.data.users.slice(0, 5);
+          setSearchResults(users);
+          setShowSearchResults(users.length > 0);
+        } else if (response && response.users) {
           const users = response.users.slice(0, 5);
           setSearchResults(users);
           setShowSearchResults(users.length > 0);
         }
       } catch (error) {
-        console.error('Search failed:', error);
         setSearchResults([]);
         setShowSearchResults(false);
       } finally {
@@ -119,7 +122,7 @@ const Navbar = () => {
 
               {/* Search Results Dropdown */}
               {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-xl z-[60] max-h-80 overflow-y-auto">
                   {searchResults.map((result: User) => (
                     <div
                       key={result.id || result._id}

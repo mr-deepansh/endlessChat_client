@@ -1,29 +1,26 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { usePageTitle } from '../../hooks/usePageTitle';
+import {
+  AlertTriangle,
+  BookOpen,
+  CheckCircle,
+  Download,
+  Eye,
+  FileText,
+  Globe,
+  HelpCircle,
+  Lock,
+  Mail,
+  Scale,
+  Shield,
+  Star,
+  Users
+} from 'lucide-react';
+import React from 'react';
+import Footer from '../../components/layout/Footer';
+import Navbar from '../../components/layout/Navbar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import {
-  FileText,
-  Scale,
-  Users,
-  Shield,
-  AlertTriangle,
-  Mail,
-  CheckCircle,
-  Star,
-  Download,
-  ExternalLink,
-  Lock,
-  Eye,
-  Globe,
-  X,
-  BookOpen,
-  Gavel,
-  HelpCircle,
-} from 'lucide-react';
-import Navbar from '../../components/layout/Navbar';
-import Footer from '../../components/layout/Footer';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const Terms: React.FC = () => {
   usePageTitle('Terms & Conditions');
@@ -88,7 +85,6 @@ const Terms: React.FC = () => {
 
   const handleResourceClick = (resource: (typeof legalResources)[0]) => {
     // Do nothing - keep content on same page
-    console.log(`Clicked on ${resource.title}`);
   };
 
   return (
@@ -527,8 +523,8 @@ const Terms: React.FC = () => {
 
         <div className="text-center mt-12 lg:mt-16 p-6 lg:p-8 rounded-xl bg-muted/50 border border-border/30">
           <p className="text-sm lg:text-base text-slate-500 dark:text-slate-400 mb-2">
-            <strong>Last updated:</strong> January 15, 2024 | <strong>Effective Date:</strong>{' '}
-            January 15, 2024
+            <strong>Last updated:</strong> October 5, 2025 | <strong>Effective Date:</strong>{' '}
+            October 5, 2025
           </p>
           <p className="text-xs lg:text-sm text-slate-400 dark:text-slate-500">
             These terms may be updated periodically. Continued use constitutes acceptance of revised

@@ -33,9 +33,7 @@ class CacheService {
 
     try {
       localStorage.setItem(this.prefix + key, JSON.stringify(cacheItem));
-    } catch (error) {
-      console.warn('Cache set failed:', error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -57,7 +55,6 @@ class CacheService {
 
       return cacheItem.data;
     } catch (error) {
-      console.warn('Cache get failed:', error);
       return null;
     }
   }
@@ -68,9 +65,7 @@ class CacheService {
   delete(key: string): void {
     try {
       localStorage.removeItem(this.prefix + key);
-    } catch (error) {
-      console.warn('Cache delete failed:', error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -97,9 +92,7 @@ class CacheService {
           }
         }
       });
-    } catch (error) {
-      console.warn('Cache invalidation failed:', error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -113,9 +106,7 @@ class CacheService {
           localStorage.removeItem(key);
         }
       });
-    } catch (error) {
-      console.warn('Cache clear failed:', error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -147,9 +138,7 @@ class CacheService {
           }
         }
       });
-    } catch (error) {
-      console.warn('Cache stats failed:', error);
-    }
+    } catch (error) {}
 
     return { totalItems, totalSize, expiredItems };
   }
@@ -173,9 +162,7 @@ class CacheService {
           }
         }
       });
-    } catch (error) {
-      console.warn('Cache cleanup failed:', error);
-    }
+    } catch (error) {}
   }
 
   /**

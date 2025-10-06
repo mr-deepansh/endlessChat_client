@@ -92,7 +92,6 @@ const ResetPassword = () => {
         });
       }
     } catch (error: any) {
-      console.error('Reset password error:', error);
       const errorMessage =
         error.message ||
         error.response?.data?.message ||

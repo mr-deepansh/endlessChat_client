@@ -107,7 +107,6 @@ const Profile = () => {
           const postsData = userPosts.posts || [];
           setPosts(postsData);
         } catch (error) {
-          console.warn('User posts API not available:', error);
           setPosts([]);
         }
       } else {
@@ -130,7 +129,6 @@ const Profile = () => {
               );
               setIsFollowing(followStatus.data?.isFollowing || false);
             } catch (error) {
-              console.warn('Failed to check follow status:', error);
               setIsFollowing(foundUser.isFollowing || false);
             }
             // Fetch user posts
@@ -139,19 +137,16 @@ const Profile = () => {
               const postsData = userPosts.posts || [];
               setPosts(postsData);
             } catch (error) {
-              console.warn('User posts API not available:', error);
               setPosts([]);
             }
           } else {
             setUser(null);
           }
         } catch (userError) {
-          console.error('Failed to fetch user:', userError);
           setUser(null);
         }
       }
     } catch (error) {
-      console.error('Failed to fetch user data:', error);
     } finally {
       setLoading(false);
     }

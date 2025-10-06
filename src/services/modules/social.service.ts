@@ -566,9 +566,7 @@ class SocialService {
       try {
         const update = JSON.parse(event.data);
         callback(update);
-      } catch (error) {
-        console.error('Failed to parse social update:', error);
-      }
+      } catch (error) {}
     };
 
     return () => ws.close();

@@ -47,7 +47,9 @@ const EmailVerificationBanner: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-blue-800">📧 Please verify your email address</p>
-            <p className="text-xs text-blue-600">Check your inbox and click the verification link to unlock all features</p>
+            <p className="text-xs text-blue-600">
+              Check your inbox and click the verification link to unlock all features
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">

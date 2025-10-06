@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import LeftSidebar from '../../components/layout/LeftSidebar';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -74,6 +75,14 @@ const getNotificationIcon = (type: string) => {
 };
 
 const getNotificationMessage = (notification: Notification) => {
+  // Debug log to check notification data
+  console.log('Notification data:', {
+    type: notification.type,
+    from: notification.from,
+    message: notification.message,
+    postId: notification.postId,
+  });
+
   switch (notification.type) {
     case 'like':
       return 'liked your post';
@@ -90,7 +99,7 @@ const getNotificationMessage = (notification: Notification) => {
     case 'comment_like':
       return 'liked your comment';
     default:
-      return notification.message;
+      return notification.message || 'interacted with your content';
   }
 };
 
@@ -111,26 +120,58 @@ const NotificationItem: React.FC<{
   onMarkRead: (id: string) => void;
   onDelete: (id: string) => void;
 }> = ({ notification, onMarkRead, onDelete }) => {
+  const navigate = useNavigate();
   const timeAgo = getTimeAgo(notification.createdAt);
   const [isHovered, setIsHovered] = useState(false);
 
+  const handleNotificationClick = () => {
+    // Mark as read when clicked
+    if (!notification.isRead) {
+      onMarkRead(notification._id);
+    }
+
+    // Navigate based on notification type
+    if (notification.type === 'follow' || notification.type === 'unfollow') {
+      // Navigate to user profile
+      navigate(`/u/${notification.from.username}`);
+    } else {
+      // Navigate to specific post
+      const postId =
+        notification.postId || notification.data?.postId?._id || notification.data?.postId;
+      if (postId) {
+        navigate(`/post/${postId}`);
+      } else {
+        navigate(`/u/${notification.from.username}`);
+      }
+    }
+  };
+
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/u/${notification.from.username}`);
+  };
+
   return (
     <div
-      className={`group relative flex items-start space-x-3 sm:space-x-4 p-3 sm:p-2 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/50 dark:hover:from-blue-950/20 dark:hover:to-purple-950/20 ${
+      className={`group relative flex items-start space-x-3 sm:space-x-4 p-3 sm:p-2 transition-all duration-200 cursor-pointer hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/50 dark:hover:from-blue-950/20 dark:hover:to-purple-950/20 ${
         !notification.isRead
           ? 'bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-950/30 dark:to-purple-950/30 border-l-2 sm:border-l-2 border-l-blue-500'
           : 'hover:bg-muted/30'
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleNotificationClick}
     >
       {/* Avatar with notification icon */}
       <div className="relative flex-shrink-0">
-        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-background shadow-sm">
-          <AvatarImage src={notification.from?.avatar} />
+        <Avatar
+          className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-background shadow-sm cursor-pointer hover:ring-primary/50 transition-all"
+          onClick={handleUserClick}
+        >
+          <AvatarImage src={notification.from?.avatar?.url || notification.from?.avatar} />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm sm:text-base">
-            {notification.from?.firstName?.[0] || 'U'}
-            {notification.from?.lastName?.[0] || 'N'}
+            {notification.from?.firstName?.[0] || notification.from?.username?.[0] || 'U'}
+            {notification.from?.lastName?.[0] || ''}
           </AvatarFallback>
         </Avatar>
         <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 bg-background rounded-full p-0.5 sm:p-1 shadow-sm border">
@@ -142,8 +183,12 @@ const NotificationItem: React.FC<{
       <div className="flex-1 min-w-0 space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-            <span className="font-semibold text-foreground text-sm sm:text-base">
-              {notification.from?.firstName || 'Unknown'} {notification.from?.lastName || 'User'}
+            <span
+              className="font-semibold text-foreground text-sm sm:text-base hover:text-primary cursor-pointer transition-colors"
+              onClick={handleUserClick}
+            >
+              {notification.from?.firstName || notification.from?.username || 'Unknown'}{' '}
+              {notification.from?.lastName || ''}
             </span>
             <span className="text-muted-foreground text-xs sm:text-sm">
               {getNotificationMessage(notification)}
@@ -159,7 +204,17 @@ const NotificationItem: React.FC<{
 
         {/* Post preview if available */}
         {notification.postContent && (
-          <div className="bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl p-3 sm:p-4 border border-border/30 hover:border-border/60 transition-colors cursor-pointer group/preview">
+          <div
+            className="bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl p-3 sm:p-4 border border-border/30 hover:border-primary/30 transition-colors cursor-pointer group/preview"
+            onClick={e => {
+              e.stopPropagation();
+              const postId =
+                notification.postId || notification.data?.postId?._id || notification.data?.postId;
+              if (postId) {
+                navigate(`/post/${postId}`);
+              }
+            }}
+          >
             <div className="flex items-start space-x-3 sm:space-x-4">
               <div className="flex-1 min-w-0">
                 <p className="text-xs sm:text-sm text-foreground/80 line-clamp-2 group-hover/preview:text-foreground transition-colors">
@@ -194,12 +249,16 @@ const NotificationItem: React.FC<{
         className={`flex items-center space-x-1 transition-opacity duration-200 ${
           isHovered || !notification.isRead ? 'opacity-100' : 'opacity-60 sm:opacity-0'
         }`}
+        onClick={e => e.stopPropagation()}
       >
         {!notification.isRead && (
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onMarkRead(notification._id)}
+            onClick={e => {
+              e.stopPropagation();
+              onMarkRead(notification._id);
+            }}
             className="h-6 w-6 sm:h-8 sm:w-8 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/50"
             title="Mark as read"
           >
@@ -209,21 +268,57 @@ const NotificationItem: React.FC<{
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0 hover:bg-muted">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 sm:h-8 sm:w-8 p-0 hover:bg-muted"
+              onClick={e => e.stopPropagation()}
+            >
               <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40 sm:w-48">
-            <DropdownMenuItem onClick={() => onMarkRead(notification._id)}>
+            <DropdownMenuItem
+              onClick={e => {
+                e.stopPropagation();
+                onMarkRead(notification._id);
+              }}
+            >
               <Eye className="h-4 w-4 mr-2" />
               <span className="text-sm">Mark as read</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Archive className="h-4 w-4 mr-2" />
-              <span className="text-sm">Archive</span>
-            </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onDelete(notification._id)}
+              onClick={e => {
+                e.stopPropagation();
+                navigate(`/u/${notification.from.username}`);
+              }}
+            >
+              <User className="h-4 w-4 mr-2" />
+              <span className="text-sm">View Profile</span>
+            </DropdownMenuItem>
+            {(notification.postId ||
+              notification.data?.postId?._id ||
+              notification.data?.postId) && (
+              <DropdownMenuItem
+                onClick={e => {
+                  e.stopPropagation();
+                  const postId =
+                    notification.postId ||
+                    notification.data?.postId?._id ||
+                    notification.data?.postId;
+                  navigate(`/post/${postId}`);
+                }}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                <span className="text-sm">View Post</span>
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuItem
+              onClick={e => {
+                e.stopPropagation();
+                onDelete(notification._id);
+              }}
               className="text-red-600 focus:text-red-600"
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -238,6 +333,7 @@ const NotificationItem: React.FC<{
 
 function Notifications() {
   usePageTitle('Notifications');
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -252,7 +348,10 @@ function Notifications() {
   const loadNotifications = async () => {
     try {
       setLoading(true);
+      console.log('Loading notifications...');
       const response = await notificationService.getNotifications();
+      console.log('Notifications API response:', response);
+      console.log('Sample notification data:', response.notifications?.[0]);
       setNotifications(response.notifications || []);
       setUnreadCount(response.unreadCount || 0);
     } catch (error) {
@@ -267,9 +366,7 @@ function Notifications() {
       await notificationService.markAsRead(id);
       setNotifications(prev => prev.map(n => (n._id === id ? { ...n, isRead: true } : n)));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Failed to mark as read:', error);
-    }
+    } catch (error) {}
   };
 
   const markAllAsRead = async () => {
@@ -277,9 +374,7 @@ function Notifications() {
       await notificationService.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
-    } catch (error) {
-      console.error('Failed to mark all as read:', error);
-    }
+    } catch (error) {}
   };
 
   const deleteNotification = async (id: string) => {
@@ -360,7 +455,7 @@ function Notifications() {
                   size="sm"
                   onClick={refreshNotifications}
                   disabled={refreshing}
-                  className="hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2 sm:px-3"
+                  className="hover:bg-muted/80 dark:hover:bg-muted/60 border-border/50 hover:border-border transition-colors px-2 sm:px-3"
                 >
                   <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''} sm:mr-2`} />
                   <span className="hidden sm:inline">Refresh</span>

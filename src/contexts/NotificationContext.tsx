@@ -68,7 +68,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setNotifications(response.notifications || []);
       setUnreadCount(response.unreadCount || 0);
     } catch (error) {
-      console.error('Failed to load notifications:', error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +81,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Failed to mark as read:', error);
       toast({
         title: 'Error',
         description: 'Failed to mark notification as read',
@@ -101,7 +99,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         description: "You're all caught up!",
       });
     } catch (error) {
-      console.error('Failed to mark all as read:', error);
       toast({
         title: 'Error',
         description: 'Failed to mark all notifications as read',
@@ -120,7 +117,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           setUnreadCount(prev => Math.max(0, prev - 1));
         }
       } catch (error) {
-        console.error('Failed to delete notification:', error);
         toast({
           title: 'Error',
           description: 'Failed to delete notification',

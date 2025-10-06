@@ -25,8 +25,27 @@ class UserService {
   private readonly baseUrl = '/users';
 
   // User Discovery & Search
-  async searchUsers(params: UserSearchParams = {}): Promise<ApiResponse<PaginatedResponse<User>>> {
-    const queryString = apiClient.buildQueryString(params);
+  async searchUsers(
+    params: UserSearchParams | string = {},
+    page?: number,
+    limit?: number
+  ): Promise<ApiResponse<PaginatedResponse<User>>> {
+    // Handle both object and string parameters for backward compatibility
+    let queryParams: UserSearchParams;
+
+    if (typeof params === 'string') {
+      // If params is a string, treat it as username search
+      queryParams = {
+        username: params,
+        page: page || 1,
+        limit: limit || 10,
+      };
+    } else {
+      // If params is an object, use it directly
+      queryParams = params;
+    }
+
+    const queryString = apiClient.buildQueryString(queryParams);
     return apiClient.get<PaginatedResponse<User>>(`${this.baseUrl}/search${queryString}`);
   }
 
@@ -236,9 +255,7 @@ class UserService {
         });
         return response.data;
       }
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-    }
+    } catch (error) {}
 
     return null;
   }

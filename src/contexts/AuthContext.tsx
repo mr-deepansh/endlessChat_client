@@ -14,9 +14,6 @@ import { toast } from '../hooks/use-toast';
 import { authService } from '../services';
 import { ChangePasswordRequest, LoginRequest, RegisterRequest, User } from '../types/api';
 import Logger from '../utils/logger';
-import '../utils/cookieDebug';
-import '../utils/authFix';
-import '../utils/cookieTest';
 
 interface AuthContextType {
   user: User | null;
@@ -64,51 +61,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
   const isSuperAdmin = user?.role === 'super_admin';
 
-  // Enhanced cookie diagnostics
-  const diagnoseCookies = () => {
-    const cookies = document.cookie;
-    console.log('🍪 Browser Cookies:', cookies);
-    console.log('🍪 Has accessToken:', cookies.includes('accessToken'));
-    console.log('🍪 Has refreshToken:', cookies.includes('refreshToken'));
-    
-    // Check User-Agent and other headers that might affect cookies
-    console.log('🌐 Browser Info:', {
-      userAgent: navigator.userAgent,
-      cookieEnabled: navigator.cookieEnabled,
-      origin: window.location.origin,
-      protocol: window.location.protocol,
-    });
-
-    // Check if cookies are accessible
-    if (!cookies) {
-      console.warn(
-        '⚠️ No cookies found in document.cookie - HttpOnly cookies are NOT visible here'
-      );
-      console.log('✅ This is NORMAL for HttpOnly cookies');
-    }
-    
-    // Test manual cookie setting
-    try {
-      document.cookie = 'test=value; path=/; SameSite=None; Secure=false';
-      const testCookie = document.cookie.includes('test=value');
-      console.log('🧪 Cookie Test:', testCookie ? 'PASS' : 'FAIL');
-      if (testCookie) {
-        document.cookie = 'test=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-      }
-    } catch (error) {
-      console.error('❌ Cookie Test Error:', error);
-    }
-    
-    // Check localStorage tokens
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
-    console.log('💾 LocalStorage Tokens:', {
-      hasAccessToken: !!accessToken,
-      hasRefreshToken: !!refreshToken,
-      accessTokenLength: accessToken?.length || 0
-    });
-  };
-
   // Check for existing session on mount - ONLY ONCE
   useEffect(() => {
     if (initialCheckDone.current) return;
@@ -116,22 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const checkAuth = async () => {
       try {
-        diagnoseCookies();
-
-        console.log('🔍 Checking authentication...');
         const response = await authService.getCurrentUser();
-
-        console.log('✅ Auth check response:', {
-          success: response.success,
-          hasUser: !!response.data,
-          userData: response.data
-            ? {
-                id: response.data._id,
-                username: response.data.username,
-                email: response.data.email,
-              }
-            : null,
-        });
 
         if (response.data) {
           setUser(response.data);
@@ -144,13 +81,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           Logger.info('No authenticated user found');
         }
       } catch (error: any) {
-        console.error('❌ Auth check failed:', {
-          message: error.message,
-          code: error.code,
-          status: error.response?.status,
-          data: error.response?.data,
-        });
-
         Logger.error('Auth check failed', {
           error: error.message || 'Unknown error',
           code: error.code,
@@ -271,23 +201,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      console.log('🔐 Attempting login...');
       const response = await authService.login(
         credentials.identifier,
         credentials.password,
         credentials.rememberMe
       );
-
-      console.log('✅ Login response:', {
-        success: response.success,
-        hasUser: !!response.data?.user,
-        message: response.message,
-      });
-
-      // Diagnose cookies after login
-      setTimeout(() => {
-        diagnoseCookies();
-      }, 500);
 
       if (response.data?.user) {
         setUser(response.data.user);
@@ -303,13 +221,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(response.message || 'Login failed');
       }
     } catch (error: any) {
-      console.error('❌ Login error:', {
-        message: error.message,
-        code: error.code,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
-
       toast({
         title: "Couldn't sign you in",
         description: error.message || 'Please check your credentials and try again',
@@ -339,11 +250,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         firstName: userData.firstName,
         lastName: userData.lastName,
       });
-
-      // Diagnose cookies after registration
-      setTimeout(() => {
-        diagnoseCookies();
-      }, 500);
 
       if (response?.data?.user || response?.user) {
         const user = response.data?.user || response.user;

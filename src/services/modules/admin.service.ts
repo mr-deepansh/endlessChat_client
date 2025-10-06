@@ -450,14 +450,10 @@ class AdminService {
       try {
         const stats = JSON.parse(event.data);
         callback(stats);
-      } catch (error) {
-        console.error('Failed to parse live stats:', error);
-      }
+      } catch (error) {}
     };
 
-    ws.onerror = error => {
-      console.error('WebSocket error:', error);
-    };
+    ws.onerror = error => {};
 
     // Return cleanup function
     return () => {

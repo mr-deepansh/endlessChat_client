@@ -110,7 +110,7 @@ const AdminDashboard: React.FC = () => {
 
       // Load stats from the corrected API
       const statsResponse = await adminService.getStats();
-      
+
       if (statsResponse.success && statsResponse.data) {
         setDashboardState(prev => ({
           ...prev,
@@ -609,9 +609,7 @@ const AdminDashboard: React.FC = () => {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() =>
-                                      window.open(`/admin/users/${user.id}`, '_blank')
-                                    }
+                                    onClick={() => window.open(`/admin/users/${user.id}`, '_blank')}
                                   >
                                     <Eye className="h-4 w-4" />
                                   </Button>

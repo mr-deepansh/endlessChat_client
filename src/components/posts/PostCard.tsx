@@ -102,8 +102,8 @@ const PostCard: React.FC<PostCardProps> = ({
   const [isLiked, setIsLiked] = useState(post.isLiked || false);
   const [isReposted, setIsReposted] = useState(post.isReposted || false);
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
-  const [repostsCount, setRepostsCount] = useState(post.repostsCount);
+  const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+  const [repostsCount, setRepostsCount] = useState(post.repostsCount || 0);
   const [quoteText, setQuoteText] = useState('');
   const [selectedPollOption, setSelectedPollOption] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -159,7 +159,8 @@ const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined) => {
+    if (!num || num === 0) return '0';
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
@@ -323,7 +324,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   <DropdownMenuItem
                     onClick={e => {
                       e.preventDefault();
-                      console.log('Delete clicked for post:', post._id);
+
                       onDelete?.(post._id);
                     }}
                     className="text-destructive focus:text-destructive"
@@ -402,7 +403,7 @@ const PostCard: React.FC<PostCardProps> = ({
               className="flex items-center space-x-2 text-social-comment hover:text-social-comment hover:bg-social-comment/10 transition-all duration-200"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">{formatNumber(post.commentsCount)}</span>
+              <span className="text-sm">{formatNumber(post.commentsCount || 0)}</span>
             </Button>
 
             <DropdownMenu>
@@ -480,7 +481,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   className="flex items-center space-x-2 text-muted-foreground hover:text-accent hover:bg-accent/10 transition-all duration-200 hover:scale-105"
                 >
                   <Share className="w-4 h-4" />
-                  <span className="text-sm">{formatNumber(post.sharesCount)}</span>
+                  <span className="text-sm">{formatNumber(post.sharesCount || 0)}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -526,7 +527,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
             <div className="flex items-center space-x-1 text-xs text-muted-foreground ml-2">
               <Eye className="w-3 h-3" />
-              <span>{formatNumber(post.viewsCount)}</span>
+              <span>{formatNumber(post.viewsCount || 0)}</span>
             </div>
           </div>
         </div>

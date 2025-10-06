@@ -28,27 +28,19 @@ class Logger {
   }
 
   static info(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(this.formatMessage('info', message, ...args));
-    }
+    // Logging disabled
   }
   static log(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(this.formatMessage('info', message, ...args));
-    }
+    // Logging disabled
   }
   static error(message: string, ...args: any[]): void {
-    console.error(this.formatMessage('error', message, ...args));
+    // Logging disabled
   }
   static warn(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(this.formatMessage('warn', message, ...args));
-    }
+    // Logging disabled
   }
   static debug(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(this.formatMessage('debug', message, ...args));
-    }
+    // Logging disabled
   }
 }
 

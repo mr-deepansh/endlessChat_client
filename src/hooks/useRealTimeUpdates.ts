@@ -23,9 +23,7 @@ export const useRealTimeUpdates = ({
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-    };
+    ws.onopen = () => {};
 
     ws.onmessage = event => {
       try {
@@ -55,19 +53,13 @@ export const useRealTimeUpdates = ({
             break;
 
           default:
-            console.log('Unknown WebSocket message type:', data.type);
         }
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
+      } catch (error) {}
     };
 
-    ws.onerror = error => {
-      console.error('WebSocket error:', error);
-    };
+    ws.onerror = error => {};
 
     ws.onclose = () => {
-      console.log('WebSocket disconnected');
       // Attempt to reconnect after 3 seconds
       setTimeout(() => {
         if (wsRef.current?.readyState === WebSocket.CLOSED) {

@@ -43,7 +43,6 @@ export const withErrorHandling = async <T>(
     const response = await apiCall();
     return response.data;
   } catch (error: any) {
-    console.error(errorMessage, error);
     // Return fallback data for notifications
     if (errorMessage.includes('notification')) {
       return [] as T;

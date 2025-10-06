@@ -75,28 +75,6 @@ const FeedSidebar: React.FC<FeedSidebarProps> = ({ onUserFollow }) => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Footer Links */}
-      <Card className="border-none shadow-soft bg-gradient-card">
-        <CardContent className="p-4">
-          <div className="text-xs text-muted-foreground space-y-1">
-            <div className="flex flex-wrap gap-2">
-              <a href="/about" className="hover:text-primary transition-smooth">
-                About
-              </a>
-              <span>•</span>
-              <a href="/privacy" className="hover:text-primary transition-smooth">
-                Privacy
-              </a>
-              <span>•</span>
-              <a href="/terms" className="hover:text-primary transition-smooth">
-                Terms
-              </a>
-            </div>
-            <p className="mt-2">© 2024 EndlessChat</p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

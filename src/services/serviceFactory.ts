@@ -63,8 +63,6 @@ class EnterpriseServiceFactory {
     this.registerService('notification', notificationService, '1.0.0');
     this.registerService('social', socialService, '1.0.0');
     this.registerService('blog', blogService, '1.0.0');
-
-    console.log(`✅ Initialized ${this.services.size} enterprise services`);
   }
 
   private registerService(name: string, instance: any, version: string): void {
@@ -88,10 +86,6 @@ class EnterpriseServiceFactory {
       uptime: 100,
       errorRate: 0,
     });
-
-    if (this.config.monitoring.enableLogging) {
-      console.log(`📦 Registered service: ${name} v${version}`);
-    }
   }
 
   public getService<T>(name: string): T {
@@ -103,7 +97,6 @@ class EnterpriseServiceFactory {
     }
 
     if (service.status === 'error') {
-      console.warn(`⚠️ Service '${name}' is in error state. Attempting to recover...`);
       this.attemptServiceRecovery(name);
     }
 
@@ -210,10 +203,6 @@ class EnterpriseServiceFactory {
       } catch (error) {
         service.status = 'error';
         service.errorCount++;
-
-        if (this.config.monitoring.enableLogging) {
-          console.error(`❌ Health check failed for service '${name}':`, error);
-        }
       }
     }
   }
@@ -227,25 +216,19 @@ class EnterpriseServiceFactory {
       service.errorCount = 0;
       service.status = 'active';
 
-      if (this.config.monitoring.enableLogging) {
-        console.log(`🔄 Attempting recovery for service '${serviceName}'`);
-      }
-
       // Perform service-specific recovery
       if (serviceName === 'apiClient') {
         // Reinitialize API client if needed
         apiClient.healthCheck();
       }
     } catch (error) {
-      console.error(`❌ Failed to recover service '${serviceName}':`, error);
+      // Silent error handling
     }
   }
 
   private setupErrorHandling(): void {
     // Global error handler for unhandled service errors
     window.addEventListener('unhandledrejection', event => {
-      console.error('🚨 Unhandled service error:', event.reason);
-
       // Try to identify which service caused the error
       const errorMessage = event.reason?.message || '';
       for (const [name, service] of this.services) {
@@ -270,10 +253,6 @@ class EnterpriseServiceFactory {
         await service.instance.start();
       }
       service.status = 'active';
-
-      if (this.config.monitoring.enableLogging) {
-        console.log(`▶️ Started service: ${name}`);
-      }
     } catch (error) {
       service.status = 'error';
       throw new Error(`Failed to start service '${name}': ${error}`);
@@ -291,10 +270,6 @@ class EnterpriseServiceFactory {
         await service.instance.stop();
       }
       service.status = 'inactive';
-
-      if (this.config.monitoring.enableLogging) {
-        console.log(`⏹️ Stopped service: ${name}`);
-      }
     } catch (error) {
       throw new Error(`Failed to stop service '${name}': ${error}`);
     }
@@ -308,18 +283,18 @@ class EnterpriseServiceFactory {
   // Bulk operations for enterprise scale
   public async startAllServices(): Promise<void> {
     const promises = Array.from(this.services.keys()).map(name =>
-      this.startService(name).catch(error =>
-        console.error(`Failed to start service '${name}':`, error)
-      )
+      this.startService(name).catch(error => {
+        // Silent error handling
+      })
     );
     await Promise.allSettled(promises);
   }
 
   public async stopAllServices(): Promise<void> {
     const promises = Array.from(this.services.keys()).map(name =>
-      this.stopService(name).catch(error =>
-        console.error(`Failed to stop service '${name}':`, error)
-      )
+      this.stopService(name).catch(error => {
+        // Silent error handling
+      })
     );
     await Promise.allSettled(promises);
   }
@@ -327,10 +302,6 @@ class EnterpriseServiceFactory {
   // Configuration management
   public updateConfig(newConfig: Partial<typeof this.config>): void {
     this.config = { ...this.config, ...newConfig };
-
-    if (this.config.monitoring.enableLogging) {
-      console.log('🔧 Service configuration updated');
-    }
   }
 
   public getConfig() {
@@ -383,10 +354,6 @@ class EnterpriseServiceFactory {
     // Clear all data
     this.services.clear();
     this.metrics.clear();
-
-    if (this.config.monitoring.enableLogging) {
-      console.log('🧹 Service factory destroyed');
-    }
   }
 }
 

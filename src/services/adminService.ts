@@ -6,7 +6,7 @@ import type {
   SuspiciousAccount,
   LoginAttempt,
   UserManagementParams,
-  ApiResponse
+  ApiResponse,
 } from '../types/api';
 
 export interface AdminDashboard {
@@ -62,7 +62,9 @@ class AdminService {
   }
 
   // Get all users (admin view)
-  async getAllUsers(params: UserManagementParams): Promise<ApiResponse<{ users: AdminUser[]; pagination: any; filters: any; meta: any }>> {
+  async getAllUsers(
+    params: UserManagementParams
+  ): Promise<ApiResponse<{ users: AdminUser[]; pagination: any; filters: any; meta: any }>> {
     const queryParams = new URLSearchParams({
       page: params.page.toString(),
       limit: params.limit.toString(),
@@ -89,13 +91,19 @@ class AdminService {
   }
 
   // Delete user (admin)
-  async deleteUser(id: string, data: { reason: string; confirmPassword?: string; notifyUser?: boolean }): Promise<ApiResponse<any>> {
+  async deleteUser(
+    id: string,
+    data: { reason: string; confirmPassword?: string; notifyUser?: boolean }
+  ): Promise<ApiResponse<any>> {
     const response = await apiClient.delete(`/admin/users/${id}`, { data });
     return response.data;
   }
 
   // Suspend user
-  async suspendUser(id: string, data: { reason: string }): Promise<ApiResponse<{ user: AdminUser }>> {
+  async suspendUser(
+    id: string,
+    data: { reason: string }
+  ): Promise<ApiResponse<{ user: AdminUser }>> {
     const response = await apiClient.patch(`/admin/users/${id}/suspend`, data);
     return response.data;
   }
@@ -113,7 +121,17 @@ class AdminService {
   }
 
   // Search users (admin)
-  async searchUsers(params: { q?: string; search?: string; username?: string; page?: number; limit?: number; role?: string; isActive?: boolean; sortBy?: string; sortOrder?: string }): Promise<ApiResponse<{ users: AdminUser[]; search: any; pagination: any; meta: any }>> {
+  async searchUsers(params: {
+    q?: string;
+    search?: string;
+    username?: string;
+    page?: number;
+    limit?: number;
+    role?: string;
+    isActive?: boolean;
+    sortBy?: string;
+    sortOrder?: string;
+  }): Promise<ApiResponse<{ users: AdminUser[]; search: any; pagination: any; meta: any }>> {
     const queryParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
@@ -125,19 +143,25 @@ class AdminService {
   }
 
   // Bulk export users
-  async exportUsers(params: { format?: string; role?: string; isActive?: boolean; fields?: string; search?: string; limit?: number; sortBy?: string; sortOrder?: string }): Promise<Blob> {
+  async exportUsers(params: {
+    format?: string;
+    role?: string;
+    isActive?: boolean;
+    fields?: string;
+    search?: string;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }): Promise<Blob> {
     const queryParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
         queryParams.append(key, value.toString());
       }
     });
-    const response = await apiClient.get(
-      `/admin/users/export?${queryParams}`,
-      {
-        responseType: 'blob',
-      }
-    );
+    const response = await apiClient.get(`/admin/users/export?${queryParams}`, {
+      responseType: 'blob',
+    });
     return response.data;
   }
 
@@ -148,7 +172,10 @@ class AdminService {
   }
 
   // Get user activity log
-  async getUserActivityLog(id: string, params?: { page?: number; limit?: number; type?: string }): Promise<ApiResponse<{ activityLog: any }>> {
+  async getUserActivityLog(
+    id: string,
+    params?: { page?: number; limit?: number; type?: string }
+  ): Promise<ApiResponse<{ activityLog: any }>> {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -181,13 +208,24 @@ class AdminService {
   }
 
   // Force password reset
-  async forcePasswordReset(id: string, data: { reason: string; notifyUser?: boolean; invalidateAllSessions?: boolean; confirmPassword?: string }): Promise<ApiResponse<any>> {
+  async forcePasswordReset(
+    id: string,
+    data: {
+      reason: string;
+      notifyUser?: boolean;
+      invalidateAllSessions?: boolean;
+      confirmPassword?: string;
+    }
+  ): Promise<ApiResponse<any>> {
     const response = await apiClient.post(`/admin/users/${id}/force-password-reset`, data);
     return response.data;
   }
 
   // Get user security analysis
-  async getUserSecurityAnalysis(id: string, params?: { includeDevices?: boolean; includeSessions?: boolean }): Promise<ApiResponse<{ user: any; securityAnalysis: SecurityAnalysis; meta: any }>> {
+  async getUserSecurityAnalysis(
+    id: string,
+    params?: { includeDevices?: boolean; includeSessions?: boolean }
+  ): Promise<ApiResponse<{ user: any; securityAnalysis: SecurityAnalysis; meta: any }>> {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -201,7 +239,17 @@ class AdminService {
   }
 
   // Get all admins
-  async getAllAdmins(params?: { page?: number; limit?: number; sortBy?: string; sortOrder?: string; search?: string; status?: string; role?: string }): Promise<ApiResponse<{ admins: AdminUser[]; pagination: any; summary: any; filters: any; metadata: any }>> {
+  async getAllAdmins(params?: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: string;
+    search?: string;
+    status?: string;
+    role?: string;
+  }): Promise<
+    ApiResponse<{ admins: AdminUser[]; pagination: any; summary: any; filters: any; metadata: any }>
+  > {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -221,14 +269,19 @@ class AdminService {
   }
 
   // Analytics endpoints
-  async getAnalyticsOverview(params?: { timeRange?: string }): Promise<ApiResponse<AnalyticsOverview>> {
+  async getAnalyticsOverview(params?: {
+    timeRange?: string;
+  }): Promise<ApiResponse<AnalyticsOverview>> {
     const queryParams = new URLSearchParams();
     if (params?.timeRange) queryParams.append('timeRange', params.timeRange);
     const response = await apiClient.get(`/admin/analytics/overview?${queryParams}`);
     return response.data;
   }
 
-  async getUserGrowthAnalytics(params?: { period?: string; days?: number }): Promise<ApiResponse<any>> {
+  async getUserGrowthAnalytics(params?: {
+    period?: string;
+    days?: number;
+  }): Promise<ApiResponse<any>> {
     const queryParams = new URLSearchParams();
     if (params?.period) queryParams.append('period', params.period);
     if (params?.days) queryParams.append('days', params.days.toString());
@@ -256,7 +309,11 @@ class AdminService {
   }
 
   // Security endpoints
-  async getSuspiciousAccounts(params?: { page?: number; limit?: number; riskLevel?: string }): Promise<ApiResponse<SuspiciousAccount[]>> {
+  async getSuspiciousAccounts(params?: {
+    page?: number;
+    limit?: number;
+    riskLevel?: string;
+  }): Promise<ApiResponse<SuspiciousAccount[]>> {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -269,7 +326,11 @@ class AdminService {
     return response.data;
   }
 
-  async getLoginAttempts(params?: { status?: string; timeRange?: string; limit?: number }): Promise<ApiResponse<LoginAttempt[]>> {
+  async getLoginAttempts(params?: {
+    status?: string;
+    timeRange?: string;
+    limit?: number;
+  }): Promise<ApiResponse<LoginAttempt[]>> {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -295,7 +356,11 @@ class AdminService {
     return response.data;
   }
 
-  async blockIP(data: { ipAddress: string; reason: string; duration: string }): Promise<ApiResponse<any>> {
+  async blockIP(data: {
+    ipAddress: string;
+    reason: string;
+    duration: string;
+  }): Promise<ApiResponse<any>> {
     const response = await apiClient.post('/admin/security/blocked-ips', data);
     return response.data;
   }

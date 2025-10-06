@@ -45,9 +45,7 @@ export const storeAuthData = (token: string, user: User): void => {
       avatar: user.avatar,
     };
     sessionStorage.setItem('user_profile', JSON.stringify(userProfile));
-  } catch (error) {
-    console.error('Failed to store auth data:', error);
-  }
+  } catch (error) {}
 };
 
 /**
@@ -57,9 +55,7 @@ export const clearAuthData = (): void => {
   try {
     SecureStorage.clearTokens();
     sessionStorage.removeItem('user_profile');
-  } catch (error) {
-    console.error('Failed to clear auth data:', error);
-  }
+  } catch (error) {}
 };
 
 /**

@@ -21,7 +21,7 @@ export const useFocusManagement = () => {
     const focusableElements = container.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
-    
+
     const firstElement = focusableElements[0] as HTMLElement;
     const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
@@ -150,7 +150,9 @@ export const useHighContrast = (): boolean => {
 
 // Hook for color scheme preference
 export const useColorScheme = (): 'light' | 'dark' | 'no-preference' => {
-  const [colorScheme, setColorScheme] = useState<'light' | 'dark' | 'no-preference'>('no-preference');
+  const [colorScheme, setColorScheme] = useState<'light' | 'dark' | 'no-preference'>(
+    'no-preference'
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -207,14 +209,11 @@ export const useSkipLinks = () => {
 export const useAriaLive = () => {
   const liveRegionRef = useRef<HTMLDivElement>(null);
 
-  const announceToScreenReader = (
-    message: string,
-    priority: 'polite' | 'assertive' = 'polite'
-  ) => {
+  const announceToScreenReader = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
     if (liveRegionRef.current) {
       liveRegionRef.current.setAttribute('aria-live', priority);
       liveRegionRef.current.textContent = message;
-      
+
       // Clear after announcement
       setTimeout(() => {
         if (liveRegionRef.current) {
@@ -224,19 +223,10 @@ export const useAriaLive = () => {
     }
   };
 
-  const LiveRegion = () => (
-    <div
-      ref={liveRegionRef}
-      aria-live="polite"
-      aria-atomic="true"
-      className="sr-only"
-    />
-  );
-
-  return { announceToScreenReader, LiveRegion };
+  return { announceToScreenReader, liveRegionRef };
 };
 
-export default {
+const accessibilityHooks = {
   useFocusManagement,
   useKeyboardNavigation,
   useScreenReader,
@@ -246,3 +236,5 @@ export default {
   useSkipLinks,
   useAriaLive,
 };
+
+export default accessibilityHooks;

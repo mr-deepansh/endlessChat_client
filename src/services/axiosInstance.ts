@@ -42,7 +42,6 @@ export const withErrorHandling = async <T>(
   try {
     return await apiCall();
   } catch (error: any) {
-    console.error(errorMessage, error);
     throw new Error(error.response?.data?.message || errorMessage);
   }
 };
