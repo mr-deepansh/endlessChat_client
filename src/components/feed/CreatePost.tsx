@@ -1,13 +1,13 @@
+import { Image, MapPin, Smile } from 'lucide-react';
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from '../../hooks/use-toast';
+import { feedService } from '../../services';
+import { Post } from '../../types/api';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Textarea } from '../ui/textarea';
-import { useAuth } from '../../contexts/AuthContext';
-import { feedService } from '../../services';
-import { toast } from '../../hooks/use-toast';
-import { Image, Smile, MapPin, Calendar } from 'lucide-react';
-import { Post } from '../../types/api';
 
 const MAX_POST_LENGTH = 280;
 
@@ -17,7 +17,7 @@ interface CreatePostProps {
   onCancel?: () => void;
 }
 
-const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPostCreated, onCancel }) => {
+const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);

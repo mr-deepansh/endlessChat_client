@@ -117,7 +117,7 @@ class NotificationService {
         hasPrevPage: data.pagination?.hasPrev || false,
         unreadCount: data.unreadCount || 0,
       };
-    } catch (error) {
+    } catch (_error) {
       return this.getEmptyResponse(page);
     }
   }
@@ -126,7 +126,7 @@ class NotificationService {
     try {
       const response = await apiClient.get('/notifications/unread-count');
       return { count: response.data.unreadCount || 0 };
-    } catch (error) {
+    } catch (_error) {
       return { count: 0 };
     }
   }
@@ -135,7 +135,7 @@ class NotificationService {
     try {
       await apiClient.patch(`/notifications/${notificationId}/read`);
       return { success: true };
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Failed to mark notification as read');
     }
   }
@@ -144,7 +144,7 @@ class NotificationService {
     try {
       const response = await apiClient.patch('/notifications/mark-all-read');
       return { success: true, count: response.data.modifiedCount || 0 };
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Failed to mark all notifications as read');
     }
   }
@@ -153,7 +153,7 @@ class NotificationService {
     try {
       await apiClient.delete(`/notifications/${notificationId}`);
       return { success: true };
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Failed to delete notification');
     }
   }
@@ -162,7 +162,7 @@ class NotificationService {
     try {
       const response = await apiClient.delete('/notifications/clear-all');
       return { success: true, count: response.data.deletedCount || 0 };
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Failed to clear all notifications');
     }
   }

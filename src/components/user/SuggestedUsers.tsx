@@ -43,7 +43,7 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
         states[user._id] = user.isFollowing || false;
       });
       setFollowingStates(states);
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setLoading(false);
     }

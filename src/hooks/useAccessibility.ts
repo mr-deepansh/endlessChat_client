@@ -211,7 +211,7 @@ export const useAriaLive = () => {
 
   const announceToScreenReader = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
     if (liveRegionRef.current) {
-      liveRegionRef.current.setAttribute('aria-live', priority);
+      liveRegionRef.current.setAttribute('aria-live');
       liveRegionRef.current.textContent = message;
 
       // Clear after announcement

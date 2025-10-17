@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => ({
     hmr: { overlay: false },
     open: false,
   },
+  preview: {
+    host: '0.0.0.0',
+    port: 8080,
+    open: false,
+  },
   plugins: [react()],
   resolve: {
     alias: {

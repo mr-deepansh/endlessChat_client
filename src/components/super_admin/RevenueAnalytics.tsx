@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, TrendingUp, Users, CreditCard } from 'lucide-react';
+import { DollarSign, Users, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { DataFormatter } from '../../services';

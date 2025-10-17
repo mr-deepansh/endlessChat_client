@@ -46,10 +46,19 @@ class PostService {
     return response.data;
   }
 
-  // Get post by ID
+  // Get post by ID (public endpoint - no auth required)
   async getPostById(id: string): Promise<Post> {
-    const response = await apiClient.get(`/blogs/posts/${id}`);
-    return response.data;
+    try {
+      const response = await apiClient.get(`/blogs/posts/${id}`);
+      return response.data;
+    } catch (error: any) {
+      // If 401, try without credentials for public access
+      if (error.response?.status === 401) {
+        const response = await apiClient.get(`/blogs/posts/public/${id}`);
+        return response.data;
+      }
+      throw error;
+    }
   }
 
   // Create new post
@@ -98,6 +107,12 @@ class PostService {
     return response.data;
   }
 
+  // Get bookmarked posts
+  async getBookmarkedPosts(page = 1, limit = 10): Promise<PostsResponse> {
+    const response = await apiClient.get(`/blogs/bookmarks?page=${page}&limit=${limit}`);
+    return response.data;
+  }
+
   // Get my posts
   async getMyPosts(page = 1, limit = 10): Promise<PostsResponse> {
     const response = await apiClient.get(`/blogs/posts/my-posts?page=${page}&limit=${limit}`);
@@ -119,7 +134,7 @@ class PostService {
         `/blogs/posts/user-id/${userId}?page=${page}&limit=${limit}`
       );
       return response.data?.posts || [];
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   }
@@ -135,9 +150,21 @@ class PostService {
     await apiClient.post(`/blogs/engagement/${postId}/view`);
   }
 
-  // Repost
-  async repost(postId: string, content?: string): Promise<Post> {
+  // Repost - Toggle repost
+  async repost(postId: string): Promise<{ isReposted: boolean; repostsCount: number }> {
+    const response = await apiClient.post(`/blogs/engagement/${postId}/repost`);
+    return response.data;
+  }
+
+  // Quote Repost - Repost with comment
+  async quoteRepost(postId: string, content: string): Promise<Post> {
     const response = await apiClient.post(`/blogs/engagement/${postId}/repost`, { content });
+    return response.data;
+  }
+
+  // Share post - Track share count
+  async sharePost(postId: string): Promise<{ sharesCount: number }> {
+    const response = await apiClient.post(`/blogs/engagement/${postId}/share`);
     return response.data;
   }
 }

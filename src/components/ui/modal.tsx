@@ -1,6 +1,4 @@
 import React from 'react';
-import { X } from 'lucide-react';
-import { Button } from './button';
 
 interface ModalProps {
   isOpen: boolean;
@@ -9,7 +7,7 @@ interface ModalProps {
   title?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
   return (

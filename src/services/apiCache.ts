@@ -10,7 +10,7 @@ class APICache {
 
   set(key: string, data: any, ttl = this.DEFAULT_TTL): void {
     this.cache.set(key, {
-      data,
+      _data,
       timestamp: Date.now(),
       ttl,
     });

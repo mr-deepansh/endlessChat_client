@@ -6,7 +6,7 @@ import { usePageTitle } from '../../hooks/usePageTitle';
 
 const SuperAdminDashboardPage: React.FC = () => {
   usePageTitle('Super Admin Dashboard');
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const { canAccessSuperAdmin } = useRoleAccess();
 
   if (!canAccessSuperAdmin) {

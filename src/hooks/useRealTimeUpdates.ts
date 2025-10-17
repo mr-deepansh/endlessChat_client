@@ -54,10 +54,10 @@ export const useRealTimeUpdates = ({
 
           default:
         }
-      } catch (error) {}
+      } catch (_error) {}
     };
 
-    ws.onerror = error => {};
+    ws.onerror = _error => {};
 
     ws.onclose = () => {
       // Attempt to reconnect after 3 seconds

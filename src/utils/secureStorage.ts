@@ -4,12 +4,17 @@ class SecureStorage {
 
   // Legacy token cleanup only
   static clearTokens(): void {
-    // Clear any legacy client-side tokens
-    sessionStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('token');
+    try {
+      // Clear any legacy client-side tokens
+      sessionStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token');
+    } catch (_error) {
+      // Ignore localStorage errors in restricted contexts
+      console.warn('Storage access denied:', error);
+    }
   }
 
   // HttpOnly cookies - not accessible from frontend

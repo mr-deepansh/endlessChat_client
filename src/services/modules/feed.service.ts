@@ -1,5 +1,5 @@
-import { postsApi as apiClient } from '../core/serviceClients';
 import type { ApiResponse, PaginatedResponse, SearchParams } from '../../types/api';
+import { postsApi as apiClient } from '../core/serviceClients';
 
 export interface Post {
   id: string;
@@ -466,7 +466,7 @@ class FeedService {
       try {
         const update = JSON.parse(event.data);
         callback(update);
-      } catch (error) {}
+      } catch (_error) {}
     };
 
     return () => ws.close();
@@ -491,7 +491,7 @@ class FeedService {
         });
         return response.data;
       }
-    } catch (error) {}
+    } catch (_error) {}
 
     return null;
   }

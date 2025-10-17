@@ -106,7 +106,7 @@ const Profile = () => {
           const userPosts = await postService.getMyPosts();
           const postsData = userPosts.posts || [];
           setPosts(postsData);
-        } catch (error) {
+        } catch (_error) {
           setPosts([]);
         }
       } else {
@@ -128,7 +128,7 @@ const Profile = () => {
                 foundUser._id || foundUser.id
               );
               setIsFollowing(followStatus.data?.isFollowing || false);
-            } catch (error) {
+            } catch (_error) {
               setIsFollowing(foundUser.isFollowing || false);
             }
             // Fetch user posts
@@ -136,17 +136,17 @@ const Profile = () => {
               const userPosts = await postService.getUserPosts(foundUser.username);
               const postsData = userPosts.posts || [];
               setPosts(postsData);
-            } catch (error) {
+            } catch (_error) {
               setPosts([]);
             }
           } else {
             setUser(null);
           }
-        } catch (userError) {
+        } catch (_userError) {
           setUser(null);
         }
       }
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setLoading(false);
     }

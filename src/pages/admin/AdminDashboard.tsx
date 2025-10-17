@@ -1,5 +1,4 @@
 import {
-  Activity,
   AlertTriangle,
   Ban,
   CheckCircle,

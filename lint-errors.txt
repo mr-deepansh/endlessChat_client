@@ -1,0 +1,58 @@
+  33:14  error  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+   9:17  error    'refreshUser' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  26:17  error    'currentUser' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:31  error  'Activity' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:29  error  'CreditCard' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3:10  error  'Card' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  3:16  error  'CardContent' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  3:29  error  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  3:41  error  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  6:10  error  'SecurityOverviewCard' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    9:11  error    'LinkIcon' is defined but never used. Allowed unused vars must match /^_/u                                                               @typescript-eslint/no-unused-vars
+   17:23  error    'User' is defined but never used. Allowed unused vars must match /^_/u                                                                   @typescript-eslint/no-unused-vars
+   5:10  error    'showNotificationToast' is defined but never used. Allowed unused vars must match /^_/u                                         @typescript-eslint/no-unused-vars
+  56:11  error    'playNotificationSound' is assigned a value but never used. Allowed unused vars must match /^_/u                                @typescript-eslint/no-unused-vars
+  36:38  error    'event' is defined but never used. Allowed unused args must match /^_/u                                                         @typescript-eslint/no-unused-vars
+   99:38  error  'priority' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  212:52  error  'priority' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  81:45  error    'action' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  38:76  error    'data' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+    7:30  error    'debounce' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  262:43  error    'type' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  224:29  error    'userId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   89:24  error    'postId' is defined but never used. Allowed unused args must match /^_/u                                                        @typescript-eslint/no-unused-vars
+  101:14  error    'error' is defined but never used. Allowed unused caught errors must match /^_/u                                                @typescript-eslint/no-unused-vars
+  111:14  error    'error' is defined but never used. Allowed unused caught errors must match /^_/u                                                @typescript-eslint/no-unused-vars
+  86:32  error  'resource' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   19:11  error    'LinkIcon' is defined but never used. Allowed unused vars must match /^_/u                                        @typescript-eslint/no-unused-vars
+  101:16  error    'postsError' is defined but never used. Allowed unused caught errors must match /^_/u                             @typescript-eslint/no-unused-vars
+  108:16  error    'statsError' is defined but never used. Allowed unused caught errors must match /^_/u                             @typescript-eslint/no-unused-vars
+  1:27  error  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   23:29  error    'CardHeader' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+   28:10  error    'Tabs' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   28:16  error    'TabsContent' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   28:29  error    'TabsList' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   28:39  error    'TabsTrigger' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:10  error  'config' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:15  error  'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  100:14  error    'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  341:5   error    'type' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  2:15  error    'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  2:28  error    'PaginatedResponse' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:15  error  'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  412:31  error    'settings' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+    2:53  error    'SearchParams' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  30:15  error    'message' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  30:35  error    'args' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  33:14  error    'message' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  33:34  error    'args' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  36:16  error    'message' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  36:36  error    'args' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  39:15  error    'message' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  39:35  error    'args' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  42:16  error    'message' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  42:36  error    'args' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  55:30  error    'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  86:40  error  Unnecessary escape character: \/  no-useless-escape
+  29:25  error  'token' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  33:26  error  'token' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars

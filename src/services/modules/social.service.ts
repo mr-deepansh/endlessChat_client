@@ -419,7 +419,7 @@ class SocialService {
     showOnlineStatus?: boolean;
     showLastSeen?: boolean;
   }): Promise<ApiResponse<{ message: string }>> {
-    return apiClient.put(`${this.baseUrl}/privacy-settings`, settings);
+    return apiClient.put(`${this.baseUrl}/privacy-settings`);
   }
 
   async getPrivacySettings(): Promise<ApiResponse<any>> {
@@ -566,7 +566,7 @@ class SocialService {
       try {
         const update = JSON.parse(event.data);
         callback(update);
-      } catch (error) {}
+      } catch (_error) {}
     };
 
     return () => ws.close();

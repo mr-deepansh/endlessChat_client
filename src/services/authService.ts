@@ -1,5 +1,4 @@
 import { apiClient } from './core/apiClient';
-import SecureStorage from '../utils/secureStorage';
 
 export interface AuthResponse {
   success: boolean;
@@ -35,8 +34,12 @@ export const authService = {
 
     // Store tokens in localStorage for local network development
     if (response.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
+      try {
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+      } catch (_e) {
+        console.warn('localStorage access denied');
+      }
 
       // Set Authorization header for future requests
       apiClient.setAuthToken(response.data.accessToken);
@@ -68,11 +71,15 @@ export const authService = {
       // Prevent 401 redirects during logout
       apiClient.setLoggingOut(true);
       await apiClient.post('/users/logout');
-    } catch (error) {}
+    } catch (_error) {}
 
     // Clear tokens from localStorage
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    try {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    } catch (_e) {
+      console.warn('localStorage access denied');
+    }
 
     // Clear API client auth
     apiClient.clearAuth();
@@ -97,10 +104,7 @@ export const authService = {
     const instance = apiClient.getInstance();
     const response = await instance.post(
       `/auth/reset-password/${token}`,
-      {
-        password,
-        confirmPassword,
-      },
+      { password, confirmPassword },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -158,6 +162,36 @@ export const authService = {
     return response;
   },
 
+  // Get Location Analytics
+  getLocationAnalytics: async () => {
+    const response = await apiClient.get('/auth/activity/location-analytics');
+    return response;
+  },
+
+  // Get Security Dashboard
+  getSecurityDashboard: async () => {
+    const response = await apiClient.get('/auth/security/dashboard');
+    return response;
+  },
+
+  // Get Threat Assessment
+  getThreatAssessment: async (timeframe = 7) => {
+    const response = await apiClient.get(`/auth/security/threat-assessment?timeframe=${timeframe}`);
+    return response;
+  },
+
+  // Get Compliance Report
+  getComplianceReport: async (days = 30) => {
+    const response = await apiClient.get(`/auth/security/compliance-report?days=${days}`);
+    return response;
+  },
+
+  // Validate IP Threat
+  validateIPThreat: async (ip: string) => {
+    const response = await apiClient.post('/auth/security/validate-ip', { ip });
+    return response;
+  },
+
   // Update Profile
   updateProfile: async (data: UpdateProfileData) => {
     const response = await apiClient.put('/users/profile/me', data);
@@ -185,7 +219,11 @@ export const authService = {
 
   // Check if user is authenticated
   isAuthenticated: (): boolean => {
-    const token = localStorage.getItem('accessToken');
-    return !!token;
+    try {
+      const token = localStorage.getItem('accessToken');
+      return !!token;
+    } catch (_e) {
+      return false;
+    }
   },
 };

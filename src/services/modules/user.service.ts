@@ -1,11 +1,5 @@
 import { usersApi as apiClient } from '../core/serviceClients';
-import type {
-  ApiResponse,
-  User,
-  PaginatedResponse,
-  SearchParams,
-  FollowStats,
-} from '../../types/api';
+import type { ApiResponse, User, PaginatedResponse, SearchParams } from '../../types/api';
 
 export interface UserSearchParams extends SearchParams {
   username?: string;
@@ -249,13 +243,13 @@ class UserService {
     try {
       const response = await this.getUserById(userId);
       if (response.success && response.data) {
-        this.userCache.set(userId, {
-          user: response.data,
+        this.userCache.set(_userId, {
+          user: response._data,
           timestamp: Date.now(),
         });
         return response.data;
       }
-    } catch (error) {}
+    } catch (_error) {}
 
     return null;
   }

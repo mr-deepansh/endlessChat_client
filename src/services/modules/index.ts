@@ -1,6 +1,7 @@
 export { default as securityService } from './securityService';
 export { default as monitoringService } from './monitoringService';
 export { default as analyticsService } from './analyticsService';
+export { adminService } from './admin.service';
 
 export type { SecurityOverview } from './securityService';
 

@@ -236,7 +236,7 @@ export const responsiveStyles = {
     styles: Partial<Record<Breakpoint | 'xs', React.CSSProperties>>
   ): React.CSSProperties => {
     let baseStyles: React.CSSProperties = {};
-    const mediaQueries: string[] = [];
+    const _mediaQueries: string[] = [];
 
     // Apply base styles (xs)
     if (styles.xs) {
@@ -247,7 +247,7 @@ export const responsiveStyles = {
     Object.entries(styles).forEach(([bp, style]) => {
       if (bp !== 'xs' && style) {
         const breakpoint = bp as Breakpoint;
-        const mediaQuery = responsiveStyles.mediaQuery(breakpoint);
+        const _mediaQuery = responsiveStyles.mediaQuery(breakpoint);
         // Note: This would need to be processed by a CSS-in-JS library
         // For React inline styles, we'd need a different approach
       }

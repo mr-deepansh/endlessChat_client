@@ -31,12 +31,15 @@ const PostDetail: React.FC = () => {
       const response = await postService.getPostById(postId!);
       setPost(response);
     } catch (error: any) {
-      setError(error.message || 'Failed to load post');
-      toast({
-        title: 'Error',
-        description: 'Failed to load post',
-        variant: 'destructive',
-      });
+      // Don't show error for 401 on public post view
+      if (error.response?.status !== 401) {
+        setError(error.message || 'Failed to load post');
+        toast({
+          title: 'Error',
+          description: 'Failed to load post',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -45,7 +48,7 @@ const PostDetail: React.FC = () => {
   const trackView = async () => {
     try {
       await postService.trackView(postId!);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail view tracking
     }
   };
@@ -80,6 +83,33 @@ const PostDetail: React.FC = () => {
         description: error.message || 'Failed to repost',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleShare = (postId: string) => {
+    setPost((prev: any) => ({
+      ...prev,
+      sharesCount: (prev.sharesCount || 0) + 1,
+    }));
+  };
+
+  const handleDelete = async (postId: string) => {
+    try {
+      await postService.deletePost(postId);
+      toast({ title: 'Post Deleted', description: 'Post deleted successfully' });
+      navigate('/feed');
+    } catch (error: any) {
+      toast({ title: 'Error', description: 'Failed to delete post', variant: 'destructive' });
+    }
+  };
+
+  const handleEdit = async (postId: string, content: string) => {
+    try {
+      await postService.editPost(postId, content);
+      setPost((prev: any) => ({ ...prev, content }));
+      toast({ title: 'Post Updated', description: 'Post updated successfully' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: 'Failed to update post', variant: 'destructive' });
     }
   };
 
@@ -134,7 +164,7 @@ const PostDetail: React.FC = () => {
           <div className="mb-4">
             <Button
               variant="ghost"
-              onClick={() => navigate(-1)}
+              onClick={() => (isAuthenticated ? navigate(-1) : navigate('/'))}
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -147,19 +177,49 @@ const PostDetail: React.FC = () => {
             <PostCard
               post={post}
               currentUserId={user?._id}
-              onLike={handleLike}
+              onLike={isAuthenticated ? handleLike : () => setShowLoginPrompt(true)}
               onRepost={handleRepost}
-              onComment={() => {}}
-              onShare={() => {}}
+              onComment={isAuthenticated ? () => {} : () => setShowLoginPrompt(true)}
+              onShare={handleShare}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
             />
 
-            {/* Comments Section - TODO: Implement comment loading */}
-            <Card className="border-none shadow-soft bg-gradient-card">
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">Comments section coming soon...</p>
-              </CardContent>
-            </Card>
+            {/* Comments Section */}
+            {isAuthenticated ? (
+              <PostComments postId={postId!} currentUserId={user?._id} />
+            ) : (
+              <Card className="border-none shadow-soft bg-gradient-card">
+                <CardContent className="p-6 text-center">
+                  <p className="text-muted-foreground mb-4">Sign in to view and post comments</p>
+                  <Button onClick={() => navigate('/login')}>Login to Comment</Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
+
+          {/* Login Prompt Modal */}
+          {showLoginPrompt && (
+            <div
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+              onClick={() => setShowLoginPrompt(false)}
+            >
+              <Card className="max-w-md mx-4" onClick={e => e.stopPropagation()}>
+                <CardContent className="p-6 text-center">
+                  <h3 className="text-xl font-semibold mb-2">Sign in Required</h3>
+                  <p className="text-muted-foreground mb-4">
+                    You need to be signed in to interact with posts
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <Button variant="outline" onClick={() => setShowLoginPrompt(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={() => navigate('/login')}>Login</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>

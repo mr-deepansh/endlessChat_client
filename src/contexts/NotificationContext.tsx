@@ -67,7 +67,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const response = await notificationService.getNotifications();
       setNotifications(response.notifications || []);
       setUnreadCount(response.unreadCount || 0);
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         prev.map(n => (n._id === notificationId ? { ...n, isRead: true } : n))
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to mark notification as read',
@@ -98,7 +98,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         title: 'All notifications marked as read',
         description: "You're all caught up!",
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to mark all notifications as read',
@@ -116,7 +116,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         if (deletedNotification && !deletedNotification.isRead) {
           setUnreadCount(prev => Math.max(0, prev - 1));
         }
-      } catch (error) {
+      } catch (_error) {
         toast({
           title: 'Error',
           description: 'Failed to delete notification',

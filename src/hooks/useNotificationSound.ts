@@ -10,7 +10,7 @@ export const useNotificationSound = () => {
         audioRef.current.volume = 0.5;
       }
       audioRef.current.play().catch(() => {});
-    } catch (error) {}
+    } catch (_error) {}
   }, []);
 
   return { playNotificationSound };

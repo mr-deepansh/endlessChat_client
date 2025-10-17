@@ -12,14 +12,12 @@ import { Textarea } from '../../components/ui/textarea';
 import { Modal } from '../../components/ui/modal';
 import Layout from '../../components/layout/Layout';
 import {
-  Users,
   MessageSquare,
   Heart,
   Calendar,
   MapPin,
   Link as LinkIcon,
   Edit3,
-  UserPlus,
   Settings,
   Shield,
   Save,
@@ -77,7 +75,7 @@ const CurrentUserProfile = () => {
     location: '',
   });
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v2';
+  const _API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v2';
 
   useEffect(() => {
     if (user) {
@@ -110,7 +108,7 @@ const CurrentUserProfile = () => {
       } catch (statsError: any) {
         // Keep default stats if API not available
       }
-    } catch (error) {
+    } catch (_error) {
       // Don't show error toast for API not being ready
     } finally {
       setIsLoading(false);
@@ -129,7 +127,7 @@ const CurrentUserProfile = () => {
         title: 'Profile Updated',
         description: 'Your profile has been successfully updated.',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Update Failed',
         description: 'Failed to update profile. Please try again.',

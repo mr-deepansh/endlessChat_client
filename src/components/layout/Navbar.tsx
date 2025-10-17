@@ -67,7 +67,7 @@ const Navbar = () => {
           setSearchResults(users);
           setShowSearchResults(users.length > 0);
         }
-      } catch (error) {
+      } catch (_error) {
         setSearchResults([]);
         setShowSearchResults(false);
       } finally {

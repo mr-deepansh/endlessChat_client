@@ -61,7 +61,7 @@ const Discover: React.FC = () => {
       }
 
       setUsers(filteredUsers);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to load users',
@@ -82,7 +82,7 @@ const Discover: React.FC = () => {
         return userId && userId !== currentUserId;
       });
       setUsers(filteredUsers);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to search users',

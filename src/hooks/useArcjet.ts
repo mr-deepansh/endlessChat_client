@@ -87,7 +87,7 @@ export const useRateLimitStatus = () => {
         remaining: decision.reason.isRateLimit() ? decision.reason.remaining : null,
         resetTime: decision.reason.isRateLimit() ? decision.reason.resetTime : null,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         allowed: false,
         remaining: 0,

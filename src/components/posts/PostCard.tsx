@@ -34,7 +34,6 @@ import {
   Clock,
   Quote,
   BarChart3,
-  Calendar,
   FileText,
   MessageSquare,
   Send,
@@ -64,7 +63,7 @@ interface Post {
   isLiked?: boolean;
   isReposted?: boolean;
   isBookmarked?: boolean;
-  images?: string[];
+  images?: (string | {url: string; publicId: string})[];
   poll?: {
     question: string;
     options: { text: string; votes: number }[];
@@ -382,15 +381,38 @@ const PostCard: React.FC<PostCardProps> = ({
 
           {/* Post Images */}
           {post.images && post.images.length > 0 && (
-            <div className="grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
-              {post.images.map((image, index) => (
+            <div className={`rounded-lg overflow-hidden ${
+              post.images.length === 1 ? '' : 
+              post.images.length === 2 ? 'grid grid-cols-2 gap-2' :
+              'grid grid-cols-2 gap-2'
+            }`}>
+              {post.images.slice(0, 4).map((image, index) => (
                 <img
                   key={index}
-                  src={image}
+                  src={typeof image === 'string' ? image : image.url}
                   alt={`Post image ${index + 1}`}
-                  className="w-full h-48 object-cover hover:scale-105 transition-smooth cursor-pointer"
+                  className={`w-full object-cover hover:scale-105 transition-smooth cursor-pointer ${
+                    post.images.length === 1 ? 'max-h-96' : 'h-48'
+                  }`}
+                  onClick={() => {
+                    window.open(typeof image === 'string' ? image : image.url, '_blank');
+                  }}
                 />
               ))}
+              {post.images.length > 4 && (
+                <div className="relative">
+                  <img
+                    src={typeof post.images[3] === 'string' ? post.images[3] : post.images[3].url}
+                    alt="Post image 4"
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <span className="text-white font-semibold text-lg">
+                      +{post.images.length - 3}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

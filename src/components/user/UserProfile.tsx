@@ -5,7 +5,6 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import {
-  MapPin,
   Calendar,
   Link as LinkIcon,
   Users,
@@ -63,7 +62,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
       const data = await userService.getUserProfile(profileUsername!);
       setProfile(data);
       setIsFollowing(data.user.isFollowing || false);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to load user profile',
@@ -87,7 +86,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
         },
       });
       setIsFollowing(userData.isFollowing || false);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to load user profile',
@@ -105,7 +104,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ username, userId }) => {
       setPostsLoading(true);
       const userPosts = await postService.getUserPostsById(profile.user._id);
       setPosts(userPosts);
-    } catch (error) {
+    } catch (_error) {
       setPosts([]);
     } finally {
       setPostsLoading(false);

@@ -150,7 +150,7 @@ class UserService {
           hasPrevPage: false,
         };
       }
-    } catch (error) {
+    } catch (_error) {
       throw error;
     }
   }
@@ -205,7 +205,7 @@ class UserService {
     try {
       const response = await apiClient.get(`/users/posts?page=${page}&limit=${limit}`);
       return response.data || [];
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   }
@@ -224,7 +224,7 @@ class UserService {
           commentsReceived: 0,
         }
       );
-    } catch (error) {
+    } catch (_error) {
       return {
         postsCount: 0,
         followersCount: 0,

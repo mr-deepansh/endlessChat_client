@@ -84,7 +84,7 @@ class ApiClient {
         return response;
       },
       async error => {
-        const originalRequest = error.config;
+        const _originalRequest = error.config;
 
         // Handle 401 Unauthorized - redirect to login
         if (error.response?.status === 401 && !this.isLoggingOut) {

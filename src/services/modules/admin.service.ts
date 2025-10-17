@@ -450,10 +450,10 @@ class AdminService {
       try {
         const stats = JSON.parse(event.data);
         callback(stats);
-      } catch (error) {}
+      } catch (_error) {}
     };
 
-    ws.onerror = error => {};
+    ws.onerror = _error => {};
 
     // Return cleanup function
     return () => {

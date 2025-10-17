@@ -18,7 +18,7 @@ import { authService } from '../../services/authService';
 const Settings: React.FC = () => {
   usePageTitle('Settings');
   const { user, refreshUser, updateProfile, changePassword } = useAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Profile form state
   const [profileData, setProfileData] = useState({

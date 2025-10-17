@@ -20,7 +20,7 @@ class SafeJSON {
       }
 
       return parsed;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -71,7 +71,7 @@ class SafeJSON {
         },
         space
       );
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }

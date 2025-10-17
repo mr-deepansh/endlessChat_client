@@ -2,7 +2,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Logger from './utils/logger';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import RateLimitIndicator from './components/common/RateLimitIndicator';
@@ -14,11 +13,12 @@ import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { RateLimitProvider } from './contexts/RateLimitContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import Logger from './utils/logger';
 
 // Import pages from organized folders
 import { ForgotPassword, Login, Register, ResetPassword, VerifyEmail } from './pages/auth';
 
-import { AdminDashboard, SuperAdminDashboard } from './pages/admin';
+import { AdminDashboard, SuperAdminDashboard, AdminSettings } from './pages/admin';
 
 import {
   Bookmarks,
@@ -80,8 +80,13 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <TooltipProvider>
             <ThemeProvider>
               <RateLimitProvider>
                 <AuthProvider>
@@ -265,6 +270,16 @@ const App = () => {
                             </ErrorBoundary>
                           }
                         />
+                        <Route
+                          path="/admin/settings"
+                          element={
+                            <ErrorBoundary>
+                              <ProtectedRoute adminOnly={true}>
+                                <AdminSettings />
+                              </ProtectedRoute>
+                            </ErrorBoundary>
+                          }
+                        />
 
                         {/* Super Admin only routes */}
                         <Route
@@ -295,9 +310,15 @@ const App = () => {
                           path="/post/:postId"
                           element={
                             <ErrorBoundary>
-                              <ProtectedRoute>
-                                <PostDetail />
-                              </ProtectedRoute>
+                              <PostDetail />
+                            </ErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="/:username/post/:postId"
+                          element={
+                            <ErrorBoundary>
+                              <PostDetail />
                             </ErrorBoundary>
                           }
                         />
@@ -310,8 +331,8 @@ const App = () => {
                 </AuthProvider>
               </RateLimitProvider>
             </ThemeProvider>
-          </BrowserRouter>
-        </TooltipProvider>
+          </TooltipProvider>
+        </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
   );

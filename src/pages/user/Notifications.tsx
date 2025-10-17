@@ -15,13 +15,9 @@ import {
   MessageCircle,
   UserPlus,
   Repeat2,
-  Filter,
   RefreshCw,
-  Settings,
   MoreHorizontal,
   Eye,
-  Archive,
-  Star,
   SlidersHorizontal,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
@@ -120,7 +116,7 @@ const NotificationItem: React.FC<{
   onMarkRead: (id: string) => void;
   onDelete: (id: string) => void;
 }> = ({ notification, onMarkRead, onDelete }) => {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const timeAgo = getTimeAgo(notification.createdAt);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -333,7 +329,7 @@ const NotificationItem: React.FC<{
 
 function Notifications() {
   usePageTitle('Notifications');
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -354,7 +350,7 @@ function Notifications() {
       console.log('Sample notification data:', response.notifications?.[0]);
       setNotifications(response.notifications || []);
       setUnreadCount(response.unreadCount || 0);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to load notifications:', error);
     } finally {
       setLoading(false);
@@ -366,7 +362,7 @@ function Notifications() {
       await notificationService.markAsRead(id);
       setNotifications(prev => prev.map(n => (n._id === id ? { ...n, isRead: true } : n)));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {}
+    } catch (_error) {}
   };
 
   const markAllAsRead = async () => {
@@ -374,14 +370,14 @@ function Notifications() {
       await notificationService.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
-    } catch (error) {}
+    } catch (_error) {}
   };
 
   const deleteNotification = async (id: string) => {
     try {
       await notificationService.deleteNotification(id);
       setNotifications(prev => prev.filter(n => n._id !== id));
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to delete notification:', error);
     }
   };
@@ -555,7 +551,7 @@ function Notifications() {
                 ) : (
                   <CardContent className="p-0">
                     <div className="divide-y divide-border/50">
-                      {filteredNotifications.map((notification, index) => (
+                      {filteredNotifications.map(notification => (
                         <NotificationItem
                           key={notification._id}
                           notification={notification}

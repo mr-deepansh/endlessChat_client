@@ -23,7 +23,7 @@ interface Post {
     title?: string;
   };
   content: string;
-  images?: string[];
+  images?: (string | {url: string; publicId: string})[];
   createdAt: string;
   likesCount: number;
   commentsCount: number;
@@ -50,7 +50,7 @@ const Feed: React.FC = () => {
         const response = await userService.getUserFeed();
 
         setPosts(response.posts || []);
-      } catch (backendError) {
+      } catch (_backendError) {
         setPosts([]);
       }
     };
@@ -72,7 +72,7 @@ const Feed: React.FC = () => {
         _id: newPost._id,
         author: newPost.author,
         content: newPost.content,
-        images: newPost.media?.map(m => m.url) || [],
+        images: newPost.images?.map(img => img.url) || [],
         createdAt: newPost.createdAt,
         likesCount: newPost.likes?.length || 0,
         commentsCount: newPost.comments?.length || 0,
@@ -125,12 +125,108 @@ const Feed: React.FC = () => {
     }
   };
 
+  const handleRepost = async (postId: string, withQuote?: boolean, quoteText?: string) => {
+    try {
+      if (withQuote && quoteText) {
+        await postService.quoteRepost(postId, quoteText);
+        toast({
+          title: 'Quote Reposted',
+          description: 'Your quote repost has been shared',
+        });
+      } else {
+        const response = await postService.repost(postId);
+        setPosts(
+          posts.map(p =>
+            p._id === postId
+              ? {
+                  ...p,
+                  isReposted: response.isReposted,
+                  repostsCount: response.repostsCount,
+                }
+              : p
+          )
+        );
+      }
+      // Refresh feed to show new repost
+      const response = await userService.getUserFeed();
+      setPosts(response.posts || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to repost',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleShare = async (postId: string) => {
+    try {
+      await postService.sharePost(postId);
+      setPosts(
+        posts.map(p =>
+          p._id === postId
+            ? {
+                ...p,
+                sharesCount: (p.sharesCount || 0) + 1,
+              }
+            : p
+        )
+      );
+    } catch (error: any) {
+      // Silent fail for share count
+      console.error('Failed to update share count:', error);
+    }
+  };
+
+  const handleDelete = async (postId: string) => {
+    try {
+      await postService.deletePost(postId);
+      setPosts(posts.filter(p => p._id !== postId));
+      toast({
+        title: 'Post Deleted',
+        description: 'Your post has been deleted successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete post',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEdit = async (postId: string, content: string) => {
+    try {
+      await postService.editPost(postId, content);
+      setPosts(
+        posts.map(p =>
+          p._id === postId
+            ? {
+                ...p,
+                content,
+              }
+            : p
+        )
+      );
+      toast({
+        title: 'Post Updated',
+        description: 'Your post has been updated successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update post',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleUserFollow = (userId: string) => {
     const loadPosts = async () => {
       try {
         const response = await userService.getUserFeed();
         setPosts(response.posts || []);
-      } catch (error) {}
+      } catch (_error) {}
     };
     loadPosts();
   };
@@ -212,15 +308,15 @@ const Feed: React.FC = () => {
                           isLiked: post.isLiked || false,
                           isReposted: post.isReposted || false,
                           isBookmarked: post.isBookmarked || false,
-                          images: post.images || [],
+                          images: post.images?.map(img => typeof img === 'string' ? img : img.url) || [],
                           type: 'text',
                         }}
                         currentUserId={user?._id}
                         onLike={() => handleLike(post._id)}
-                        onRepost={() => {}}
-                        onShare={() => {}}
-                        onEdit={() => {}}
-                        onDelete={() => {}}
+                        onRepost={handleRepost}
+                        onShare={handleShare}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
                       />
                     ))
                 )}

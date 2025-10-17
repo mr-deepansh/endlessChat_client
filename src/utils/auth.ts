@@ -45,7 +45,7 @@ export const storeAuthData = (token: string, user: User): void => {
       avatar: user.avatar,
     };
     sessionStorage.setItem('user_profile', JSON.stringify(userProfile));
-  } catch (error) {}
+  } catch (_error) {}
 };
 
 /**
@@ -55,7 +55,7 @@ export const clearAuthData = (): void => {
   try {
     SecureStorage.clearTokens();
     sessionStorage.removeItem('user_profile');
-  } catch (error) {}
+  } catch (_error) {}
 };
 
 /**

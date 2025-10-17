@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Bell } from 'lucide-react';
-import { Button } from '../ui/button';
+
 import { Badge } from '../ui/badge';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useAuth } from '../../contexts/AuthContext';

@@ -16,7 +16,7 @@ export const usePerformanceMonitor = (componentName: string) => {
 
     return () => {
       if (renderStartRef.current) {
-        const renderTime = performance.now() - renderStartRef.current;
+        const _renderTime = performance.now() - renderStartRef.current;
         // Record render time (method would need to be public)
       }
     };

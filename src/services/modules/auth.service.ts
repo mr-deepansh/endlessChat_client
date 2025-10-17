@@ -1,11 +1,8 @@
 import { authApi as apiClient } from '../core/serviceClients';
 import type {
   ApiResponse,
-  LoginRequest,
-  RegisterRequest,
   AuthResponse,
   User,
-  ChangePasswordRequest,
   ActivityLog,
   LocationAnalytics,
 } from '../../types/api';

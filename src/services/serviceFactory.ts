@@ -200,7 +200,7 @@ class EnterpriseServiceFactory {
         } else if (metrics) {
           metrics.uptime = Math.max(0, metrics.uptime - 5);
         }
-      } catch (error) {
+      } catch (_error) {
         service.status = 'error';
         service.errorCount++;
       }
@@ -221,7 +221,7 @@ class EnterpriseServiceFactory {
         // Reinitialize API client if needed
         apiClient.healthCheck();
       }
-    } catch (error) {
+    } catch (_error) {
       // Silent error handling
     }
   }
@@ -253,7 +253,7 @@ class EnterpriseServiceFactory {
         await service.instance.start();
       }
       service.status = 'active';
-    } catch (error) {
+    } catch (_error) {
       service.status = 'error';
       throw new Error(`Failed to start service '${name}': ${error}`);
     }
@@ -270,7 +270,7 @@ class EnterpriseServiceFactory {
         await service.instance.stop();
       }
       service.status = 'inactive';
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Failed to stop service '${name}': ${error}`);
     }
   }
@@ -283,7 +283,7 @@ class EnterpriseServiceFactory {
   // Bulk operations for enterprise scale
   public async startAllServices(): Promise<void> {
     const promises = Array.from(this.services.keys()).map(name =>
-      this.startService(name).catch(error => {
+      this.startService(name).catch(_error => {
         // Silent error handling
       })
     );
@@ -292,7 +292,7 @@ class EnterpriseServiceFactory {
 
   public async stopAllServices(): Promise<void> {
     const promises = Array.from(this.services.keys()).map(name =>
-      this.stopService(name).catch(error => {
+      this.stopService(name).catch(_error => {
         // Silent error handling
       })
     );

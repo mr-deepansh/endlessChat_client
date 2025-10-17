@@ -32,11 +32,8 @@ import {
   Clock,
   Globe,
   Video,
-  Camera,
   Hash,
   AtSign,
-  Zap,
-  Users,
 } from 'lucide-react';
 import { format } from 'date-fns';
 // Upload service will be handled by postService
@@ -232,43 +229,47 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
       });
       return;
     }
-
     setIsGettingLocation(true);
     navigator.geolocation.getCurrentPosition(
       async position => {
         try {
-          // Mock location name - in real app, use reverse geocoding API
-          const mockLocations = [
-            'New York, NY',
-            'San Francisco, CA',
-            'Los Angeles, CA',
-            'Chicago, IL',
-            'Miami, FL',
-          ];
-          const randomLocation = mockLocations[Math.floor(Math.random() * mockLocations.length)];
-          setLocation(randomLocation);
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const locationName =
+            data.address?.city ||
+            data.address?.town ||
+            data.address?.village ||
+            data.address?.state ||
+            'Unknown Location';
+          setLocation(locationName);
           toast({
             title: 'Location added',
-            description: `Added ${randomLocation} to your post.`,
+            description: `Added ${locationName} to your post.`,
           });
-        } catch (error) {
+        } catch (_error) {
+          setLocation(
+            `${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}`
+          );
           toast({
-            title: 'Location error',
-            description: 'Could not get location name.',
-            variant: 'destructive',
+            title: 'Location added',
+            description: 'Location coordinates added to your post.',
           });
         } finally {
           setIsGettingLocation(false);
         }
       },
-      error => {
+      _error => {
         setIsGettingLocation(false);
         toast({
           title: 'Location denied',
           description: 'Please allow location access to add your location.',
           variant: 'destructive',
         });
-      }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 

@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
-import { analyticsService, revenueService, monitoringService } from '../services/modules';
+import { analyticsService, monitoringService, adminService } from '../services/modules';
 import type {
   RetentionAnalytics,
   EngagementMetrics,
-  RevenueAnalytics,
   DatabaseStats,
 } from '../services/modules';
+
+interface RevenueAnalytics {
+  totalRevenue: number;
+  revenueGrowth: number;
+  averageRevenuePerUser: number;
+  revenueBySource: Record<string, number>;
+  monthlyRecurringRevenue: number;
+}
 
 export const useRetentionAnalytics = (period = 'weekly', weeks = 12) => {
   const [data, setData] = useState<RetentionAnalytics | null>(null);
@@ -64,8 +71,10 @@ export const useRevenueAnalytics = (period = '30d') => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await revenueService.getRevenueAnalytics(period);
-        setData(result);
+        const response = await adminService.getRevenueAnalytics(period);
+        if (response.success) {
+          setData(response.data);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch revenue data');
       } finally {

@@ -26,7 +26,7 @@ const Search: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const usersPerPage = 10;
 
   useEffect(() => {
@@ -53,7 +53,7 @@ const Search: React.FC = () => {
         setTotalUsers(0);
         setTotalPages(1);
       }
-    } catch (error) {
+    } catch (_error) {
       setUsers([]);
       setTotalUsers(0);
       setTotalPages(1);

@@ -41,7 +41,7 @@ const VerticalUserSuggestions: React.FC<VerticalUserSuggestionsProps> = ({
         states[user._id] = user.isFollowing || false;
       });
       setFollowingStates(states);
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setLoading(false);
     }

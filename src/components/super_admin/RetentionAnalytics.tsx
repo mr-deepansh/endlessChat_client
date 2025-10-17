@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Users, Calendar } from 'lucide-react';
+import { TrendingUp, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { DataFormatter } from '../../services';

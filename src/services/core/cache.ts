@@ -33,7 +33,7 @@ class CacheService {
 
     try {
       localStorage.setItem(this.prefix + key, JSON.stringify(cacheItem));
-    } catch (error) {}
+    } catch (_error) {}
   }
 
   /**
@@ -54,7 +54,7 @@ class CacheService {
       }
 
       return cacheItem.data;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -65,7 +65,7 @@ class CacheService {
   delete(key: string): void {
     try {
       localStorage.removeItem(this.prefix + key);
-    } catch (error) {}
+    } catch (_error) {}
   }
 
   /**
@@ -92,7 +92,7 @@ class CacheService {
           }
         }
       });
-    } catch (error) {}
+    } catch (_error) {}
   }
 
   /**
@@ -106,7 +106,7 @@ class CacheService {
           localStorage.removeItem(key);
         }
       });
-    } catch (error) {}
+    } catch (_error) {}
   }
 
   /**
@@ -138,7 +138,7 @@ class CacheService {
           }
         }
       });
-    } catch (error) {}
+    } catch (_error) {}
 
     return { totalItems, totalSize, expiredItems };
   }
@@ -162,7 +162,7 @@ class CacheService {
           }
         }
       });
-    } catch (error) {}
+    } catch (_error) {}
   }
 
   /**

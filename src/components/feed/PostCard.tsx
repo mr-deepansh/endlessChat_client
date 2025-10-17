@@ -50,7 +50,7 @@ interface PostCardProps {
     isBookmarked: boolean;
     isReposted: boolean;
     createdAt: string;
-    images?: string[]; // matches Feed.tsx usage
+    images?: (string | {url: string; publicId: string})[]; // matches backend response
     // other optional fields allowed
     [key: string]: any;
   };
@@ -64,7 +64,6 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({
   post,
-  currentUserId,
   onLike,
   onRepost,
   onShare,
@@ -192,12 +191,50 @@ const PostCard: React.FC<PostCardProps> = ({
               </p>
 
               {post.images && post.images.length > 0 && (
-                <div className="mt-3 rounded-lg overflow-hidden">
-                  <img
-                    src={post.images[0]}
-                    alt="Post media"
-                    className="w-full max-h-96 object-cover"
-                  />
+                <div className={`mt-3 rounded-lg overflow-hidden ${
+                  post.images.length === 1 ? '' : 
+                  post.images.length === 2 ? 'grid grid-cols-2 gap-1' :
+                  'grid grid-cols-2 gap-1'
+                }`}>
+                  {post.images.slice(0, 4).map((image, index) => (
+                    <img
+                      key={index}
+                      src={typeof image === 'string' ? image : image.url}
+                      alt={`Post media ${index + 1}`}
+                      className={`w-full object-cover ${
+                        post.images.length === 1 ? 'max-h-96' : 'h-48'
+                      } hover:scale-105 transition-transform cursor-pointer bg-gray-100`}
+                      onClick={() => {
+                        // TODO: Open image in modal
+                        window.open(typeof image === 'string' ? image : image.url, '_blank');
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // Prevent infinite loop
+                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%239ca3af"%3EImage unavailable%3C/text%3E%3C/svg%3E';
+                        target.style.cursor = 'default';
+                      }}
+                    />
+                  ))}
+                  {post.images.length > 4 && (
+                    <div className="relative">
+                      <img
+                        src={typeof post.images[3] === 'string' ? post.images[3] : post.images[3].url}
+                        alt="Post media 4"
+                        className="w-full h-48 object-cover bg-gray-100"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%239ca3af"%3EImage unavailable%3C/text%3E%3C/svg%3E';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="text-white font-semibold text-lg">
+                          +{post.images.length - 3}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
