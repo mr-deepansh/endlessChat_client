@@ -63,7 +63,7 @@ interface Post {
   isLiked?: boolean;
   isReposted?: boolean;
   isBookmarked?: boolean;
-  images?: (string | {url: string; publicId: string})[];
+  images?: (string | { url: string; publicId: string })[];
   poll?: {
     question: string;
     options: { text: string; votes: number }[];
@@ -381,11 +381,15 @@ const PostCard: React.FC<PostCardProps> = ({
 
           {/* Post Images */}
           {post.images && post.images.length > 0 && (
-            <div className={`rounded-lg overflow-hidden ${
-              post.images.length === 1 ? '' : 
-              post.images.length === 2 ? 'grid grid-cols-2 gap-2' :
-              'grid grid-cols-2 gap-2'
-            }`}>
+            <div
+              className={`rounded-lg overflow-hidden ${
+                post.images.length === 1
+                  ? ''
+                  : post.images.length === 2
+                    ? 'grid grid-cols-2 gap-2'
+                    : 'grid grid-cols-2 gap-2'
+              }`}
+            >
               {post.images.slice(0, 4).map((image, index) => (
                 <img
                   key={index}

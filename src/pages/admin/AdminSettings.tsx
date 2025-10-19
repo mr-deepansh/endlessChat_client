@@ -13,7 +13,13 @@ import {
 import React, { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
@@ -170,9 +176,7 @@ const AdminSettings: React.FC = () => {
                   <Server className="w-5 h-5" />
                   Application Configuration
                 </CardTitle>
-                <CardDescription>
-                  Basic application settings and information
-                </CardDescription>
+                <CardDescription>Basic application settings and information</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -181,9 +185,7 @@ const AdminSettings: React.FC = () => {
                       <Label>Application Name</Label>
                       <Input
                         value={editedSettings.application?.name || ''}
-                        onChange={e =>
-                          handleSettingChange('application', 'name', e.target.value)
-                        }
+                        onChange={e => handleSettingChange('application', 'name', e.target.value)}
                         placeholder="App Name"
                       />
                     </div>
@@ -240,9 +242,7 @@ const AdminSettings: React.FC = () => {
                   <Shield className="w-5 h-5" />
                   Security Configuration
                 </CardTitle>
-                <CardDescription>
-                  Manage authentication and security settings
-                </CardDescription>
+                <CardDescription>Manage authentication and security settings</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
@@ -252,14 +252,10 @@ const AdminSettings: React.FC = () => {
                       <Input
                         id="jwtExpiry"
                         value={editedSettings.security?.jwtExpiry || ''}
-                        onChange={e =>
-                          handleSettingChange('security', 'jwtExpiry', e.target.value)
-                        }
+                        onChange={e => handleSettingChange('security', 'jwtExpiry', e.target.value)}
                         placeholder="1h"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Format: 1h, 7d, 30d
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">Format: 1h, 7d, 30d</p>
                     </div>
                     <div>
                       <Label htmlFor="maxLoginAttempts">Max Login Attempts</Label>
@@ -397,16 +393,12 @@ const AdminSettings: React.FC = () => {
                         }
                         placeholder="10485760"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        10485760 bytes = 10MB
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">10485760 bytes = 10MB</p>
                     </div>
                   </div>
 
                   <Button
-                    onClick={() =>
-                      updateSettings('performance', editedSettings.performance || {})
-                    }
+                    onClick={() => updateSettings('performance', editedSettings.performance || {})}
                     disabled={saving.performance}
                     className="flex items-center gap-2"
                   >
@@ -464,8 +456,8 @@ const AdminSettings: React.FC = () => {
                   <Alert>
                     <Database className="h-4 w-4" />
                     <AlertDescription>
-                      Database settings are managed through environment variables and require
-                      server restart.
+                      Database settings are managed through environment variables and require server
+                      restart.
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -519,8 +511,8 @@ const AdminSettings: React.FC = () => {
                   <Alert>
                     <Server className="h-4 w-4" />
                     <AlertDescription>
-                      Redis settings are managed through environment variables and require
-                      server restart.
+                      Redis settings are managed through environment variables and require server
+                      restart.
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -536,9 +528,7 @@ const AdminSettings: React.FC = () => {
                   <Mail className="w-5 h-5" />
                   Monitoring Configuration
                 </CardTitle>
-                <CardDescription>
-                  System monitoring and logging settings
-                </CardDescription>
+                <CardDescription>System monitoring and logging settings</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
@@ -548,9 +538,7 @@ const AdminSettings: React.FC = () => {
                       <select
                         id="monitoringEnabled"
                         value={editedSettings.monitoring?.enabled || 'true'}
-                        onChange={e =>
-                          handleSettingChange('monitoring', 'enabled', e.target.value)
-                        }
+                        onChange={e => handleSettingChange('monitoring', 'enabled', e.target.value)}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <option value="true">Enabled</option>
@@ -563,11 +551,7 @@ const AdminSettings: React.FC = () => {
                         id="healthCheckInterval"
                         value={editedSettings.monitoring?.healthCheckInterval || ''}
                         onChange={e =>
-                          handleSettingChange(
-                            'monitoring',
-                            'healthCheckInterval',
-                            e.target.value
-                          )
+                          handleSettingChange('monitoring', 'healthCheckInterval', e.target.value)
                         }
                         placeholder="30000"
                       />
@@ -612,9 +596,7 @@ const AdminSettings: React.FC = () => {
                   </Alert>
 
                   <Button
-                    onClick={() =>
-                      updateSettings('monitoring', editedSettings.monitoring || {})
-                    }
+                    onClick={() => updateSettings('monitoring', editedSettings.monitoring || {})}
                     disabled={saving.monitoring}
                     className="flex items-center gap-2"
                   >

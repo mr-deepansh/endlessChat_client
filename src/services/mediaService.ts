@@ -32,16 +32,20 @@ class MediaService {
    */
   async uploadMultipleMedia(files: File[]): Promise<ApiResponse<MediaUploadResponse[]>> {
     const formData = new FormData();
-    
-    files.forEach((file) => {
+
+    files.forEach(file => {
       formData.append('media', file);
     });
 
-    const response = await apiClient.post<MediaUploadResponse[]>('/media/upload-multiple', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post<MediaUploadResponse[]>(
+      '/media/upload-multiple',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
 
     return response.data;
   }

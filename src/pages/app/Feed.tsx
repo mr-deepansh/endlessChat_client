@@ -23,7 +23,7 @@ interface Post {
     title?: string;
   };
   content: string;
-  images?: (string | {url: string; publicId: string})[];
+  images?: (string | { url: string; publicId: string })[];
   createdAt: string;
   likesCount: number;
   commentsCount: number;
@@ -308,7 +308,9 @@ const Feed: React.FC = () => {
                           isLiked: post.isLiked || false,
                           isReposted: post.isReposted || false,
                           isBookmarked: post.isBookmarked || false,
-                          images: post.images?.map(img => typeof img === 'string' ? img : img.url) || [],
+                          images:
+                            post.images?.map(img => (typeof img === 'string' ? img : img.url)) ||
+                            [],
                           type: 'text',
                         }}
                         currentUserId={user?._id}

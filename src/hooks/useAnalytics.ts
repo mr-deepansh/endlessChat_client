@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { analyticsService, monitoringService, adminService } from '../services/modules';
-import type {
-  RetentionAnalytics,
-  EngagementMetrics,
-  DatabaseStats,
-} from '../services/modules';
+import type { RetentionAnalytics, EngagementMetrics, DatabaseStats } from '../services/modules';
 
 interface RevenueAnalytics {
   totalRevenue: number;
