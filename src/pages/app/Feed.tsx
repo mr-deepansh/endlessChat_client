@@ -180,16 +180,21 @@ const Feed: React.FC = () => {
 
   const handleDelete = async (postId: string) => {
     try {
-      await postService.deletePost(postId);
+      const post = posts.find(p => p._id === postId);
+      if (!post) return;
+
+      console.log('Delete request:', { postId, username: post.author.username });
+      await postService.deletePost(postId, post.author.username);
       setPosts(posts.filter(p => p._id !== postId));
       toast({
         title: 'Post Deleted',
         description: 'Your post has been deleted successfully',
       });
     } catch (error: any) {
+      console.error('Delete failed:', error.response?.data || error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete post',
+        description: error.response?.data?.message || error.message || 'Failed to delete post',
         variant: 'destructive',
       });
     }

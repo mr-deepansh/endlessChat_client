@@ -90,8 +90,11 @@ class PostService {
   }
 
   // Delete post
-  async deletePost(id: string): Promise<void> {
-    const response = await apiClient.delete(`/blogs/posts/${id}`);
+  async deletePost(id: string, username: string): Promise<void> {
+    const encodedUsername = encodeURIComponent(username);
+    const url = `/blogs/posts/${encodedUsername}/post/${id}`;
+    console.log('Delete URL:', url);
+    const response = await apiClient.delete(url);
     return response;
   }
 

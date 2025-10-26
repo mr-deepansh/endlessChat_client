@@ -129,8 +129,9 @@ class FeedService {
     return apiClient.put<Post>(`${this.baseUrl}/${postId}`, postData);
   }
 
-  async deletePost(postId: string): Promise<ApiResponse<{ message: string }>> {
-    return apiClient.delete(`${this.baseUrl}/${postId}`);
+  async deletePost(postId: string, username: string): Promise<ApiResponse<{ message: string }>> {
+    const encodedUsername = encodeURIComponent(username);
+    return apiClient.delete(`/blogs/posts/${encodedUsername}/post/${postId}`);
   }
 
   async getUserPosts(

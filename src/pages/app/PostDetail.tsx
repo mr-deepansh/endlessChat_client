@@ -95,7 +95,8 @@ const PostDetail: React.FC = () => {
 
   const handleDelete = async (postId: string) => {
     try {
-      await postService.deletePost(postId);
+      if (!post?.author?.username) return;
+      await postService.deletePost(postId, post.author.username);
       toast({ title: 'Post Deleted', description: 'Post deleted successfully' });
       navigate('/feed');
     } catch (error: any) {

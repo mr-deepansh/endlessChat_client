@@ -285,7 +285,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, placeholder = "What's
           });
           return;
         }
-
+        setImageFiles(prev => [...prev, file]);
         const reader = new FileReader();
         reader.onload = e => {
           if (e.target?.result) {

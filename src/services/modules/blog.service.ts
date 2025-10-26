@@ -180,8 +180,9 @@ class BlogService {
     return apiClient.patch<BlogPost>(`${this.baseUrl}/posts/${postId}`, data);
   }
 
-  async deletePost(postId: string): Promise<ApiResponse<{ message: string }>> {
-    return apiClient.delete(`${this.baseUrl}/posts/${postId}`);
+  async deletePost(postId: string, username: string): Promise<ApiResponse<{ message: string }>> {
+    const encodedUsername = encodeURIComponent(username);
+    return apiClient.delete(`${this.baseUrl}/posts/${encodedUsername}/post/${postId}`);
   }
 
   async likePost(postId: string): Promise<ApiResponse<{ message: string }>> {
