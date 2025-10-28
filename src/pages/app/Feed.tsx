@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import Navbar from '../../components/layout/Navbar';
+import FeedSidebar from '../../components/feed/FeedSidebar';
 import LeftSidebar from '../../components/layout/LeftSidebar';
+import Navbar from '../../components/layout/Navbar';
 import CreatePost from '../../components/posts/CreatePost';
 import PostCard from '../../components/posts/PostCard';
-import FeedSidebar from '../../components/feed/FeedSidebar';
+import { Card, CardContent } from '../../components/ui/card';
 import FeedUserSuggestions from '../../components/user/FeedUserSuggestions';
 import { useAuth } from '../../contexts/AuthContext';
-import { postService, userService } from '../../services';
 import { toast } from '../../hooks/use-toast';
 import { usePageTitle } from '../../hooks/usePageTitle';
-import { Card, CardContent } from '../../components/ui/card';
+import { postService, userService } from '../../services';
+import { handlePostShare } from '../../utils/shareUtils';
 
 interface Post {
   _id: string;
@@ -60,19 +61,20 @@ const Feed: React.FC = () => {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  const handleCreatePost = async (postData: any) => {
+  const handleCreatePost = async (postData: { content: string; files?: File[] }) => {
     setLoading(true);
     try {
       const newPost = await postService.createPost({
         content: postData.content,
-        files: postData.files,
+        files: postData.files || [],
       });
 
       const newPostData: Post = {
         _id: newPost._id,
         author: newPost.author,
         content: newPost.content,
-        images: newPost.images?.map(img => img.url) || [],
+        images:
+          (newPost as { images?: (string | { url: string; publicId: string })[] }).images || [],
         createdAt: newPost.createdAt,
         likesCount: newPost.likes?.length || 0,
         commentsCount: newPost.comments?.length || 0,
@@ -90,10 +92,10 @@ const Feed: React.FC = () => {
         description: 'Your post has been published successfully.',
         duration: 3000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create post',
+        description: (error as Error).message || 'Failed to create post',
         variant: 'destructive',
         duration: 4000,
       });
@@ -116,10 +118,10 @@ const Feed: React.FC = () => {
             : p
         )
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update like',
+        description: (error as Error).message || 'Failed to update like',
         variant: 'destructive',
       });
     }
@@ -150,31 +152,51 @@ const Feed: React.FC = () => {
       // Refresh feed to show new repost
       const response = await userService.getUserFeed();
       setPosts(response.posts || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to repost',
+        description: (error as Error).message || 'Failed to repost',
         variant: 'destructive',
       });
     }
   };
 
-  const handleShare = async (postId: string) => {
+  const handleShare = async (postId: string, platform?: string) => {
+    const post = posts.find(p => p._id === postId);
+    if (!post) {
+      console.error('❌ Post not found for sharing:', postId);
+      return;
+    }
+
+    const postUrl = `${window.location.origin}/post/${postId}`;
+    const shareText = `Check out this post by ${post.author.firstName} ${post.author.lastName}: ${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}`;
+
+    // console.log('🚀 Initiating share:', { postId, platform, postUrl });
+
     try {
-      await postService.sharePost(postId);
-      setPosts(
-        posts.map(p =>
-          p._id === postId
-            ? {
-                ...p,
-                sharesCount: (p.sharesCount || 0) + 1,
-              }
-            : p
-        )
-      );
-    } catch (error: any) {
-      // Silent fail for share count
-      console.error('Failed to update share count:', error);
+      await handlePostShare({
+        postId,
+        postUrl,
+        shareText,
+        ...(platform && { platform }),
+        onShareSuccess: async () => {
+          try {
+            await postService.sharePost(postId);
+            setPosts(
+              posts.map(p =>
+                p._id === postId ? { ...p, sharesCount: (p.sharesCount || 0) + 1 } : p
+              )
+            );
+            // console.log('✅ Share tracked successfully');
+          } catch (err) {
+            console.error('❌ Failed to track share:', err);
+          }
+        },
+      });
+
+      // Share completed (success/failure handled by handlePostShare)
+    } catch (error) {
+      console.error('❌ Share error in handleShare:', error);
     }
   };
 
@@ -183,18 +205,24 @@ const Feed: React.FC = () => {
       const post = posts.find(p => p._id === postId);
       if (!post) return;
 
-      console.log('Delete request:', { postId, username: post.author.username });
+      // console.log('Delete request:', { postId, username: post.author.username });
       await postService.deletePost(postId, post.author.username);
       setPosts(posts.filter(p => p._id !== postId));
       toast({
         title: 'Post Deleted',
         description: 'Your post has been deleted successfully',
       });
-    } catch (error: any) {
-      console.error('Delete failed:', error.response?.data || error);
+    } catch (error: unknown) {
+      console.error(
+        'Delete failed:',
+        (error as { response?: { data?: unknown } }).response?.data || error
+      );
       toast({
         title: 'Error',
-        description: error.response?.data?.message || error.message || 'Failed to delete post',
+        description:
+          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          (error as Error).message ||
+          'Failed to delete post',
         variant: 'destructive',
       });
     }
@@ -217,16 +245,16 @@ const Feed: React.FC = () => {
         title: 'Post Updated',
         description: 'Your post has been updated successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update post',
+        description: (error as Error).message || 'Failed to update post',
         variant: 'destructive',
       });
     }
   };
 
-  const handleUserFollow = (userId: string) => {
+  const handleUserFollow = (_userId: string) => {
     const loadPosts = async () => {
       try {
         const response = await userService.getUserFeed();
@@ -263,9 +291,9 @@ const Feed: React.FC = () => {
                   </div>
                 )}
 
-                {showSuggestions && (
+                {showSuggestions && user?._id && (
                   <FeedUserSuggestions
-                    currentUserId={user?._id}
+                    currentUserId={user._id}
                     onUserFollow={handleUserFollow}
                     onDismiss={() => setShowSuggestions(false)}
                   />
@@ -302,7 +330,7 @@ const Feed: React.FC = () => {
                             username: post.author?.username || 'unknown',
                             firstName: post.author?.firstName || 'Unknown',
                             lastName: post.author?.lastName || 'User',
-                            avatar: post.author?.avatar,
+                            avatar: post.author?.avatar || '',
                           },
                           createdAt: post.createdAt || new Date().toISOString(),
                           likesCount: post.likesCount || 0,
@@ -318,7 +346,7 @@ const Feed: React.FC = () => {
                             [],
                           type: 'text',
                         }}
-                        currentUserId={user?._id}
+                        currentUserId={user?._id || ''}
                         onLike={() => handleLike(post._id)}
                         onRepost={handleRepost}
                         onShare={handleShare}

@@ -167,8 +167,14 @@ class PostService {
 
   // Share post - Track share count
   async sharePost(postId: string): Promise<{ sharesCount: number }> {
-    const response = await apiClient.post(`/blogs/engagement/${postId}/share`);
-    return response.data;
+    try {
+      const response = await apiClient.post(`/blogs/engagement/${postId}/share`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Share API error:', error.response?.data || error.message);
+      // Return default if API fails
+      return { sharesCount: 0 };
+    }
   }
 }
 

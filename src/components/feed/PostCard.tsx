@@ -1,6 +1,18 @@
 // src/components/posts/PostCard.tsx
+import { formatDistanceToNow } from 'date-fns';
+import {
+  Bookmark,
+  Heart,
+  Link2,
+  MessageCircle,
+  MoreHorizontal,
+  Repeat2,
+  Share,
+  Trash2,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getImageUrl, handleImageError, processImageArray } from '../../utils/imageUtils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
@@ -8,18 +20,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import {
-  Heart,
-  MessageCircle,
-  Repeat2,
-  Share,
-  Bookmark,
-  MoreHorizontal,
-  Trash2,
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
 /**
  * NOTE / FIX:
@@ -52,7 +55,7 @@ interface PostCardProps {
     createdAt: string;
     images?: (string | { url: string; publicId: string })[]; // matches backend response
     // other optional fields allowed
-    [key: string]: any;
+    [key: string]: unknown;
   };
   currentUserId?: string;
   onLike?: (postId: string) => void;
@@ -96,10 +99,6 @@ const PostCard: React.FC<PostCardProps> = ({
   const handleDeleteClick = () => {
     // Let parent confirm/delete (Feed.tsx already has confirm)
     onDelete?.(post._id);
-  };
-
-  const handleShareClick = () => {
-    onShare?.(post._id);
   };
 
   return (
@@ -190,61 +189,55 @@ const PostCard: React.FC<PostCardProps> = ({
                 })}
               </p>
 
-              {post.images && post.images.length > 0 && (
-                <div
-                  className={`mt-3 rounded-lg overflow-hidden ${
-                    post.images.length === 1
-                      ? ''
-                      : post.images.length === 2
-                        ? 'grid grid-cols-2 gap-1'
-                        : 'grid grid-cols-2 gap-1'
-                  }`}
-                >
-                  {post.images.slice(0, 4).map((image, index) => (
-                    <img
-                      key={index}
-                      src={typeof image === 'string' ? image : image.url}
-                      alt={`Post media ${index + 1}`}
-                      className={`w-full object-cover ${
-                        post.images.length === 1 ? 'max-h-96' : 'h-48'
-                      } hover:scale-105 transition-transform cursor-pointer bg-gray-100`}
-                      onClick={() => {
-                        // TODO: Open image in modal
-                        window.open(typeof image === 'string' ? image : image.url, '_blank');
-                      }}
-                      onError={e => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null; // Prevent infinite loop
-                        target.src =
-                          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%239ca3af"%3EImage unavailable%3C/text%3E%3C/svg%3E';
-                        target.style.cursor = 'default';
-                      }}
-                    />
-                  ))}
-                  {post.images.length > 4 && (
-                    <div className="relative">
-                      <img
-                        src={
-                          typeof post.images[3] === 'string' ? post.images[3] : post.images[3].url
-                        }
-                        alt="Post media 4"
-                        className="w-full h-48 object-cover bg-gray-100"
-                        onError={e => {
-                          const target = e.target as HTMLImageElement;
-                          target.onerror = null;
-                          target.src =
-                            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%239ca3af"%3EImage unavailable%3C/text%3E%3C/svg%3E';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="text-white font-semibold text-lg">
-                          +{post.images.length - 3}
-                        </span>
-                      </div>
+              {(() => {
+                const processedImages = processImageArray(post.images);
+                return (
+                  processedImages.length > 0 && (
+                    <div
+                      className={`mt-3 rounded-lg overflow-hidden ${
+                        processedImages.length === 1
+                          ? ''
+                          : processedImages.length === 2
+                            ? 'grid grid-cols-2 gap-1'
+                            : 'grid grid-cols-2 gap-1'
+                      }`}
+                    >
+                      {processedImages.slice(0, 4).map((image, index) => {
+                        const imageUrl = getImageUrl(image);
+                        return (
+                          <img
+                            key={index}
+                            src={imageUrl}
+                            alt={`Post media ${index + 1}`}
+                            className={`w-full object-cover ${
+                              processedImages.length === 1 ? 'max-h-96' : 'h-48'
+                            } hover:scale-105 transition-transform cursor-pointer bg-gray-100`}
+                            onClick={() => {
+                              window.open(imageUrl, '_blank');
+                            }}
+                            onError={e => handleImageError(e, imageUrl)}
+                          />
+                        );
+                      })}
+                      {processedImages.length > 4 && (
+                        <div className="relative">
+                          <img
+                            src={getImageUrl(processedImages[3])}
+                            alt="Post media 4"
+                            className="w-full h-48 object-cover bg-gray-100"
+                            onError={e => handleImageError(e, getImageUrl(processedImages[3]))}
+                          />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span className="text-white font-semibold text-lg">
+                              +{processedImages.length - 3}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
+                  )
+                );
+              })()}
             </div>
 
             <div className="flex items-center justify-between mt-4">
@@ -297,15 +290,64 @@ const PostCard: React.FC<PostCardProps> = ({
                 <span className="text-sm">{post.likesCount}</span>
               </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleShareClick}
-                className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center"
-              >
-                <Share className="w-4 h-4" />
-                <span className="text-sm">Share</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center space-x-1 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 flex-1 justify-center"
+                  >
+                    <Share className="w-4 h-4" />
+                    <span className="text-sm">{(post.sharesCount as number) || 0}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center">
+                  <DropdownMenuItem onClick={() => onShare?.(post._id, 'whatsapp')}>
+                    <MessageCircle className="w-4 h-4 mr-2 text-green-600" />
+                    WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onShare?.(post._id, 'x')}>
+                    <span className="w-4 h-4 mr-2 text-black font-bold text-xs flex items-center justify-center">
+                      𝕏
+                    </span>
+                    X (Twitter)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onShare?.(post._id, 'threads')}>
+                    <MessageCircle className="w-4 h-4 mr-2 text-black" />
+                    Threads
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onShare?.(post._id, 'linkedin')}>
+                    <span className="w-4 h-4 mr-2 text-blue-600 font-bold text-xs flex items-center justify-center">
+                      in
+                    </span>
+                    LinkedIn
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onShare?.(post._id, 'facebook')}>
+                    <span className="w-4 h-4 mr-2 text-blue-600 font-bold text-xs flex items-center justify-center">
+                      f
+                    </span>
+                    Facebook
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onShare?.(post._id, 'instagram')}>
+                    <span className="w-4 h-4 mr-2 text-pink-600 font-bold text-xs flex items-center justify-center">
+                      📷
+                    </span>
+                    Instagram
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={async e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      await onShare?.(post._id);
+                    }}
+                    onSelect={e => e.preventDefault()}
+                  >
+                    <Link2 className="w-4 h-4 mr-2" />
+                    Copy Link
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

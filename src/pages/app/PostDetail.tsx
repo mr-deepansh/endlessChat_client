@@ -1,22 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../../components/layout/Navbar';
-import LeftSidebar from '../../components/layout/LeftSidebar';
-import PostCard from '../../components/posts/PostCard';
-import { Card, CardContent } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import postService from '../../services/postService';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import LeftSidebar from '../../components/layout/LeftSidebar';
+import Navbar from '../../components/layout/Navbar';
+import PostCard from '../../components/posts/PostCard';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent } from '../../components/ui/card';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../hooks/use-toast';
+import postService from '../../services/postService';
+import { handlePostShare } from '../../utils/shareUtils';
 
 const PostDetail: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [post, setPost] = useState<any>(null);
+  const { user, isAuthenticated } = useAuth();
+  const [post, setPost] = useState<{
+    _id: string;
+    content: string;
+    author: {
+      _id: string;
+      username: string;
+      firstName: string;
+      lastName: string;
+      avatar?: string;
+    };
+    images?: (string | { url: string; publicId: string })[];
+    likesCount: number;
+    commentsCount: number;
+    repostsCount: number;
+    sharesCount: number;
+    viewsCount: number;
+    isLiked?: boolean;
+    isReposted?: boolean;
+    isBookmarked?: boolean;
+    createdAt: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     if (postId) {
@@ -30,10 +52,11 @@ const PostDetail: React.FC = () => {
       setLoading(true);
       const response = await postService.getPostById(postId!);
       setPost(response);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Don't show error for 401 on public post view
-      if (error.response?.status !== 401) {
-        setError(error.message || 'Failed to load post');
+      if ((error as { response?: { status?: number } }).response?.status !== 401) {
+        const errorMessage = (error as Error).message || 'Failed to load post';
+        setError(errorMessage);
         toast({
           title: 'Error',
           description: 'Failed to load post',
@@ -72,11 +95,16 @@ const PostDetail: React.FC = () => {
 
   const handleRepost = async (postId: string, withQuote?: boolean, quoteText?: string) => {
     try {
-      await postService.repost(postId, quoteText);
+      if (withQuote && quoteText) {
+        await postService.quoteRepost(postId, quoteText);
+      } else {
+        await postService.repost(postId);
+      }
       toast({
         title: 'Success',
         description: withQuote ? 'Quote repost created' : 'Post reposted',
       });
+      fetchPost();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -86,11 +114,24 @@ const PostDetail: React.FC = () => {
     }
   };
 
-  const handleShare = (postId: string) => {
-    setPost((prev: any) => ({
-      ...prev,
-      sharesCount: (prev.sharesCount || 0) + 1,
-    }));
+  const handleShare = async (postId: string, platform?: string) => {
+    const postUrl = `${window.location.origin}/post/${postId}`;
+    const shareText = `Check out this post by ${post?.author?.firstName} ${post?.author?.lastName}: ${post?.content?.substring(0, 100)}${post?.content?.length > 100 ? '...' : ''}`;
+
+    await handlePostShare({
+      postId,
+      postUrl,
+      shareText,
+      platform,
+      onShareSuccess: async () => {
+        try {
+          await postService.sharePost(postId);
+          setPost((prev: any) => ({ ...prev, sharesCount: (prev.sharesCount || 0) + 1 }));
+        } catch (err) {
+          console.error('Failed to track share:', err);
+        }
+      },
+    });
   };
 
   const handleDelete = async (postId: string) => {
@@ -188,7 +229,12 @@ const PostDetail: React.FC = () => {
 
             {/* Comments Section */}
             {isAuthenticated ? (
-              <PostComments postId={postId!} currentUserId={user?._id} />
+              <Card className="border-none shadow-soft bg-gradient-card">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Comments</h3>
+                  <p className="text-muted-foreground text-center py-4">Comments coming soon</p>
+                </CardContent>
+              </Card>
             ) : (
               <Card className="border-none shadow-soft bg-gradient-card">
                 <CardContent className="p-6 text-center">
