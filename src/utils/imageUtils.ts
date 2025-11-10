@@ -48,10 +48,24 @@ export const handleImageError = (
   const target = event.target as HTMLImageElement;
 
   // Prevent infinite loop
+  if (target.dataset.errorHandled) return;
+  target.dataset.errorHandled = 'true';
   target.onerror = null;
 
   // Log the error for debugging
   console.warn(`⚠️ Image failed to load: ${originalSrc}`);
+
+  // Try alternative Cloudinary transformations first
+  if (isCloudinaryUrl(originalSrc) && !target.dataset.fallbackAttempted) {
+    target.dataset.fallbackAttempted = 'true';
+    // Try with different quality/format
+    const fallbackUrl = originalSrc.replace('/upload/', '/upload/q_auto,f_auto/');
+    if (fallbackUrl !== originalSrc) {
+      target.src = fallbackUrl;
+      target.onerror = e => handleImageError(e as any, fallbackUrl, fallbackOptions);
+      return;
+    }
+  }
 
   // Set fallback image
   target.src = createFallbackImage(fallbackOptions);

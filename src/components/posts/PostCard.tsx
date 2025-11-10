@@ -41,7 +41,9 @@ import {
   Share,
   Trash2,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import CommentList from './CommentList';
+import { useComments } from '@/hooks/useComments';
 
 interface User {
   _id: string;
@@ -49,6 +51,15 @@ interface User {
   firstName: string;
   lastName: string;
   avatar?: string;
+}
+
+interface Comment {
+  _id: string;
+  content: string;
+  author: User;
+  createdAt: string;
+  likesCount: number;
+  isLiked?: boolean;
 }
 
 interface Post {
@@ -76,6 +87,7 @@ interface Post {
   type?: 'text' | 'article' | 'poll' | 'media';
   repostOf?: Post;
   quotedPost?: Post;
+  comments?: Comment[];
 }
 
 interface PostCardProps {
@@ -109,6 +121,18 @@ const PostCard: React.FC<PostCardProps> = ({
   const [hasVoted, setHasVoted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+  const { comments, addComment, likeComment, deleteComment, loadComments } = useComments(
+    post._id,
+    []
+  );
+
+  useEffect(() => {
+    if (showComments) {
+      loadComments();
+    }
+  }, [showComments, loadComments]);
 
   const isOwnPost = currentUserId === post.author?._id;
 
@@ -436,11 +460,11 @@ const PostCard: React.FC<PostCardProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onComment?.(post._id)}
+              onClick={() => setShowComments(!showComments)}
               className="flex items-center space-x-2 text-social-comment hover:text-social-comment hover:bg-social-comment/10 transition-all duration-200"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">{formatNumber(post.commentsCount || 0)}</span>
+              <span className="text-sm">{formatNumber(commentsCount)}</span>
             </Button>
 
             <DropdownMenu>
@@ -573,6 +597,24 @@ const PostCard: React.FC<PostCardProps> = ({
               <span>{formatNumber(post.viewsCount || 0)}</span>
             </div>
           </div>
+
+          {/* Comments Section */}
+          {showComments && (
+            <CommentList
+              postId={post._id}
+              comments={comments}
+              currentUserId={currentUserId}
+              onAddComment={async (content: string) => {
+                await addComment(content);
+                setCommentsCount(prev => prev + 1);
+              }}
+              onLikeComment={likeComment}
+              onDeleteComment={async (commentId: string) => {
+                await deleteComment(commentId);
+                setCommentsCount(prev => prev - 1);
+              }}
+            />
+          )}
         </div>
       </CardContent>
     </Card>

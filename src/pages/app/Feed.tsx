@@ -49,7 +49,6 @@ const Feed: React.FC = () => {
     const loadPosts = async () => {
       try {
         const response = await userService.getUserFeed();
-
         setPosts(response.posts || []);
       } catch (_backendError) {
         setPosts([]);

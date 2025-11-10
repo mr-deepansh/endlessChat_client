@@ -88,7 +88,7 @@ class CommentValidator {
 // ==================== Service ====================
 
 class CommentService {
-  private readonly BASE_PATH = '/blogs/comments';
+  private readonly BASE_PATH = '/posts';
   private readonly DEFAULT_LIMIT = 20;
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
   private readonly CACHE_TTL = 60000; // 1 minute
@@ -97,27 +97,45 @@ class CommentService {
    * Get comments for a post with pagination and sorting
    */
   async getComments(postId: string, filters: CommentFilters = {}): Promise<CommentsResponse> {
-    const { page = 1, limit = this.DEFAULT_LIMIT, sortBy = 'newest' } = filters;
+    const { page = 1, limit = this.DEFAULT_LIMIT, sortBy = 'createdAt' } = filters;
 
     try {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(limit),
         sortBy,
+        sortOrder: 'desc',
+        loadReplies: 'true',
       });
+
+      const url = `/blogs/comments/${postId}?${params}`;
+      console.log('🔍 [CommentService] Fetching comments:', { postId, url, filters });
 
       const cacheKey = `comments_${postId}_${params.toString()}`;
       const cached = this.getFromCache<CommentsResponse>(cacheKey);
-      if (cached) return cached;
+      if (cached) {
+        console.log('✅ [CommentService] Cache hit:', cacheKey);
+        return cached;
+      }
 
-      const response = await apiClient.get(`${this.BASE_PATH}/${postId}?${params}`);
+      const response = await apiClient.get(url);
+      console.log('✅ [CommentService] Response received:', response);
+
       const result = this.normalizeCommentsResponse(response.data);
+      console.log('✅ [CommentService] Normalized result:', result);
 
       this.setCache(cacheKey, result);
       return result;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ [CommentService] Error details:', {
+        postId,
+        error: error?.message || error,
+        response: error?.response?.data,
+        status: error?.response?.status,
+        url: `/blogs/comments/${postId}`,
+      });
       Logger.error('Failed to fetch comments', { postId, error });
-      throw new Error('Failed to load comments');
+      throw error;
     }
   }
 
@@ -127,21 +145,33 @@ class CommentService {
   async addComment(postId: string, data: CreateCommentData): Promise<Comment> {
     const validation = CommentValidator.validateContent(data.content);
     if (!validation.valid) {
+      console.error('❌ [CommentService] Validation failed:', validation.error);
       throw new Error(validation.error);
     }
 
     try {
       const sanitizedContent = CommentValidator.sanitizeContent(data.content);
-      const response = await apiClient.post(`${this.BASE_PATH}/${postId}`, {
+      const payload = {
         content: sanitizedContent,
-        parentComment: data.parentComment,
-      });
+        parentCommentId: data.parentComment,
+      };
+
+      console.log('🔍 [CommentService] Adding comment:', { postId, payload });
+
+      const response = await apiClient.post(`/blogs/comments/${postId}`, payload);
+      console.log('✅ [CommentService] Comment added:', response);
 
       this.invalidateCacheForPost(postId);
       return this.normalizeComment(response.data.data || response.data);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ [CommentService] Add comment error:', {
+        postId,
+        error: error?.message || error,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
       Logger.error('Failed to add comment', { postId, error });
-      throw new Error('Failed to post comment');
+      throw error;
     }
   }
 
@@ -150,7 +180,7 @@ class CommentService {
    */
   async toggleCommentLike(commentId: string): Promise<{ isLiked: boolean; likesCount: number }> {
     try {
-      const response = await apiClient.post(`${this.BASE_PATH}/${commentId}/like`);
+      const response = await apiClient.post(`/blogs/comments/like/${commentId}`);
       const data = response.data.data || response.data;
 
       this.invalidateCache();
@@ -175,7 +205,7 @@ class CommentService {
 
     try {
       const sanitizedContent = CommentValidator.sanitizeContent(content);
-      const response = await apiClient.post(`${this.BASE_PATH}/${commentId}/reply`, {
+      const response = await apiClient.post(`/comments/${commentId}/reply`, {
         content: sanitizedContent,
       });
 
@@ -198,7 +228,7 @@ class CommentService {
 
     try {
       const sanitizedContent = CommentValidator.sanitizeContent(data.content);
-      const response = await apiClient.patch(`${this.BASE_PATH}/${commentId}`, {
+      const response = await apiClient.patch(`/blogs/comments/${commentId}`, {
         content: sanitizedContent,
       });
 
@@ -215,7 +245,7 @@ class CommentService {
    */
   async deleteComment(commentId: string): Promise<void> {
     try {
-      await apiClient.delete(`${this.BASE_PATH}/${commentId}`);
+      await apiClient.delete(`/blogs/comments/${commentId}`);
       this.invalidateCache();
     } catch (error) {
       Logger.error('Failed to delete comment', { commentId, error });
@@ -232,7 +262,7 @@ class CommentService {
       const cached = this.getFromCache<Comment>(cacheKey);
       if (cached) return cached;
 
-      const response = await apiClient.get(`${this.BASE_PATH}/${commentId}`);
+      const response = await apiClient.get(`/comments/${commentId}`);
       const comment = this.normalizeComment(response.data.data || response.data);
 
       this.setCache(cacheKey, comment);
@@ -258,7 +288,7 @@ class CommentService {
         limit: String(limit),
       });
 
-      const response = await apiClient.get(`${this.BASE_PATH}/${commentId}/replies?${params}`);
+      const response = await apiClient.get(`/blogs/comments/replies/${commentId}?${params}`);
       return this.normalizeCommentsResponse(response.data);
     } catch (error) {
       Logger.error('Failed to fetch comment replies', { commentId, error });
@@ -270,7 +300,9 @@ class CommentService {
 
   private normalizeCommentsResponse(data: any): CommentsResponse {
     return {
-      comments: (data.comments || data.data || []).map(this.normalizeComment),
+      comments: (data.comments || data.data || []).map((comment: any) =>
+        this.normalizeComment(comment)
+      ),
       totalComments: data.pagination?.totalCount || data.total || 0,
       totalPages: data.pagination?.totalPages || 0,
       currentPage: data.pagination?.currentPage || 1,
@@ -280,21 +312,26 @@ class CommentService {
   }
 
   private normalizeComment(comment: any): Comment {
+    const author = comment.author || {};
+    const fullName = author.fullName || `${author.firstName || ''} ${author.lastName || ''}`.trim();
+    const firstName = author.firstName || fullName.split(' ')[0] || 'Unknown';
+    const lastName = author.lastName || fullName.split(' ')[1] || 'User';
+
     return {
       _id: comment._id,
       content: comment.content || '',
-      author: comment.author || {
-        _id: 'unknown',
-        username: 'unknown',
-        firstName: 'Unknown',
-        lastName: 'User',
-        avatar: null,
+      author: {
+        _id: author._id || 'unknown',
+        username: author.username || 'unknown',
+        firstName,
+        lastName,
+        avatar: author.avatar || null,
       },
       post: comment.post || comment.postId || '',
       likes: comment.likes || [],
-      likesCount: comment.likesCount || comment.likes?.length || 0,
-      replies: (comment.replies || []).map(this.normalizeComment),
-      repliesCount: comment.repliesCount || comment.replies?.length || 0,
+      likesCount: comment.likeCount || comment.likesCount || comment.likes?.length || 0,
+      replies: (comment.replies || []).map((reply: any) => this.normalizeComment(reply)),
+      repliesCount: comment.replyCount || comment.repliesCount || comment.replies?.length || 0,
       parentComment: comment.parentComment,
       isLiked: comment.isLiked || false,
       isEdited: comment.isEdited || false,
