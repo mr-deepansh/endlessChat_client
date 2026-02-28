@@ -41,7 +41,8 @@ const responsiveButtonVariants = cva(
 );
 
 export interface ResponsiveButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof responsiveButtonVariants> {
   asChild?: boolean;
   loading?: boolean;
