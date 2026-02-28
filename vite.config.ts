@@ -1,54 +1,54 @@
-import react from '@vitejs/plugin-react-swc';
-import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
 
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: '0.0.0.0',
-    port: 8080,
-    hmr: { overlay: false },
-    open: false,
-  },
-  preview: {
-    host: '0.0.0.0',
-    port: 8080,
-    open: false,
-  },
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  build: {
-    target: 'esnext',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['lucide-react', '@radix-ui/react-slot'],
-        },
+export default defineConfig(({ mode }) => {
+  const isProd = mode === "production";
+
+  return {
+    plugins: [react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
     },
-    chunkSizeWarningLimit: 1000, // Increase default warning threshold
-    minify: mode === 'production' ? 'terser' : false,
-    terserOptions:
-      mode === 'production'
+    server: {
+      host: "0.0.0.0",
+      port: 5173,
+      open: false,
+      strictPort: true,
+    },
+    build: {
+      outDir: "dist",
+      sourcemap: !isProd,
+      target: "esnext",
+      minify: isProd ? "terser" : false,
+      terserOptions: isProd
         ? {
             compress: {
               drop_console: true,
               drop_debugger: true,
-              pure_funcs: ['console.log'],
+              pure_funcs: ["console.log"],
             },
           }
         : undefined,
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    force: mode === 'development',
-  },
-  esbuild: {
-    logOverride: { 'this-is-undefined-in-esm': 'silent' },
-  },
-}));
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ["react", "react-dom"],
+            router: ["react-router-dom"],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 1000,
+    },
+    optimizeDeps: {
+      include: ["react", "react-dom", "react-router-dom"],
+    },
+    esbuild: {
+      logOverride: {
+        "this-is-undefined-in-esm": "silent",
+      },
+    },
+  };
+});
